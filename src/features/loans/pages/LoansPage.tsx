@@ -1,0 +1,1 @@
+// LoansPage.tsx placeholder

@@ -1,0 +1,1 @@
+// UpdateProfilePage.tsx placeholder
