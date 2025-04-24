@@ -1,9 +1,22 @@
 import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onCreate: (data: { name: string; document: string; email: string; phone: string; address: string }) => void;
+  onCreate: (data: {
+    name: string;
+    document: string;
+    email: string;
+    phone: string;
+    address: string;
+  }) => void;
 }
 
 const ClientFormModal = ({ open, onClose, onCreate }: Props) => {
@@ -19,36 +32,90 @@ const ClientFormModal = ({ open, onClose, onCreate }: Props) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
-      <div className="bg-white p-6 rounded w-full max-w-md">
-        <h2 className="text-lg font-bold mb-4">Nuevo Cliente</h2>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-md w-full bg-white">
+        <DialogHeader>
+          <DialogTitle>Registrar nuevo cliente</DialogTitle>
+        </DialogHeader>
 
-        <div className="space-y-2">
-          {['name', 'document', 'email', 'phone', 'address'].map((field) => (
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium mb-1">Nombre completo</label>
             <input
-              key={field}
-              name={field}
-              placeholder={field.toUpperCase()}
-              value={form[field as keyof typeof form]}
+              id="name"
+              name="name"
+              type="text"
+              placeholder="Ej: Juan Pérez"
+              value={form.name}
               onChange={handleChange}
-              className="border px-3 py-2 w-full rounded"
+              className="border border-primary rounded px-3 py-2 w-full"
             />
-          ))}
+          </div>
+
+          <div>
+            <label htmlFor="document" className="block text-sm font-medium mb-1">Documento de identidad</label>
+            <input
+              id="document"
+              name="document"
+              type="text"
+              placeholder="DNI / Cédula"
+              value={form.document}
+              onChange={handleChange}
+              className="border border-primary rounded px-3 py-2 w-full"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium mb-1">Correo electrónico</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Ej: correo@ejemplo.com"
+              value={form.email}
+              onChange={handleChange}
+              className="border border-primary rounded px-3 py-2 w-full"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium mb-1">Teléfono</label>
+            <input
+              id="phone"
+              name="phone"
+              type="text"
+              placeholder="Ej: 987654321"
+              value={form.phone}
+              onChange={handleChange}
+              className="border border-primary rounded px-3 py-2 w-full"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="address" className="block text-sm font-medium mb-1">Dirección</label>
+            <input
+              id="address"
+              name="address"
+              type="text"
+              placeholder="Ej: Calle 123, Ciudad"
+              value={form.address}
+              onChange={handleChange}
+              className="border border-primary rounded px-3 py-2 w-full"
+            />
+          </div>
         </div>
 
-        <div className="flex justify-end mt-4 gap-2">
-          <button onClick={onClose} className="px-4 py-2 bg-gray-300 rounded">
+        <div className="flex justify-end gap-2 mt-6">
+          <Button variant="secondary" onClick={onClose}>
             Cancelar
-          </button>
-          <button onClick={() => onCreate(form)} className="px-4 py-2 bg-green-600 text-white rounded">
+          </Button>
+          <Button onClick={() => onCreate(form)}>
             Crear
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

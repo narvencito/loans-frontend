@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface SectionBlockProps {
   id: string;
@@ -19,29 +20,28 @@ export default function SectionBlock({ id, title, content, index }: SectionBlock
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: index * 0.2 }}
-      className="bg-white shadow-md rounded-xl p-6 border border-muted"
+      className="bg-card text-card-foreground shadow-lg rounded-xl p-6 border border-muted space-y-6"
     >
-      <h2 className="text-2xl font-semibold text-primary mb-6">{title}</h2>
-      <div className="space-y-6">
-        {content.map((item, idx) => (
-          <div key={idx} className="text-gray-700">
-            {item.step ? (
-              <div className="flex items-start gap-4">
-                <span className="text-3xl font-bold text-secondary">{item.step}</span>
-                <div>
-                  <h3 className="text-lg font-semibold text-primary">{item.title}</h3>
-                  <p>{item.description}</p>
-                </div>
-              </div>
-            ) : (
-              <>
+      <h2 className="text-2xl font-bold text-primary">{title}</h2>
+
+      {content.map((item, idx) => (
+        <div key={idx} className="text-muted-foreground">
+          {item.step ? (
+            <div className="flex items-start gap-4">
+              <span className="text-3xl font-bold text-secondary">{item.step}</span>
+              <div>
                 <h3 className="text-lg font-semibold text-primary mb-1">{item.title}</h3>
-                <p>{item.description}</p>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
+                <p className="text-sm leading-relaxed">{item.description}</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <h3 className="text-lg font-semibold text-primary mb-1">{item.title}</h3>
+              <p className="text-sm leading-relaxed">{item.description}</p>
+            </>
+          )}
+        </div>
+      ))}
     </motion.section>
   );
 }

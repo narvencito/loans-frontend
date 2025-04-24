@@ -1,81 +1,57 @@
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+
+const navItems = [
+  { to: '/admin/dashboard', label: 'Dashboard' },
+  { to: '/admin/users', label: 'Usuarios' },
+  { to: '/admin/clients', label: 'Clientes' },
+  { to: '/admin/cash-loans', label: 'Préstamo en efectivo' },
+  { to: '/admin/equipment', label: 'Gestión de equipos' },
+  { to: '/admin/equipment-status', label: 'Estado de equipos' },
+  { to: '/admin/equipment-category', label: 'Categoría de equipos' },
+];
 
 export default function AdminLayout() {
+  const location = useLocation();
+
   return (
     <div className="min-h-screen flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 p-4">
-      <h2 className="font-bold text-xl mb-4 text-white">Admin</h2>
-      <ul className="space-y-2">
-        <li>
-          <Link
-            to="/admin/dashboard"
-            className="block text-white hover:text-green-400"
-          >
-            Dashboard
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/admin/users"
-            className="block text-white hover:text-green-400"
-          >
-            Usuarios
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/admin/clients"
-            className="block text-white hover:text-green-400"
-          >
-            Clientes
-          </Link>
-        </li>
+      <aside className="w-64 p-4 bg-background text-gray-200">
+        <h2 className="font-bold text-xl mb-4">Panel Admin</h2>
+        <ScrollArea className="h-full">
+          <ul className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = location.pathname == (item.to);
+              return (
+                <li key={item.to}>
+                  <Link
+                    to={item.to}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={cn(
+                      'block px-3 py-2 rounded text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-gray-200 hover:bg-primary hover:text-black'
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </ScrollArea>
+      </aside>
 
-        <li>
-          <Link
-            to="/admin/cash-loans"
-            className="block text-white hover:text-green-400"
-          >
-            Préstamo en efectivo
-          </Link>
-        </li>
-
-        <li>
-          <Link
-            to="/admin/equipment"
-            className="block text-white hover:text-green-400"
-          >
-            Gestión de equipos
-          </Link>
-        </li>
-
-        <li>
-          <Link
-            to="/admin/equipment-status"
-            className="block text-white hover:text-green-400"
-          >
-            Estado de equipos
-          </Link>
-        </li>
-
-        <li>
-          <Link
-            to="/admin/equipment-category"
-            className="block text-white hover:text-green-400"
-          >
-            Categoria de equipos
-          </Link>
-        </li>
-
-      </ul>
-    </aside>
-
-      {/* Contenido */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <header className="bg-gray-900 text-white p-4 text-lg font-bold">
+        <header className="p-4 text-lg font-bold border-b border-border bg-background text-white text-primary-foreground">
           Panel de Administración
         </header>
+        <Separator />
         <main className="p-6 flex-1 overflow-y-auto">
           <Outlet />
         </main>

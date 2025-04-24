@@ -31,23 +31,26 @@ export default function LoanOptionsSection() {
   };
 
   return (
-    <section className="py-16 bg-white text-center">
-      <h2 className="text-2xl font-bold text-primary mb-8">¿Qué tipo de préstamo necesitas?</h2>
+    <section className="py-20 px-4 text-[hsl(var(--foreground))]">
+      <h2 className="text-2xl font-bold text-primary text-center mb-10">
+        ¿Qué tipo de préstamo necesitas?
+      </h2>
 
-      {/* Desktop layout */}
-      <div className="hidden md:grid grid-cols-3 gap-6 px-4 max-w-6xl mx-auto">
+      {/* Desktop */}
+      <div className="hidden md:grid grid-cols-3 gap-6 max-w-6xl mx-auto">
         {loans.map((loan, index) => (
           <div
             key={index}
-            className="border border-primary rounded-lg overflow-hidden shadow-sm transition-transform hover:scale-105"
+            className="bg-card border border-primary rounded-xl shadow hover:scale-[1.02] transition-transform"
           >
-            <div className="bg-green-50 p-4">
-              <img src={loan.image} alt={loan.title} className="mx-auto mb-2 h-32 object-contain" />
-              <h3 className="text-lg font-bold text-green-700">{loan.title}</h3>
-            </div>
-            <div className="p-4 text-gray-700">
-              <p>{loan.description}</p>
-              <a href="#" className="block mt-4 text-blue-600 font-medium hover:underline">
+            <div className="p-4 flex flex-col items-center">
+              <img src={loan.image} alt={loan.title} className="h-32 object-contain mb-4" />
+              <h3 className="text-lg font-semibold text-primary mb-2">{loan.title}</h3>
+              <p className="text-muted-foreground text-sm">{loan.description}</p>
+              <a
+                href="#"
+                className="mt-4 text-primary font-medium hover:underline transition-colors"
+              >
                 Lo quiero
               </a>
             </div>
@@ -55,42 +58,51 @@ export default function LoanOptionsSection() {
         ))}
       </div>
 
-      {/* Mobile carousel */}
-      <div className="md:hidden px-4">
-        <div className="relative">
-          <div className="border border-primary rounded-lg overflow-hidden shadow">
-            <div className="bg-green-50 p-4">
-              <img
-                src={loans[activeIndex].image}
-                alt={loans[activeIndex].title}
-                className="mx-auto mb-2 h-32 object-contain"
-              />
-              <h3 className="text-lg font-bold text-green-700">{loans[activeIndex].title}</h3>
-            </div>
-            <div className="p-4 text-gray-700">
-              <p>{loans[activeIndex].description}</p>
-              <a href="#" className="block mt-4 text-blue-600 font-medium hover:underline">
-                Lo quiero
-              </a>
-            </div>
-          </div>
-
-          <div className="flex justify-between absolute top-1/2 w-full px-2 -translate-y-1/2">
-            <button onClick={handlePrev} className="p-2 text-primary bg-white rounded-full shadow">
-              <FaChevronLeft />
-            </button>
-            <button onClick={handleNext} className="p-2 text-primary bg-white rounded-full shadow">
-              <FaChevronRight />
-            </button>
+      {/* Mobile */}
+      <div className="md:hidden max-w-md mx-auto relative">
+        <div className="bg-card border border-primary rounded-xl shadow">
+          <div className="p-4 flex flex-col items-center">
+            <img
+              src={loans[activeIndex].image}
+              alt={loans[activeIndex].title}
+              className="h-32 object-contain mb-2"
+            />
+            <h3 className="text-lg font-semibold text-primary mb-1">
+              {loans[activeIndex].title}
+            </h3>
+            <p className="text-muted-foreground text-sm">{loans[activeIndex].description}</p>
+            <a
+              href="#"
+              className="mt-4 text-primary font-medium hover:underline transition-colors"
+            >
+              Lo quiero
+            </a>
           </div>
         </div>
 
+        <div className="absolute inset-y-1/2 -translate-y-1/2 flex justify-between w-full px-4">
+          <button
+            onClick={handlePrev}
+            className="p-2 bg-background border border-muted rounded-full shadow"
+          >
+            <FaChevronLeft />
+          </button>
+          <button
+            onClick={handleNext}
+            className="p-2 bg-background border border-muted rounded-full shadow"
+          >
+            <FaChevronRight />
+          </button>
+        </div>
+
         <div className="flex justify-center mt-4 space-x-2">
-          {loans.map((_, index) => (
-            <div
-              key={index}
-              className={`w-2 h-2 rounded-full ${index === activeIndex ? 'bg-primary' : 'bg-gray-300'}`}
-            ></div>
+          {loans.map((_, i) => (
+            <span
+              key={i}
+              className={`w-2 h-2 rounded-full ${
+                i === activeIndex ? 'bg-primary' : 'bg-muted'
+              }`}
+            />
           ))}
         </div>
       </div>

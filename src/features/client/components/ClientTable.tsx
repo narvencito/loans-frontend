@@ -1,4 +1,13 @@
-import { ClientItem } from "../api/client_api";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { ClientItem } from '../api/client_api';
 
 interface Props {
   clients: ClientItem[];
@@ -7,42 +16,45 @@ interface Props {
 
 const ClientTable = ({ clients, onToggle }: Props) => {
   return (
-    <table className="min-w-[600px] w-full border rounded shadow text-sm">
-  <thead className="bg-gray-100">
-    <tr>
-      <th className="p-2 text-left">Nombre</th>
-      <th className="p-2 text-left">DNI</th>
-      <th className="p-2 text-left">Correo</th>
-      <th className="p-2 text-left">Teléfono</th>
-      <th className="p-2 text-center">Estado</th>
-      <th className="p-2 text-center">Acción</th>
-    </tr>
-  </thead>
-  <tbody>
-    {clients.map((c) => (
-      <tr key={c.id} className="border-t">
-        <td className="p-2 truncate max-w-[150px]">{c.name}</td>
-        <td className="p-2">{c.document}</td>
-        <td className="p-2 truncate max-w-[180px]">{c.email}</td>
-        <td className="p-2">{c.phone}</td>
-        <td className="p-2 text-center">
-          <span className={c.isActive ? 'text-green-600' : 'text-red-600'}>
-            {c.isActive ? 'Activo' : 'Inactivo'}
-          </span>
-        </td>
-        <td className="p-2 text-center">
-          <button
-            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs"
-            onClick={() => onToggle(c.id)}
-          >
-            {c.isActive ? 'Desactivar' : 'Activar'}
-          </button>
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
-
+    <div className="rounded-md border overflow-hidden min-w-[600px] w-full">
+      <Table>
+        <TableHeader>
+          <TableRow className="text-muted-foreground">
+            <TableHead>Nombre</TableHead>
+            <TableHead>DNI</TableHead>
+            <TableHead>Correo</TableHead>
+            <TableHead>Teléfono</TableHead>
+            <TableHead className="text-center">Estado</TableHead>
+            <TableHead className="text-center">Acción</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {clients.map((c) => (
+            <TableRow key={c.id}>
+              <TableCell className="truncate max-w-[150px]">{c.name}</TableCell>
+              <TableCell>{c.document}</TableCell>
+              <TableCell className="truncate max-w-[180px]">{c.email}</TableCell>
+              <TableCell>{c.phone}</TableCell>
+              <TableCell className="text-center">
+                <span className={c.isActive ? 'text-green-600' : 'text-red-600'}>
+                  {c.isActive ? 'Activo' : 'Inactivo'}
+                </span>
+              </TableCell>
+              <TableCell className="text-center">
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                  onClick={() => onToggle(c.id)}
+                >
+                  {c.isActive ? 'Desactivar' : 'Activar'}
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 

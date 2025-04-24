@@ -24,7 +24,7 @@ export const generateSchedulePDF = (
 
   autoTable(doc, {
     startY: 50,
-    head: [['#', 'Fecha', 'Interés', 'Capital', 'Saldo', 'Cuota']],
+    head: [['#', 'Fecha', 'Interés', 'Capital', 'Saldo', 'Cuota','Estado']],
     body: cuotas.map((c) => [
       c.nro,
       c.fecha,
@@ -32,6 +32,7 @@ export const generateSchedulePDF = (
       `S/ ${c.capital}`,
       `S/ ${c.saldo.toFixed(2)}`,
       `S/ ${c.cuota}`,
+      `${c.status}`,
     ]),
   });
 

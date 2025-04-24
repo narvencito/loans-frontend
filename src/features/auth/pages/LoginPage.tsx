@@ -10,10 +10,10 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const user = await loginUser({ username, password });
-      alert('Login exitoso');
+      //alert('Login exitoso');
       console.log(user);
     } catch (err) {
-      alert('Credenciales incorrectas');
+      //alert('Credenciales incorrectas');
     }
   };
 

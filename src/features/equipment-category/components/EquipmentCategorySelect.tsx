@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react';
 import { EquipmentCategory, equipmentCategoryApi } from '../api/equipment-category-api';
 
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+
 interface Props {
   value: string;
   onChange: (value: string) => void;
@@ -8,7 +17,12 @@ interface Props {
   disabled?: boolean;
 }
 
-const EquipmentCategorySelect = ({ value, onChange, label = 'Categoría', disabled = false }: Props) => {
+const EquipmentCategorySelect = ({
+  value,
+  onChange,
+  label = 'Categoría',
+  disabled = false,
+}: Props) => {
   const [options, setOptions] = useState<EquipmentCategory[]>([]);
 
   useEffect(() => {
@@ -17,18 +31,25 @@ const EquipmentCategorySelect = ({ value, onChange, label = 'Categoría', disabl
 
   return (
     <div className="flex flex-col gap-1 w-full">
-      <label className="text-sm text-gray-600">{label}</label>
-      <select
+      <Label className="text-sm text-gray-600">{label}</Label>
+
+      <Select
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onValueChange={onChange}
         disabled={disabled}
-        className="border px-3 py-2 w-full rounded"
       >
-        <option value="">Seleccione...</option>
-        {options.map((c) => (
-          <option key={c.id} value={c.id}>{c.name}</option>
-        ))}
-      </select>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Seleccione..." />
+        </SelectTrigger>
+
+        <SelectContent  className="select-white">
+          {options.map((c) => (
+            <SelectItem key={c.id} value={c.id}>
+              {c.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 };

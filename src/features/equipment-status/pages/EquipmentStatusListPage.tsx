@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { EquipmentStatus, equipmentStatusApi } from '../api/equipment-status-api';
 import EquipmentStatusTable from '../components/EquipmentStatusTable';
 import EquipmentStatusFormModal from '../components/EquipmentStatusFormModal';
+import { Button } from '@/components/ui/button';
 
 const EquipmentStatusListPage = () => {
   const [statuses, setStatuses] = useState<EquipmentStatus[]>([]);
@@ -39,15 +40,19 @@ const EquipmentStatusListPage = () => {
     <div className="p-4 sm:p-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Estados de Equipos</h1>
-        <button onClick={handleCreate} className="bg-green-600 text-white px-4 py-2 rounded">
+        <Button onClick={handleCreate}>
           Crear Estado
-        </button>
+        </Button>
       </div>
 
       {loading ? (
         <p>Cargando...</p>
       ) : (
-        <EquipmentStatusTable data={statuses} onEdit={handleEdit} onDelete={handleDelete} />
+        <EquipmentStatusTable
+          data={statuses}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       )}
 
       <EquipmentStatusFormModal

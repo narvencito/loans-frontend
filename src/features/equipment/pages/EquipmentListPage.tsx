@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { CreateEquipmentDto, equipmentApi, EquipmentItem } from '../api/equipment_api';
 import EquipmentTable from '../components/EquipmentTable';
 import EquipmentFormModal from '../components/EquipmentFormModal';
+import { Button } from '@/components/ui/button';
+import { showConfirm } from '@/shared/utils/global-dialog-utils';
 
 const EquipmentListPage = () => {
   const [equipos, setEquipos] = useState<EquipmentItem[]>([]);
@@ -35,8 +37,13 @@ const EquipmentListPage = () => {
     setShowModal(true);
   };
 
-
   const handleDelete = async (id: string) => {
+    const isConfirmed = await showConfirm(
+      '¿Estás seguro de eliminar el equipo?'
+    );
+
+    if (!isConfirmed) return;
+
     await equipmentApi.delete(id);
     loadEquipos();
   };
@@ -49,13 +56,12 @@ const EquipmentListPage = () => {
     <div className="p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
         <h1 className="text-xl sm:text-2xl font-bold">Gestión de Equipos</h1>
-
-        <button
-          className="bg-green-600 text-white px-4 py-2 rounded w-full sm:w-auto"
+        <Button
+          className="w-full sm:w-auto"
           onClick={() => setShowModal(true)}
         >
           Registrar equipo
-        </button>
+        </Button>
       </div>
 
       {loading ? (

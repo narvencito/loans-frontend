@@ -1,11 +1,18 @@
 import { useState } from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function SimulatorCard() {
   const [amount, setAmount] = useState('');
   const [term, setTerm] = useState('12');
   const [monthlyPayment, setMonthlyPayment] = useState<number | null>(null);
 
-  const interestRate = 0.02; // 2% mensual
+  const interestRate = 0.02;
 
   const simulate = () => {
     const amountNum = parseFloat(amount);
@@ -16,40 +23,50 @@ export default function SimulatorCard() {
   };
 
   return (
-    <div className="bg-white text-gray-800 p-6 rounded-xl shadow-xl w-full max-w-md">
-      <h2 className="text-2xl font-semibold mb-4 text-center">Simulador de Préstamos</h2>
+    <div className="bg-card text-card-foreground p-6 rounded-xl shadow-lg w-full max-w-md border border-muted">
+      <h2 className="text-2xl font-bold text-center mb-6 text-primary">
+        Simulador de Préstamos
+      </h2>
 
-      <label className="block mb-2 font-medium">Monto a solicitar (S/)</label>
-      <input
-        type="number"
-        className="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        placeholder="Ej: 1000"
-      />
+      <div className="mb-4">
+        <label htmlFor="amount" className="block text-sm font-medium mb-1">
+          Monto a solicitar (S/)
+        </label>
+        <input
+          id="amount"
+          type="number"
+          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="Ej: 1000"
+        />
+      </div>
 
-      <label className="block mb-2 font-medium">Plazo (meses)</label>
-      <select
-        className="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-        value={term}
-        onChange={(e) => setTerm(e.target.value)}
-      >
-        <option value="6">6 meses</option>
-        <option value="12">12 meses</option>
-        <option value="18">18 meses</option>
-      </select>
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-1">Plazo (meses)</label>
+        <Select value={term} onValueChange={setTerm}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Selecciona plazo" />
+          </SelectTrigger>
+          <SelectContent className="select-white">
+            <SelectItem value="6">6 meses</SelectItem>
+            <SelectItem value="12">12 meses</SelectItem>
+            <SelectItem value="18">18 meses</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       <button
         onClick={simulate}
-        className="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary/90 transition"
+        className="w-full bg-primary text-primary-foreground py-2 rounded-md font-medium hover:opacity-90 transition-colors"
       >
         Calcular cuota mensual
       </button>
 
       {monthlyPayment !== null && (
         <div className="mt-6 text-center">
-          <p className="text-lg">Tu cuota mensual aproximada es:</p>
-          <p className="text-2xl font-bold text-primary">S/ {monthlyPayment}</p>
+          <p className="text-base text-muted-foreground">Tu cuota mensual aproximada es:</p>
+          <p className="text-2xl font-bold text-primary mt-2">S/ {monthlyPayment}</p>
         </div>
       )}
     </div>

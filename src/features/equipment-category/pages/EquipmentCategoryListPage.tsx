@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { EquipmentCategory, equipmentCategoryApi } from '../api/equipment-category-api';
 import EquipmentCategoryTable from '../components/EquipmentCategoryTable';
 import EquipmentCategoryFormModal from '../components/EquipmentCategoryFormModal';
-
+import { Button } from '@/components/ui/button';
 
 const EquipmentCategoryListPage = () => {
   const [categories, setCategories] = useState<EquipmentCategory[]>([]);
@@ -40,15 +40,19 @@ const EquipmentCategoryListPage = () => {
     <div className="p-4 sm:p-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Categorías de Equipos</h1>
-        <button onClick={handleCreate} className="bg-green-600 text-white px-4 py-2 rounded">
+        <Button onClick={handleCreate}>
           Crear Categoría
-        </button>
+        </Button>
       </div>
 
       {loading ? (
         <p>Cargando...</p>
       ) : (
-        <EquipmentCategoryTable data={categories} onEdit={handleEdit} onDelete={handleDelete} />
+        <EquipmentCategoryTable
+          data={categories}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       )}
 
       <EquipmentCategoryFormModal

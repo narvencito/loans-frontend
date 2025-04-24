@@ -1,55 +1,70 @@
 import { CashLoanItem } from "../api/cash_loans_api";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 interface Props {
-    loans: CashLoanItem[];
-    onDelete: (id: string) => void;
-    onViewSchedule: (id: string) => void;
+  loans: CashLoanItem[];
+  askToogle: (id: string) => void;
+  onViewSchedule: (id: string) => void;
 }
 
-const CashLoanTable = ({ loans, onDelete, onViewSchedule }: Props) => {
-    return (
-        <table className="min-w-[700px] w-full border rounded shadow text-sm">
-            <thead className="bg-gray-100">
-                <tr>
-                    <th className="p-2 text-left">Cliente</th>
-                    <th className="p-2 text-left">Monto</th>
-                    <th className="p-2 text-left">Cuotas</th>
-                    <th className="p-2 text-left">Fecha Inicio</th>
-                    <th className="p-2 text-center">Estado</th>
-                    <th className="p-2 text-center">Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                {loans.map((l) => (
-                    <tr key={l.id} className="border-t">
-                        <td className="p-2">{l.clientName}</td>
-                        <td className="p-2">S/ {l.amount}</td>
-                        <td className="p-2">{l.term}</td>
-                        <td className="p-2">{new Date(l.startDate).toLocaleDateString()}</td>
-                        <td className="p-2 text-center">
-                            <span className={l.isActive ? 'text-green-600' : 'text-red-600'}>
-                                {l.isActive ? 'Activo' : 'Inactivo'}
-                            </span>
-                        </td>
-                        <td className="p-2 text-center">
-                            <button
-                                className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-xs"
-                                onClick={() => onViewSchedule(l.id)}
-                            >
-                                Cronograma
-                            </button>
-                            <button
-                                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-xs"
-                                onClick={() => onDelete(l.id)}
-                            >
-                                Eliminar
-                            </button>
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    );
+const CashLoanTable = ({ loans, askToogle, onViewSchedule }: Props) => {
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow className="text-muted-foreground">
+            <TableHead>Cliente</TableHead>
+            <TableHead>Monto</TableHead>
+            <TableHead>Cuotas</TableHead>
+            <TableHead>Fecha Inicio</TableHead>
+            <TableHead className="text-center">Estado</TableHead>
+            <TableHead className="text-center">Acción</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {loans.map((l) => (
+            <TableRow key={l.id}>
+              <TableCell className="text-foreground">{l.clientName}</TableCell>
+              <TableCell className="text-foreground">S/ {l.amount}</TableCell>
+              <TableCell className="text-foreground">{l.term}</TableCell>
+              <TableCell className="text-foreground">
+                {new Date(l.startDate).toLocaleDateString()}
+              </TableCell>
+              <TableCell className="text-center">
+                <span className={l.isActive ? "text-green-600" : "text-red-600"}>
+                  {l.isActive ? "Activo" : "Inactivo"}
+                </span>
+              </TableCell>
+              <TableCell className="text-center space-x-2">
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => onViewSchedule(l.id)}
+                >
+                  Cronograma
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={() => askToogle(l.id)}
+                >
+                  Eliminar
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
 };
 
 export default CashLoanTable;

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { equipmentCategoryApi, EquipmentCategory } from '../api/equipment-category-api';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
 interface Props {
   open: boolean;
@@ -34,19 +37,28 @@ const EquipmentCategoryFormModal = ({ open, onClose, onSuccess, category }: Prop
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
       <div className="bg-white p-6 rounded w-full max-w-md">
-        <h2 className="text-lg font-bold mb-4">{category ? 'Editar' : 'Crear'} Categoría</h2>
-        <input
-          type="text"
-          placeholder="Nombre de la categoría"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="border px-3 py-2 w-full rounded"
-        />
-        <div className="flex justify-end mt-4 gap-2">
-          <button onClick={onClose} className="bg-gray-300 px-4 py-2 rounded">Cancelar</button>
-          <button onClick={handleSubmit} className="bg-green-600 text-white px-4 py-2 rounded">
+        <h2 className="text-lg font-bold mb-4">
+          {category ? 'Editar' : 'Crear'} Categoría
+        </h2>
+
+        <div className="space-y-2">
+          <Label htmlFor="name">Nombre de la categoría</Label>
+          <Input
+            id="name"
+            type="text"
+            placeholder="Ej: Laptops"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+
+        <div className="flex justify-end mt-6 gap-2">
+          <Button variant="outline" onClick={onClose} className="hover:bg-gray-200">
+            Cancelar
+          </Button>
+          <Button onClick={handleSubmit}>
             Guardar
-          </button>
+          </Button>
         </div>
       </div>
     </div>

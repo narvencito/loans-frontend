@@ -2,6 +2,7 @@ import HeroSection from '../components/HeroSection';
 import SectionBlock from '../components/SectionBlock';
 import ContactSection from '../components/ContactSection';
 import LoanOptionsSection from '../components/LoanOptionsSection';
+import { Separator } from '@/components/ui/separator';
 
 const sections = [
   {
@@ -85,20 +86,28 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
-      <LoanOptionsSection />
-      <div className="pt-24 pb-10 px-4 max-w-5xl mx-auto space-y-24">
-        {sections.map((section, index) => (
-          <SectionBlock
-            key={section.id}
-            id={section.id}
-            title={section.title}
-            content={section.content}
-            index={index}
-          />
-        ))}
 
-        <ContactSection delay={sections.length * 0.2} />
-      </div>
+      <section className="text-foreground py-16">
+        <div className="max-w-5xl mx-auto px-4 space-y-16">
+          <LoanOptionsSection />
+
+          <Separator className="my-6 bg-primary h-[2px]" />
+
+          {sections.map((section, index) => (
+            <SectionBlock
+              key={section.id}
+              id={section.id}
+              title={section.title}
+              content={section.content}
+              index={index}
+            />
+          ))}
+
+          <Separator className="my-6 bg-primary h-[2px]" />
+
+          <ContactSection delay={sections.length * 0.2} />
+        </div>
+      </section>
     </>
   );
 }

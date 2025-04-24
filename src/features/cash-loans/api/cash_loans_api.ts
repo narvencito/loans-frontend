@@ -6,7 +6,7 @@ export interface CreateCashLoanDto {
   amount: number;
   rate: number;
   term: number;
-  startDate: string;
+  startDate: Date;
 }
 
 export interface CashLoanItem {
@@ -23,10 +23,17 @@ export interface CashLoanItem {
 export interface InstallmentItem {
   nro: number;
   fecha: string;
-  capital: number;
   interes: number;
+  capital: number;
   saldo: number;
   cuota: number;
+  status: string;
+  id: string;
+}
+
+export interface CashLoanScheduleResponse {
+  cuotas: InstallmentItem[];
+  deudaTotal: number;
 }
 
 export const cashLoanApi = {
@@ -62,7 +69,7 @@ export const cashLoanApi = {
     );
   },
 
-  async getSchedule(loanId: string): Promise<InstallmentItem[]> {
+  async getSchedule(loanId: string): Promise<CashLoanScheduleResponse> {
     return apiRequest(
       api.get(`/cash-loans/${loanId}/schedule`),
       {

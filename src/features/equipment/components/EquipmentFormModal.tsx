@@ -3,6 +3,15 @@ import { CreateEquipmentDto, EquipmentItem } from '../api/equipment_api';
 import EquipmentStatusSelect from '@/features/equipment-status/components/EquipmentStatusSelect';
 import EquipmentCategorySelect from '@/features/equipment-category/components/EquipmentCategorySelect';
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -10,7 +19,12 @@ interface Props {
   defaultValues?: EquipmentItem | null;
 }
 
-const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) => {
+const EquipmentFormModal = ({
+  open,
+  onClose,
+  onSubmit,
+  defaultValues,
+}: Props) => {
   const [form, setForm] = useState<CreateEquipmentDto>({
     code: '',
     name: '',
@@ -48,32 +62,28 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
     onSubmit(form);
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded w-full max-w-md">
-        <h2 className="text-lg font-bold mb-4">
-          {defaultValues ? 'Editar equipo' : 'Registrar nuevo equipo'}
-        </h2>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {defaultValues ? 'Editar equipo' : 'Registrar nuevo equipo'}
+          </DialogTitle>
+        </DialogHeader>
 
-        <div className="space-y-2">
-          <input
-            type="text"
+        <div className="space-y-4 py-2">
+          <Input
             name="code"
             placeholder="Código"
             value={form.code}
             onChange={handleChange}
-            className="border px-3 py-2 w-full rounded"
           />
 
-          <input
-            type="text"
+          <Input
             name="name"
             placeholder="Nombre"
             value={form.name}
             onChange={handleChange}
-            className="border px-3 py-2 w-full rounded"
           />
 
           <EquipmentCategorySelect
@@ -86,24 +96,22 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
             onChange={(val) => setForm((prev) => ({ ...prev, statusId: val }))}
           />
 
-          <input
-            type="text"
+          <Input
             name="location"
             placeholder="Ubicación"
             value={form.location}
             onChange={handleChange}
-            className="border px-3 py-2 w-full rounded"
           />
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onClose} className="px-4 py-2 bg-gray-300 rounded">Cancelar</button>
-          <button onClick={handleSubmit} className="px-4 py-2 bg-green-600 text-white rounded">
-            Guardar
-          </button>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSubmit}>Guardar</Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

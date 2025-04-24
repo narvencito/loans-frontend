@@ -1,5 +1,6 @@
-import toast from 'react-hot-toast';
 import { AxiosPromise } from 'axios';
+import { showGlobalDialog } from '@/shared/utils/global-dialog'; // asegúrate que el path sea correcto
+import { showError, showSuccess } from './global-dialog-utils';
 
 interface ToastMessages {
   loading?: string;
@@ -9,22 +10,13 @@ interface ToastMessages {
 
 export async function apiRequest<T>(
   promise: AxiosPromise<T>,
-  messages?: ToastMessages,
+  messages?: ToastMessages
 ): Promise<T> {
-  let toastId: string | undefined;
-
-  if (messages?.loading) {
-    toastId = toast.loading(messages.loading);
-  }
-
   try {
     const res = await promise;
 
     if (messages?.success) {
-      if (toastId) toast.success(messages.success, { id: toastId });
-      else toast.success(messages.success);
-    } else if (toastId) {
-      toast.dismiss(toastId);
+      showSuccess(messages.success );
     }
 
     return res.data;
@@ -33,12 +25,7 @@ export async function apiRequest<T>(
 
     const message =
       error?.response?.data?.message || error?.message || defaultMessage;
-
-    if (toastId) {
-      toast.error(message, { id: toastId });
-    } else {
-      toast.error(message);
-    }
+    showError(message);
 
     throw error;
   }

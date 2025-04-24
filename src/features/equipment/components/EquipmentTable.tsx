@@ -1,3 +1,12 @@
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { EquipmentItem } from "../api/equipment_api";
 
 interface Props {
@@ -8,49 +17,53 @@ interface Props {
 
 const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
   return (
-    <table className="min-w-[800px] w-full border rounded shadow text-sm">
-      <thead className="bg-gray-100">
-        <tr>
-          <th className="p-2 text-left">Código</th>
-          <th className="p-2 text-left">Nombre</th>
-          <th className="p-2 text-left">Categoría</th>
-          <th className="p-2 text-left">Estado</th>
-          <th className="p-2 text-left">Ubicación</th>
-          <th className="p-2 text-center">Activo</th>
-          <th className="p-2 text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {equipos.map((eq) => (
-          <tr key={eq.id} className="border-t">
-            <td className="p-2">{eq.code}</td>
-            <td className="p-2">{eq.name}</td>
-            <td className="p-2">{eq.categoryName}</td>
-            <td className="p-2">{eq.statusName}</td>
-            <td className="p-2">{eq.location || '-'}</td>
-            <td className="p-2 text-center">
-              <span className={eq.isActive ? 'text-green-600' : 'text-red-600'}>
-                {eq.isActive ? 'Sí' : 'No'}
-              </span>
-            </td>
-            <td className="p-2 text-center">
-            <button
-                className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-xs"
-                onClick={() => onEdit(eq)}
-              >
-                Editar
-              </button>
-              <button
-                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-xs"
-                onClick={() => onDelete(eq.id)}
-              >
-                Eliminar
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Código</TableHead>
+            <TableHead>Nombre</TableHead>
+            <TableHead>Categoría</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead>Ubicación</TableHead>
+            <TableHead className="text-center">Activo</TableHead>
+            <TableHead className="text-center">Acciones</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {equipos.map((eq) => (
+            <TableRow key={eq.id}>
+              <TableCell>{eq.code}</TableCell>
+              <TableCell>{eq.name}</TableCell>
+              <TableCell>{eq.categoryName}</TableCell>
+              <TableCell>{eq.statusName}</TableCell>
+              <TableCell>{eq.location || '-'}</TableCell>
+              <TableCell className="text-center">
+                <span className={eq.isActive ? 'text-green-600' : 'text-red-600'}>
+                  {eq.isActive ? 'Sí' : 'No'}
+                </span>
+              </TableCell>
+              <TableCell className="text-center space-x-2">
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => onEdit(eq)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => onDelete(eq.id)}
+                >
+                  Eliminar
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 

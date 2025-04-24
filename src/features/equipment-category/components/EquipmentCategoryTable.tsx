@@ -1,4 +1,13 @@
 import { EquipmentCategory } from "../api/equipment-category-api";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   data: EquipmentCategory[];
@@ -8,35 +17,45 @@ interface Props {
 
 const EquipmentCategoryTable = ({ data, onEdit, onDelete }: Props) => {
   return (
-    <table className="min-w-[500px] w-full border rounded shadow text-sm">
-      <thead className="bg-gray-100">
-        <tr>
-          <th className="p-2 text-left">Nombre</th>
-          <th className="p-2 text-center">Activo</th>
-          <th className="p-2 text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((c) => (
-          <tr key={c.id} className="border-t">
-            <td className="p-2">{c.name}</td>
-            <td className="p-2 text-center">
-              <span className={c.isActive ? 'text-green-600' : 'text-red-600'}>
-                {c.isActive ? 'Sí' : 'No'}
-              </span>
-            </td>
-            <td className="p-2 text-center">
-              <button className="text-blue-600 mr-2" onClick={() => onEdit(c)}>
-                Editar
-              </button>
-              <button className="text-red-600" onClick={() => onDelete(c.id)}>
-                Eliminar
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow className="text-muted-foreground">
+            <TableHead>Nombre</TableHead>
+            <TableHead className="text-center">Activo</TableHead>
+            <TableHead className="text-center">Acciones</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {data.map((c) => (
+            <TableRow key={c.id}>
+              <TableCell className="text-foreground">{c.name}</TableCell>
+              <TableCell className="text-center">
+                <span className={c.isActive ? 'text-green-600' : 'text-red-600'}>
+                  {c.isActive ? 'Sí' : 'No'}
+                </span>
+              </TableCell>
+              <TableCell className="text-center space-x-2">
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => onEdit(c)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => onDelete(c.id)}
+                >
+                  Eliminar
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 
