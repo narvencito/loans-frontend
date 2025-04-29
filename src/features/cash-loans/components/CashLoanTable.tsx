@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { CashLoanItem } from "../api/cash_loans_api";
 import {
   Table,
@@ -8,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import Pagination from "@/shared/components/Pagination";
 
 interface Props {
   loans: CashLoanItem[];
@@ -16,6 +18,12 @@ interface Props {
 }
 
 const CashLoanTable = ({ loans, askToogle, onViewSchedule }: Props) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5); // Ahora también se maneja pageSize
+
+  const totalPages = Math.ceil(loans.length / pageSize);
+  const paginatedLoans = loans.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -30,7 +38,7 @@ const CashLoanTable = ({ loans, askToogle, onViewSchedule }: Props) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {loans.map((l) => (
+          {paginatedLoans.map((l) => (
             <TableRow key={l.id}>
               <TableCell className="text-foreground">{l.clientName}</TableCell>
               <TableCell className="text-foreground">S/ {l.amount}</TableCell>
@@ -39,9 +47,7 @@ const CashLoanTable = ({ loans, askToogle, onViewSchedule }: Props) => {
                 {new Date(l.startDate).toLocaleDateString()}
               </TableCell>
               <TableCell className="text-center">
-                <span className={l.isActive ? "text-green-600" : "text-red-600"}>
-                  {l.isActive ? "Activo" : "Inactivo"}
-                </span>
+                <span className="text-green-600">{l.state}</span>
               </TableCell>
               <TableCell className="text-center space-x-2">
                 <Button
@@ -63,6 +69,18 @@ const CashLoanTable = ({ loans, askToogle, onViewSchedule }: Props) => {
           ))}
         </TableBody>
       </Table>
+
+      {/* Nuevo paginador avanzado */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1); 
+        }}
+      />
     </div>
   );
 };

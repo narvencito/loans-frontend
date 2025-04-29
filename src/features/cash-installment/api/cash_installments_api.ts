@@ -9,4 +9,11 @@ export const cashInstallmentApi = {
       error: "No se pudo realizar el pago",
     });
   },
+
+  async generateVoucher(installmentId: string): Promise<Blob> {
+    return apiRequest<Blob>(
+      api.post(`/cash-installments-printer/${installmentId}/voucher`, undefined, { responseType: 'blob' } ),
+      { loading: "Generando voucher...", success: "Voucher generado." }
+    );
+  },
 };

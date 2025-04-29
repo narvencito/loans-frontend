@@ -23,6 +23,14 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     useLoaderStore.getState().hide();
+
+    const contentType = response.headers['content-type'];
+
+    // Si es un PDF (blob), lo devolvemos tal cual
+    if (contentType && contentType.includes('application/pdf')) {
+      return response;
+    }
+    
     const res = response.data;
 
     if (res?.success === true) {

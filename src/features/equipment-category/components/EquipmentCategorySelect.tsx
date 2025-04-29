@@ -31,7 +31,7 @@ const EquipmentCategorySelect = ({
 
   return (
     <div className="flex flex-col gap-1 w-full">
-      <Label className="text-sm text-gray-600">{label}</Label>
+      <Label className="text-sm">{label}</Label>
 
       <Select
         value={value}

@@ -64,7 +64,7 @@ const EquipmentFormModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-white">
         <DialogHeader>
           <DialogTitle>
             {defaultValues ? 'Editar equipo' : 'Registrar nuevo equipo'}
@@ -72,43 +72,62 @@ const EquipmentFormModal = ({
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          <Input
-            name="code"
-            placeholder="Código"
-            value={form.code}
-            onChange={handleChange}
-          />
+          <div>
+            <label className="text-sm font-medium">Código</label>
+            <Input
+              name="code"
+              placeholder="Código"
+              value={form.code}
+              onChange={handleChange}
+            />
+          </div>
 
-          <Input
-            name="name"
-            placeholder="Nombre"
-            value={form.name}
-            onChange={handleChange}
-          />
+          <div>
+            <label className="text-sm font-medium">Nombre</label>
+            <Input
+              name="name"
+              placeholder="Nombre"
+              value={form.name}
+              onChange={handleChange}
+            />
+          </div>
 
-          <EquipmentCategorySelect
-            value={form.categoryId}
-            onChange={(val) => setForm((prev) => ({ ...prev, categoryId: val }))}
-          />
+          <div>
+            <EquipmentCategorySelect
+              value={form.categoryId}
+              onChange={(val) =>
+                setForm((prev) => ({ ...prev, categoryId: val }))
+              }
+            />
+          </div>
 
-          <EquipmentStatusSelect
-            value={form.statusId}
-            onChange={(val) => setForm((prev) => ({ ...prev, statusId: val }))}
-          />
+          <div>
+            <EquipmentStatusSelect
+              value={form.statusId}
+              onChange={(val) =>
+                setForm((prev) => ({ ...prev, statusId: val }))
+              }
+            />
+          </div>
 
-          <Input
-            name="location"
-            placeholder="Ubicación"
-            value={form.location}
-            onChange={handleChange}
-          />
+          <div>
+            <label className="text-sm font-medium">Ubicación</label>
+            <Input
+              name="location"
+              placeholder="Ubicación"
+              value={form.location}
+              onChange={handleChange}
+            />
+          </div>
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={onClose}>
+          <Button className="bg-gray-300 text-black px-4 py-2 rounded" onClick={onClose}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit}>Guardar</Button>
+          <Button className="bg-green-600 text-white px-4 py-2 rounded" onClick={handleSubmit}>
+            Guardar
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

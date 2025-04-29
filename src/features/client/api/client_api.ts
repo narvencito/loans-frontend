@@ -50,4 +50,25 @@ export const clientApi = {
       }
     );
   },
+
+  async searchClientsByNameDocument(search: string) {
+    return apiRequest<[ClientItem]>(
+      api.get(`/clients/search?query=${search}`),
+      {
+        loading: 'Buscando clientes...',
+        error: 'No se pudo buscar clientes',
+      }
+    );
+  },
+
+  async getClientById(id: string) {
+    console.log("estamos llamando a la busqueda de cliente por id");
+    return apiRequest<ClientItem>(
+      api.get(`/clients/${id}`),
+      {
+        loading: 'Cargando cliente...',
+        error: 'No se pudo obtener el cliente',
+      }
+    );
+  },
 };

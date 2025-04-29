@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Check, ChevronsUpDown } from "lucide-react";
 
 export interface SimpleClient {
   id: string;
@@ -8,9 +13,10 @@ export interface SimpleClient {
 
 interface ClientSearchInputProps {
   clients: SimpleClient[];
-  selectedClientId: string;
+  selectedClientId?: string | null;
   onSelect: (clientId: string) => void;
   placeholder?: string;
+  label?: string;
   disabled?: boolean;
 }
 
@@ -19,65 +25,57 @@ const ClientSearchInput = ({
   selectedClientId,
   onSelect,
   placeholder = "Buscar cliente por nombre",
+  label = "Cliente",
   disabled = false,
 }: ClientSearchInputProps) => {
-  const [filterText, setFilterText] = useState('');
+  const [open, setOpen] = useState(false);
   const selectedClient = clients.find((c) => c.id === selectedClientId);
-  const [filteredClients, setFilteredClients] = useState<SimpleClient[]>(clients);
-
-  useEffect(() => {
-    const filtered = clients.filter((c) =>
-      c.name.toLowerCase().includes(filterText.toLowerCase())
-    );
-    setFilteredClients(filtered);
-  }, [filterText, clients]);
 
   return (
-    <div className="relative">
-      <input
-        type="text"
-        value={selectedClient ? selectedClient.name : filterText}
-        onChange={(e) => {
-          setFilterText(e.target.value);
-          onSelect('');
-        }}
-        placeholder={placeholder}
-        className={cn(
-          "border border-primary px-3 py-2 w-full rounded pr-10 text-sm",
-          disabled || selectedClient ? "bg-gray-100 text-gray-500" : "text-foreground"
-        )}
-        disabled={disabled || !!selectedClient}
-      />
+    <div className="w-full flex flex-col gap-1">
+      {label && <Label className="text-sm">{label}</Label>}
 
-      {selectedClient && (
-        <button
-          type="button"
-          onClick={() => {
-            onSelect('');
-            setFilterText('');
-          }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-destructive text-sm"
-        >
-          ✕
-        </button>
-      )}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            disabled={disabled}
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between bg-white"
+          >
+            {selectedClient ? selectedClient.name : placeholder}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
 
-      {filterText && !selectedClient && (
-        <ul className="mt-1 max-h-40 overflow-auto border border-border rounded shadow text-sm z-50 absolute w-full bg-white">
-          {filteredClients.map((client) => (
-            <li
-              key={client.id}
-              onClick={() => {
-                onSelect(client.id);
-                setFilterText('');
-              }}
-              className="px-3 py-2 cursor-pointer hover:bg-primary/10 text-foreground"
-            >
-              {client.name}
-            </li>
-          ))}
-        </ul>
-      )}
+        <PopoverContent className="w-full p-0">
+          <Command>
+            <CommandInput placeholder={placeholder} />
+            <CommandEmpty>No se encontraron clientes</CommandEmpty>
+            <CommandGroup>
+              {clients.map((client) => (
+                <CommandItem
+                  key={client.id}
+                  value={client.name}
+                  onSelect={() => {
+                    onSelect(client.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      client.id === selectedClientId ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {client.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

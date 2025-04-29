@@ -18,6 +18,8 @@ export interface CashLoanItem {
   term: number;
   startDate: string;
   isActive: boolean;
+  state: string;
+  stateId: string;
 }
 
 export interface InstallmentItem {
@@ -43,6 +45,20 @@ export const cashLoanApi = {
       {
         loading: 'Cargando préstamos...',
         error: 'Error al cargar préstamos',
+      }
+    );
+  },
+
+  async getCashLoansFiltered(filters: { clientId?: string; statusId?: string }) {
+    const query = new URLSearchParams();
+    if (filters.clientId) query.append("clientId", filters.clientId);
+    if (filters.statusId) query.append("statusId", filters.statusId == 'all' ? '' : filters.statusId);
+  
+    return apiRequest<CashLoanItem[]>(
+      api.get(`/cash-loans/filtered?${query.toString()}`),
+      {
+        loading: "Buscando préstamos...",
+        error: "Error al buscar préstamos",
       }
     );
   },
@@ -76,6 +92,25 @@ export const cashLoanApi = {
         loading: 'Cargando cronograma...',
         error: 'Error al obtener cronograma',
       }
+    );
+  },
+
+  async payAllInstallments(loanId: string) {
+    return api.patch(`/cash-loans/${loanId}/pay-all`);
+  },
+
+   async generateVoucherForLoan (loanId: string): Promise<Blob>  {
+    return apiRequest<Blob>(
+      api.post(`/cash-loans-printer/${loanId}/voucher`, undefined, { responseType: 'blob' } ),
+      { loading: 'Generando voucher total...', success: 'Voucher total generado.' },
+      
+    );
+  },
+  
+  async generateNoDebtCertificate (loanId: string): Promise<Blob> {
+    return apiRequest<Blob>(
+      api.post(`/cash-loans-printer/${loanId}/no-debt-certificate`, undefined, { responseType: 'blob' } ),
+      { loading: 'Generando constancia de no adeudo...', success: 'Constancia de no adeudo generada.' }
     );
   },
 

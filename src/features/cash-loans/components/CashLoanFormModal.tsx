@@ -1,10 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { clientApi, ClientItem } from '@/features/client/api/client_api';
-import ClientSearchInput from '@/features/client/components/ClientSearchInput';
+import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { DatePicker } from '@/shared/components/DatePicker';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { CreateCashLoanDto } from '@/features/cash-loans/api/cash_loans_api';
 
 interface Props {
@@ -14,126 +20,121 @@ interface Props {
 }
 
 const CashLoanFormModal = ({ open, onClose, onCreate }: Props) => {
-  const amountRef = useRef<HTMLInputElement>(null);
-  const rateRef = useRef<HTMLInputElement>(null);
-  const termRef = useRef<HTMLInputElement>(null);
-
-  const [clients, setClients] = useState<ClientItem[]>([]);
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [clientId, setClientId] = useState('');
+  const [form, setForm] = useState<CreateCashLoanDto>({
+    clientId: '',
+    amount: 0,
+    rate: 0,
+    term: 1,
+    startDate: new Date(),
+  });
   const [errors, setErrors] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open) {
-      clientApi.getClients().then(setClients);
-    }
-  }, [open]);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: name === 'amount' || name === 'rate'
+        ? parseFloat(value)
+        : name === 'term'
+        ? parseInt(value)
+        : value,
+    }));
+  };
 
-  const handleClose = () => {
-    setStartDate(undefined);
-    setClientId('');
+  const handleSubmit = () => {
+    if (!form.clientId || !form.startDate) {
+      setErrors('Debe seleccionar un cliente y una fecha válida');
+      return;
+    }
+
+    if (form.amount <= 0) {
+      setErrors('El monto debe ser mayor a 0');
+      return;
+    }
+
+    if (form.rate < 0) {
+      setErrors('La tasa de interés no puede ser negativa');
+      return;
+    }
+
+    if (form.term <= 0) {
+      setErrors('El número de cuotas debe ser mayor a 0');
+      return;
+    }
+
+    setErrors(null);
+    onCreate(form);
+  };
+
+  const handleReset = () => {
+    setForm({
+      clientId: '',
+      amount: 0,
+      rate: 0,
+      term: 1,
+      startDate: new Date(),
+    });
     setErrors(null);
     onClose();
   };
 
-  const validateForm = (
-    amount: number,
-    rate: number,
-    term: number
-  ): boolean => {
-    if (!clientId || !startDate) return false;
-    if (isNaN(amount) || amount <= 0) {
-      setErrors('El monto debe ser mayor a 0');
-      return false;
-    }
-    if (isNaN(rate) || rate < 0) {
-      setErrors('La tasa de interés no puede ser negativa');
-      return false;
-    }
-    if (isNaN(term) || term <= 0) {
-      setErrors('El número de cuotas debe ser mayor a 0');
-      return false;
-    }
-
-    setErrors(null);
-    return true;
-  };
-
-  const handleSubmit = () => {
-    const amount = parseFloat(amountRef.current?.value ?? '');
-    const rate = parseFloat(rateRef.current?.value ?? '');
-    const term = parseInt(termRef.current?.value ?? '');
-
-    if (!validateForm(amount, rate, term)) return;
-
-    onCreate({
-      clientId,
-      amount,
-      rate,
-      term,
-      startDate: startDate!,
-    });
-  };
-
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded w-full max-w-md">
-        <h2 className="text-lg font-bold mb-4">Registrar nuevo préstamo</h2>
+    <Dialog open={open} onOpenChange={handleReset}>
+      <DialogContent className="sm:max-w-md bg-white">
+        <DialogHeader>
+          <DialogTitle>Registrar nuevo préstamo</DialogTitle>
+        </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 py-2">
           <div>
-            <label className="text-sm font-medium">Cliente</label>
-            <ClientSearchInput
-              clients={clients}
-              selectedClientId={clientId}
-              onSelect={(id) => setClientId(id)}
-              placeholder="Buscar cliente por nombre"
+            <AsyncClientCombobox
+              selectedClientId={form.clientId}
+              onSelect={(id) => setForm((prev) => ({ ...prev, clientId: id ?? '' }))}
+              placeholder="Buscar cliente por nombre o documento"
             />
           </div>
 
           <div>
             <label className="text-sm font-medium">Monto (S/)</label>
             <Input
-              type="number"
               name="amount"
-              ref={amountRef}
+              type="number"
               min={0}
               placeholder="Ej. 1000"
-              className="mt-1"
+              value={form.amount || ''}
+              onChange={handleChange}
             />
           </div>
 
           <div>
             <label className="text-sm font-medium">Tasa de interés (%)</label>
             <Input
-              type="number"
               name="rate"
-              ref={rateRef}
+              type="number"
               min={0}
               placeholder="Ej. 5"
-              className="mt-1"
+              value={form.rate || ''}
+              onChange={handleChange}
             />
           </div>
 
           <div>
             <label className="text-sm font-medium">Número de cuotas</label>
             <Input
-              type="number"
               name="term"
-              ref={termRef}
+              type="number"
               min={1}
               placeholder="Ej. 12"
-              className="mt-1"
+              value={form.term || ''}
+              onChange={handleChange}
             />
           </div>
 
           <div>
             <label className="text-sm font-medium">Fecha de inicio</label>
             <DatePicker
-              value={startDate}
-              onChange={setStartDate}
+              value={form.startDate}
+              onChange={(date) => setForm((prev) => ({ ...prev, startDate: date! }))}
               placeholder={format(new Date(), 'dd/MM/yyyy')}
             />
           </div>
@@ -141,20 +142,16 @@ const CashLoanFormModal = ({ open, onClose, onCreate }: Props) => {
           {errors && <p className="text-red-600 text-sm">{errors}</p>}
         </div>
 
-        <div className="flex justify-end mt-6 gap-2">
-          <Button variant="secondary" onClick={handleClose} className="hover:bg-gray-400">
+        <div className="flex justify-end gap-2 mt-4">
+          <Button className="bg-gray-300 text-black px-4 py-2 rounded" onClick={handleReset}>
             Cancelar
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!clientId || !startDate}
-            className="bg-green-600 text-white hover:bg-green-700"
-          >
+          <Button className="bg-green-600 text-white px-4 py-2 rounded" onClick={handleSubmit} disabled={!form.clientId || !form.startDate}>
             Crear
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
