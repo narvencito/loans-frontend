@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import EquipmentFeatureSelectCheckboxList from '@/features/equipment-feature/components/EquipmentFeatureSelectedCheckboxList';
 
 interface Props {
   open: boolean;
@@ -31,6 +32,7 @@ const EquipmentFormModal = ({
     location: '',
     statusId: '',
     categoryId: '',
+    featureIds: [],
   });
 
   useEffect(() => {
@@ -41,6 +43,7 @@ const EquipmentFormModal = ({
         location: defaultValues.location || '',
         statusId: defaultValues.statusId,
         categoryId: defaultValues.categoryId,
+        featureIds: defaultValues.features?.map(f => f.id) || [],
       });
     } else {
       setForm({
@@ -49,6 +52,7 @@ const EquipmentFormModal = ({
         location: '',
         statusId: '',
         categoryId: '',
+        featureIds: [],
       });
     }
   }, [defaultValues]);
@@ -64,15 +68,15 @@ const EquipmentFormModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-white">
+      <DialogContent className="sm:max-w-3xl bg-white max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {defaultValues ? 'Editar equipo' : 'Registrar nuevo equipo'}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+          <div className="col-span-1">
             <label className="text-sm font-medium">Código</label>
             <Input
               name="code"
@@ -82,7 +86,7 @@ const EquipmentFormModal = ({
             />
           </div>
 
-          <div>
+          <div className="col-span-1">
             <label className="text-sm font-medium">Nombre</label>
             <Input
               name="name"
@@ -110,7 +114,7 @@ const EquipmentFormModal = ({
             />
           </div>
 
-          <div>
+          <div className="sm:col-span-2">
             <label className="text-sm font-medium">Ubicación</label>
             <Input
               name="location"
@@ -121,7 +125,17 @@ const EquipmentFormModal = ({
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 mt-4">
+        <div className="mt-4">
+          <label className="text-sm font-medium">Características</label>
+          <div className="max-h-40 overflow-y-auto border rounded-md p-2 mt-1">
+            <EquipmentFeatureSelectCheckboxList
+              selected={form.featureIds || []}
+              onChange={(ids) => setForm((prev) => ({ ...prev, featureIds: ids }))}
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6">
           <Button className="bg-gray-300 text-black px-4 py-2 rounded" onClick={onClose}>
             Cancelar
           </Button>

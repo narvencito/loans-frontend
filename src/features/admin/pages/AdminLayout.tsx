@@ -11,6 +11,8 @@ const navItems = [
   { to: '/admin/equipment', label: 'Gestión de equipos' },
   { to: '/admin/equipment-status', label: 'Estado de equipos' },
   { to: '/admin/equipment-category', label: 'Categoría de equipos' },
+  { to: '/admin/equipment-feature', label: 'Caracteristica de equipos' },
+  { to: '/admin/equipment-financing', label: 'Financiamiento de equipos' },
 ];
 
 export default function AdminLayout() {

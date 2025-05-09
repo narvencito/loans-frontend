@@ -19,7 +19,7 @@ interface Props {
 
 const CashLoanTable = ({ loans, askToogle, onViewSchedule }: Props) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5); // Ahora también se maneja pageSize
+  const [pageSize, setPageSize] = useState(10); // Ahora también se maneja pageSize
 
   const totalPages = Math.ceil(loans.length / pageSize);
   const paginatedLoans = loans.slice((currentPage - 1) * pageSize, currentPage * pageSize);

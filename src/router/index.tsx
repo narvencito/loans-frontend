@@ -15,6 +15,8 @@ import CashLoanListPage from '@/features/cash-loans/pages/CashLoanListPage';
 import EquipmentListPage from '@/features/equipment/pages/EquipmentListPage';
 import EquipmentStatusListPage from '@/features/equipment-status/pages/EquipmentStatusListPage';
 import EquipmentCategoryListPage from '@/features/equipment-category/pages/EquipmentCategoryListPage';
+import EquipmentFeatureListPage from '@/features/equipment-feature/pages/EquipmentFeatureListPage';
+import EquipmentFinancingListPage from '@/features/equipment-financing/pages/EquipmentFinancingListPage ';
 
 export const router = createBrowserRouter([
   {
@@ -41,6 +43,8 @@ export const router = createBrowserRouter([
       { path: 'equipment', element: <EquipmentListPage /> },
       { path: 'equipment-status', element: <EquipmentStatusListPage /> },
       { path: 'equipment-category', element: <EquipmentCategoryListPage /> },
+      { path: 'equipment-feature', element: <EquipmentFeatureListPage /> },
+      { path: 'equipment-financing', element: <EquipmentFinancingListPage /> },
     ],
   },
   {

@@ -8,6 +8,11 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { EquipmentItem } from "../api/equipment_api";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
+import TruncatedWithTooltip from "@/components/common/TruncatedWithTooltip";
+import Pagination from "@/shared/components/Pagination";
+import { useState } from "react";
 
 interface Props {
   equipos: EquipmentItem[];
@@ -15,7 +20,15 @@ interface Props {
   onEdit: (item: EquipmentItem) => void;
 }
 
+
+
 const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalPages = Math.ceil(equipos.length / pageSize);
+  const paginated = equipos.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  
   return (
     <div className="rounded-md border">
       <Table>
@@ -23,6 +36,7 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
           <TableRow>
             <TableHead>Código</TableHead>
             <TableHead>Nombre</TableHead>
+            <TableHead>Características</TableHead>
             <TableHead>Categoría</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead>Ubicación</TableHead>
@@ -35,6 +49,7 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
             <TableRow key={eq.id}>
               <TableCell>{eq.code}</TableCell>
               <TableCell>{eq.name}</TableCell>
+              <TruncatedWithTooltip text={eq.features.map(f => f.name).join(" / ")} />
               <TableCell>{eq.categoryName}</TableCell>
               <TableCell>{eq.statusName}</TableCell>
               <TableCell>{eq.location || '-'}</TableCell>
@@ -63,6 +78,16 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
           ))}
         </TableBody>
       </Table>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+      />
     </div>
   );
 };

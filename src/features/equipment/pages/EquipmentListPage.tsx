@@ -14,6 +14,7 @@ const EquipmentListPage = () => {
   const loadEquipos = async () => {
     setLoading(true);
     const data = await equipmentApi.getAll();
+    console.log("data de los equipos ", data);
     setEquipos(data);
     setLoading(false);
   };

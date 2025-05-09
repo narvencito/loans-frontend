@@ -1,3 +1,4 @@
+import { EquipmentFeature } from '@/features/equipment-feature/api/equipment-feature-api';
 import { api } from '@/shared/utils/api';
 import { apiRequest } from '@/shared/utils/apiHelper';
 
@@ -7,6 +8,7 @@ export interface CreateEquipmentDto {
   categoryId: string;
   statusId: string;
   location?: string;
+  featureIds?: string[];
 }
 
 export interface UpdateEquipmentDto extends Partial<CreateEquipmentDto> {
@@ -23,6 +25,7 @@ export interface EquipmentItem {
   statusName: string;
   location?: string;
   isActive: boolean;
+  features: EquipmentFeature[];
 }
 
 export const equipmentApi = {
@@ -67,5 +70,19 @@ export const equipmentApi = {
         error: 'No se pudo eliminar el equipo',
       }
     );
+  },
+
+  async getById(id: string): Promise<EquipmentItem> {
+    return apiRequest(api.get(`/equipment/${id}`), {
+      loading: 'Cargando equipo...',
+      error: 'No se pudo cargar el equipo',
+    });
+  },
+
+  async searchByNameOrCode(query: string): Promise<EquipmentItem[]> {
+    return apiRequest(api.get(`/equipment/search?query=${encodeURIComponent(query)}`), {
+      loading: 'Buscando equipos...',
+      error: 'No se pudieron buscar los equipos',
+    });
   },
 };
