@@ -9,6 +9,8 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import ColumnApp from '@/shared/components/ColumnApp';
+import LabelApp from '@/shared/components/LabelApp';
 
 interface Props {
   value: string;
@@ -30,8 +32,8 @@ const EquipmentStatusSelect = ({
   }, []);
 
   return (
-    <div className="flex flex-col gap-1 w-full">
-      <Label className="text-sm">{label}</Label>
+    <ColumnApp className='w-full'>
+      <LabelApp className="text-sm">{label}</LabelApp>
 
       <Select
         value={value}
@@ -50,7 +52,7 @@ const EquipmentStatusSelect = ({
           ))}
         </SelectContent>
       </Select>
-    </div>
+    </ColumnApp>
   );
 };
 

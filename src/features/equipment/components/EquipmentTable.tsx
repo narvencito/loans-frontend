@@ -8,8 +8,6 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { EquipmentItem } from "../api/equipment_api";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { TooltipProvider } from "@radix-ui/react-tooltip";
 import TruncatedWithTooltip from "@/components/common/TruncatedWithTooltip";
 import Pagination from "@/shared/components/Pagination";
 import { useState } from "react";
@@ -44,6 +42,7 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
             <TableHead className="text-center">Acciones</TableHead>
           </TableRow>
         </TableHeader>
+        
         <TableBody>
           {equipos.map((eq) => (
             <TableRow key={eq.id}>

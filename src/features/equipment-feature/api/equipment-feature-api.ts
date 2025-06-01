@@ -8,6 +8,11 @@ export interface EquipmentFeature {
   icon?: string;
 }
 
+export interface ImageApp {
+  id: string;
+  url: string;
+}
+
 export const equipmentFeatureApi = {
   async getAll(): Promise<EquipmentFeature[]> {
     return apiRequest(api.get('/equipment-features'), {

@@ -11,6 +11,8 @@ const EquipmentListPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentItem | null>(null);
 
+  const stableDefaultValues = React.useMemo(() => selectedEquipment, [selectedEquipment?.id]);
+
   const loadEquipos = async () => {
     setLoading(true);
     const data = await equipmentApi.getAll();
@@ -19,12 +21,10 @@ const EquipmentListPage = () => {
     setLoading(false);
   };
 
-  const handleSubmit = async (data: CreateEquipmentDto) => {
+  const handleSubmit = async (data: FormData) => {
     if (selectedEquipment) {
-      await equipmentApi.update(selectedEquipment.id, {
-        ...data,
-        id: selectedEquipment.id,
-      });
+      data.append('id', selectedEquipment.id);
+      await equipmentApi.update(selectedEquipment.id, data);
     } else {
       await equipmentApi.create(data);
     }
@@ -80,7 +80,7 @@ const EquipmentListPage = () => {
           setSelectedEquipment(null);
         }}
         onSubmit={handleSubmit}
-        defaultValues={selectedEquipment}
+        defaultValues={stableDefaultValues}
       />
     </div>
   );

@@ -3,9 +3,6 @@ import { useLoaderStore } from '../store/loader.store';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 api.interceptors.request.use(
@@ -15,6 +12,12 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+     const isFormData = config.data instanceof FormData;
+    if (!isFormData && !config.headers['Content-Type']) {
+      config.headers['Content-Type'] = 'application/json';
+    }
+
     return config;
   },
   (error) => Promise.reject(error)

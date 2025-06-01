@@ -1,4 +1,4 @@
-import { EquipmentFeature } from '@/features/equipment-feature/api/equipment-feature-api';
+import { EquipmentFeature, ImageApp } from '@/features/equipment-feature/api/equipment-feature-api';
 import { api } from '@/shared/utils/api';
 import { apiRequest } from '@/shared/utils/apiHelper';
 
@@ -8,7 +8,12 @@ export interface CreateEquipmentDto {
   categoryId: string;
   statusId: string;
   location?: string;
+  serial?: string;
+  number?: string;
+  purchasePrice: number,
+  salePrice: number,
   featureIds?: string[];
+  images?: ImageApp[];
 }
 
 export interface UpdateEquipmentDto extends Partial<CreateEquipmentDto> {
@@ -19,6 +24,10 @@ export interface EquipmentItem {
   id: string;
   code: string;
   name: string;
+  serial: string;
+  number: string;
+  purchasePrice: number;
+  salePrice: number;
   categoryId: string;
   categoryName: string;
   statusId: string;
@@ -26,6 +35,7 @@ export interface EquipmentItem {
   location?: string;
   isActive: boolean;
   features: EquipmentFeature[];
+  images: ImageApp[];
 }
 
 export const equipmentApi = {
@@ -39,7 +49,7 @@ export const equipmentApi = {
     );
   },
 
-  async create(data: CreateEquipmentDto): Promise<EquipmentItem> {
+  async create(data: FormData): Promise<EquipmentItem> {
     return apiRequest(
       api.post('/equipment', data),
       {
@@ -50,7 +60,7 @@ export const equipmentApi = {
     );
   },
 
-  async update(id: string, data: UpdateEquipmentDto): Promise<EquipmentItem> {
+  async update(id: string, data: FormData): Promise<EquipmentItem> {
     return apiRequest(
       api.put(`/equipment/${id}`, data),
       {

@@ -6,6 +6,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import DialogApp from '@/shared/components/DialogApp';
+import ColumnApp from '@/shared/components/ColumnApp';
+import LabelApp from '@/shared/components/LabelApp';
+import { Input } from '@/components/ui/input';
 
 interface Props {
   open: boolean;
@@ -33,89 +37,80 @@ const ClientFormModal = ({ open, onClose, onCreate }: Props) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-full bg-white">
-        <DialogHeader>
-          <DialogTitle>Registrar nuevo cliente</DialogTitle>
-        </DialogHeader>
+    <DialogApp
+      open={open}
+      onClose={onClose}
+      onConfirm={() => onCreate(form)}
+      maxWidth='md'
+      title={"Registrar nuevo cliente"}
+    >
+      <ColumnApp className="overflow-y-auto px-6 py-4 px-5 space-y-4 flex-1">
+        <ColumnApp>
+          <LabelApp >Nombre completo</LabelApp>
+          <Input
+            id="name"
+            name="name"
+            type="text"
+            placeholder="Ej: Juan Pérez"
+            value={form.name}
+            onChange={handleChange}
+            className="border border-primary rounded px-3 py-2 w-full"
+          />
+        </ColumnApp>
 
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-1">Nombre completo</label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              placeholder="Ej: Juan Pérez"
-              value={form.name}
-              onChange={handleChange}
-              className="border border-primary rounded px-3 py-2 w-full"
-            />
-          </div>
+        <ColumnApp>
+          <LabelApp >Documento de identidad</LabelApp>
+          <Input
+            id="document"
+            name="document"
+            type="text"
+            placeholder="DNI / Cédula"
+            value={form.document}
+            onChange={handleChange}
+            className="border border-primary rounded px-3 py-2 w-full"
+          />
+        </ColumnApp>
 
-          <div>
-            <label htmlFor="document" className="block text-sm font-medium mb-1">Documento de identidad</label>
-            <input
-              id="document"
-              name="document"
-              type="text"
-              placeholder="DNI / Cédula"
-              value={form.document}
-              onChange={handleChange}
-              className="border border-primary rounded px-3 py-2 w-full"
-            />
-          </div>
+        <ColumnApp>
+          <LabelApp >Correo electrónico</LabelApp>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="Ej: correo@ejemplo.com"
+            value={form.email}
+            onChange={handleChange}
+            className="border border-primary rounded px-3 py-2 w-full"
+          />
+        </ColumnApp>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">Correo electrónico</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="Ej: correo@ejemplo.com"
-              value={form.email}
-              onChange={handleChange}
-              className="border border-primary rounded px-3 py-2 w-full"
-            />
-          </div>
+        <ColumnApp>
+          <LabelApp >Teléfono</LabelApp>
+          <Input
+            id="phone"
+            name="phone"
+            type="text"
+            placeholder="Ej: 987654321"
+            value={form.phone}
+            onChange={handleChange}
+            className="border border-primary rounded px-3 py-2 w-full"
+          />
+        </ColumnApp>
 
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium mb-1">Teléfono</label>
-            <input
-              id="phone"
-              name="phone"
-              type="text"
-              placeholder="Ej: 987654321"
-              value={form.phone}
-              onChange={handleChange}
-              className="border border-primary rounded px-3 py-2 w-full"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="address" className="block text-sm font-medium mb-1">Dirección</label>
-            <input
-              id="address"
-              name="address"
-              type="text"
-              placeholder="Ej: Calle 123, Ciudad"
-              value={form.address}
-              onChange={handleChange}
-              className="border border-primary rounded px-3 py-2 w-full"
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-2 mt-6">
-          <Button variant="secondary" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button onClick={() => onCreate(form)}>
-            Crear
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+        <ColumnApp>
+          <LabelApp >Dirección</LabelApp>
+          <Input
+            id="address"
+            name="address"
+            type="text"
+            placeholder="Ej: Calle 123, Ciudad"
+            value={form.address}
+            onChange={handleChange}
+            className="border border-primary rounded px-3 py-2 w-full"
+          />
+        </ColumnApp>
+      </ColumnApp>
+    </DialogApp>
   );
 };
 
