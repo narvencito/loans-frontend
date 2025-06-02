@@ -78,6 +78,7 @@ const EquipmentListPage = () => {
         onClose={() => {
           setShowModal(false);
           setSelectedEquipment(null);
+          loadEquipos();
         }}
         onSubmit={handleSubmit}
         defaultValues={stableDefaultValues}

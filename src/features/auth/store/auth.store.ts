@@ -16,7 +16,7 @@ console.log('user del local storage', user);
 
 export const useAuthStore = create<AuthState>((set) => ({
     token: token,
-    user:  null, //user: (user) ? JSON.parse(user) : null,
+    user: (user) ? JSON.parse(user) : null,
     isAuthenticated: false,
   
     setAuth: ({ token, user }) => {

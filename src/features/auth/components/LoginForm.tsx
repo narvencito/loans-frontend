@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { showGlobalDialog } from '@/shared/utils/global-dialog';
 import { showError } from '@/shared/utils/global-dialog-utils';
 
 const loginSchema = z.object({
@@ -43,8 +42,10 @@ export default function LoginForm({ onClose }: { onClose: () => void }) {
       if (role === 'ADMIN') {
         navigate('/admin/dashboard');
       } else if (role === 'CLIENT') {
-        navigate('/client/home');
-      } else {
+        navigate('/client/dashboard');
+      } else if (role === 'WORKER'){
+        navigate('/worker/dashboard');
+      }else{
         navigate('/');
       }
     } catch (error: any) {

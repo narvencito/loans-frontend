@@ -95,4 +95,15 @@ export const equipmentApi = {
       error: 'No se pudieron buscar los equipos',
     });
   },
+
+   async deleteImageByUrl(url: string): Promise<void> {
+    return apiRequest(
+      api.delete('/equipment/images/by-url', { params: { url } }),
+      {
+        loading: 'Eliminando imagen...',
+        success: 'Imagen eliminada correctamente',
+        error: 'No se pudo eliminar la imagen',
+      }
+    );
+  },
 };

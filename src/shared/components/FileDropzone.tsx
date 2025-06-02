@@ -5,6 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { UploadCloud, X } from 'lucide-react';
 import { ImageApp } from '@/features/equipment-feature/api/equipment-feature-api';
+import { showConfirm } from '../utils/global-dialog-utils';
+import { equipmentApi } from '@/features/equipment/api/equipment_api';
 
 interface Props {
   existingImages?: ImageApp[];
@@ -67,6 +69,7 @@ const onDrop = useCallback(
   [existing, newFiles]
 );
 
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'image/*': [] },
@@ -78,9 +81,19 @@ const onDrop = useCallback(
     setNewFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const removeExistingImage = (id: string) => {
+  const removeExistingImage = async (id: string, url: string) => {
+
+  const isConfirmed = await showConfirm('¿Estás seguro de que deseas eliminar esta imagen?');
+      if (!isConfirmed) return;
+
+  try {
+    await equipmentApi.deleteImageByUrl(url);
     setExisting((prev) => prev.filter((img) => img.id !== id));
-  };
+  } catch (err) {
+    console.error(err);
+    setError('Error al eliminar la imagen. Intenta nuevamente.');
+  }
+};
 
   useEffect(() => {
     if (error) {
@@ -113,7 +126,7 @@ const onDrop = useCallback(
             <img src={img.url} alt="imagen" className="h-24 w-full object-cover rounded" />
             <button
               className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
-              onClick={() => removeExistingImage(img.id)}
+              onClick={() => removeExistingImage(img.id, img.url)}
               type="button"
             >
               <X className="w-4 h-4" />

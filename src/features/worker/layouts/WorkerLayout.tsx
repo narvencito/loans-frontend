@@ -3,18 +3,21 @@ import { Separator } from '@/components/ui/separator';
 import { AppSidebar } from '@/shared/layouts/AppSidebar';
 
 const navItems = [
-  { to: '/client/dashboard', label: 'Dashboard' },
-  { to: '/client/cash-loans', label: 'Préstamo en efectivo' },
-  { to: '/client/equipment-financing', label: 'Financiamiento de equipos' },
+   { to: '/worker/dashboard', label: 'Dashboard' },
+   { to: '/worker/clients', label: 'Clientes' },
+   { to: '/worker/cash-loans', label: 'Préstamo en efectivo' },
+   { to: '/worker/equipment', label: 'Gestión de equipos' },
+   { to: '/worker/equipment-feature', label: 'Caracteristica de equipos' },
+   { to: '/worker/equipment-financing', label: 'Financiamiento de equipos' },
 ];
 
-export default function ClientLayout() {
+export default function WorkerLayout() {
   const location = useLocation();
 
   return (
     <div className="min-h-screen flex">
       {/* Sidebar */}
-      <AppSidebar title="Panel Cliente" navItems={navItems} />
+      <AppSidebar title="Panel Trabajador" navItems={navItems} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">

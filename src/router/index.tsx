@@ -2,10 +2,7 @@ import ClientLayout from '@/features/client/layouts/ClientLayout';
 import PrivateRoute from './PrivateRoute';
 import LoginPage from '@/features/auth/pages/LoginPage';
 import HomePage from '@/features/home/pages/HomePage';
-import GeneralLayout from '@/shared/layouts/GeneralLayout';
-import MainLayout from '@/shared/layouts/MainLayout';
 import AdminDashboard from '@/features/admin/pages/AdminDashboard';
-import ClientHomePage from '@/features/client/pages/ClientHomePage';
 import { createBrowserRouter } from 'react-router-dom';
 import SimulatorPage from '@/features/simulator/pages/SimulatorPage';
 import UserListPage from '@/features/user/pages/UserListPage';
@@ -17,6 +14,11 @@ import EquipmentStatusListPage from '@/features/equipment-status/pages/Equipment
 import EquipmentCategoryListPage from '@/features/equipment-category/pages/EquipmentCategoryListPage';
 import EquipmentFeatureListPage from '@/features/equipment-feature/pages/EquipmentFeatureListPage';
 import EquipmentFinancingListPage from '@/features/equipment-financing/pages/EquipmentFinancingListPage ';
+import MainLayout from '@/shared/layouts/MainLayout';
+import WorkerDashboard from '@/features/worker/pages/WorkerDashboard';
+import WorkerLayout from '@/features/worker/layouts/WorkerLayout';
+import ClientDashboardPage from '@/features/client/pages/ClientDashBoard';
+import EquipmentGeneral from '@/features/equipment/pages/EquipmentGeneral';
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +27,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/login', element: <LoginPage/> },
+      { path: '/equipment', element: <EquipmentGeneral/> },
       { path: '/simulator', element: <SimulatorPage/> },
     ],
   },
@@ -55,7 +58,23 @@ export const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
-      { path: 'home', element: <ClientHomePage /> },
+      { path: 'dashboard', element: <ClientDashboardPage /> },
+    ],
+  },
+  {
+    path: '/worker',
+    element: (
+      <PrivateRoute roles={['WORKER']}>
+        <WorkerLayout />
+      </PrivateRoute>
+    ),
+    children: [
+      { path: 'dashboard', element: <WorkerDashboard /> },
+      { path: 'clients', element: <ClientListPage /> },
+      { path: 'cash-loans', element: <CashLoanListPage /> },
+      { path: 'equipment', element: <EquipmentListPage /> },
+      { path: 'equipment-feature', element: <EquipmentFeatureListPage /> },
+      { path: 'equipment-financing', element: <EquipmentFinancingListPage /> },
     ],
   },
 ]);

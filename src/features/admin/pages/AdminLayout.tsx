@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { AppSidebar } from '@/shared/layouts/AppSidebar';
 
 const navItems = [
   { to: '/admin/dashboard', label: 'Dashboard' },
@@ -21,32 +22,7 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen flex">
       {/* Sidebar */}
-      <aside className="w-64 p-4 bg-background text-gray-200">
-        <h2 className="font-bold text-xl mb-4">Panel Admin</h2>
-        <ScrollArea className="h-full">
-          <ul className="space-y-1">
-            {navItems.map((item) => {
-              const isActive = location.pathname == (item.to);
-              return (
-                <li key={item.to}>
-                  <Link
-                    to={item.to}
-                    aria-current={isActive ? 'page' : undefined}
-                    className={cn(
-                      'block px-3 py-2 rounded text-sm font-medium transition-colors',
-                      isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-gray-200 hover:bg-primary hover:text-black'
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </ScrollArea>
-      </aside>
+      <AppSidebar title="Panel Admin" navItems={navItems} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
