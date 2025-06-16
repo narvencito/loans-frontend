@@ -35,9 +35,9 @@ export default function ProductCard({ producto, onViewDetail }: Props) {
   const hasImages = imagesUrls.length > 0;
 
   const navigate = useNavigate();
-  const handleContinue = () => {
-    navigate('/financing/personal-data');
-  };
+  // const handleContinue = () => { // This function will be removed
+  //   navigate('/financing/personal-data');
+  // };
 
   return (
     <div className="w-[300px] h-[400px] border rounded-xl shadow hover:shadow-lg transition bg-white flex flex-col items-center justify-between relative p-4">
@@ -78,13 +78,23 @@ export default function ProductCard({ producto, onViewDetail }: Props) {
         <h2 className="font-semibold text-2xl">{name}</h2>
 
         <button
-          onClick={handleContinue}
+          onClick={() => navigate(`/request-wizard?type=financing&equipmentId=${producto.id}`)}
           className="w-full bg-yellow-400 mt-3 py-2 rounded font-bold text-white hover:bg-yellow-500">
           ¡La quiero!
         </button>
 
-        <button onClick={() => navigate(`/client/equipment/request-loan/${producto.id}`)}>Solicitar préstamo</button>
-        <button onClick={() => navigate(`/client/equipment/request-financing/${producto.id}`)}>Solicitar financiamiento</button>
+        <button
+          onClick={() => navigate(`/request-wizard?type=equipment&equipmentId=${producto.id}`)}
+          className="w-full bg-blue-500 mt-3 py-2 rounded font-bold text-white hover:bg-blue-600" // Added some basic styling for visibility
+        >
+          Solicitar préstamo
+        </button>
+        <button
+          onClick={() => navigate(`/request-wizard?type=financing&equipmentId=${producto.id}`)}
+          className="w-full bg-green-500 mt-3 py-2 rounded font-bold text-white hover:bg-green-600" // Added some basic styling for visibility
+        >
+          Solicitar financiamiento
+        </button>
 
         <div className="flex flex-col items-center mt-2 text-sm underline text-blue-600">
           <button onClick={onViewDetail} className="hover:text-blue-800">
