@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react'; // Added useEffect
 import { useSearchParams } from 'react-router-dom';
 import { StepNavigation } from '../components/StepNavigation';
 import { StepPersonalData } from '../components/StepPersonalData';
 import { StepSelectEquipment } from '../components/StepSelectEquipment';
 import { StepConfirmRequest } from '../components/StepConfirmRequest';
 import { StepLoanDetails } from '../components/StepLoanDetails';
-import { EquipmentItem } from '@/features/equipment/api/equipment_api';
+import { EquipmentItem, equipmentApi } from '@/features/equipment/api/equipment_api'; // Added equipmentApi
 
 // Define SubmissionStatus type
 type SubmissionStatus = 'idle' | 'submitting' | 'success' | 'error';
@@ -28,10 +28,49 @@ export default function RequestWizardPage() {
   const [loanDetailsData, setLoanDetailsData] = useState<{ amount: number; term: number } | null>(null);
   const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>('idle');
   const [submittedData, setSubmittedData] = useState<any | null>(null);
+  const [isLoadingEquipment, setIsLoadingEquipment] = useState(false); // For loading indicator
+
+  // Effect to fetch equipment if equipmentId is present in URL
+  useEffect(() => {
+    if (equipmentId && (type === 'equipment' || type === 'financing')) {
+      setIsLoadingEquipment(true);
+      equipmentApi.getById(equipmentId)
+        .then(data => {
+          setSelectedEquipment(data);
+        })
+        .catch(error => {
+          console.error("Error fetching equipment by ID:", error);
+          setSelectedEquipment(undefined); // Clear if error
+          // Optionally, remove equipmentId from URL if not found or redirect
+          // setSearchParams(prev => { prev.delete('equipmentId'); return prev; });
+        })
+        .finally(() => {
+          setIsLoadingEquipment(false);
+        });
+    } else {
+      // Clear selectedEquipment if equipmentId is not present or type is not relevant
+      setSelectedEquipment(undefined);
+    }
+  }, [equipmentId, type, setSearchParams]); // Added setSearchParams to dependencies
 
   const steps = useMemo(() => {
+    const hasPreselectedEquipment = !!selectedEquipment && (type === 'equipment' || type === 'financing');
+
     if (type === 'cash') {
       return ['Datos personales', 'Detalles del préstamo', 'Confirmar solicitud'];
+    } else if (type === 'equipment') {
+      return hasPreselectedEquipment
+        ? ['Datos personales', 'Confirmar solicitud']
+        : ['Datos personales', 'Selección de equipo', 'Confirmar solicitud'];
+    } else if (type === 'financing') {
+      return hasPreselectedEquipment
+        ? ['Datos personales', 'Detalles del préstamo', 'Confirmar solicitud']
+        : ['Datos personales', 'Selección de equipo', 'Detalles del préstamo', 'Confirmar solicitud'];
+    }
+    return ['Datos personales', 'Confirmar solicitud']; // Default or error case for robustness
+  }, [type, selectedEquipment]);
+
+  const resetWizard = () => {
     } else if (type === 'equipment') {
       return ['Datos personales', 'Selección de equipo', 'Confirmar solicitud'];
     } else if (type === 'financing') {
@@ -50,6 +89,8 @@ export default function RequestWizardPage() {
     // Optionally clear search params by navigating or using setSearchParams
     // setSearchParams({}); // Example: Clears all search params
   };
+
+  // handleSubmit remains the same for now
 
   const handleSubmit = () => {
     if (!personalData) return;
@@ -144,83 +185,68 @@ export default function RequestWizardPage() {
     );
   }
 
+  // Render loading indicator for equipment fetching
+  if (isLoadingEquipment) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
+        <div className="text-2xl font-semibold text-gray-700">Cargando equipo...</div>
+        {/* Optional: Add a spinner animation here */}
+      </div>
+    );
+  }
+
+  // Submission status messages (submitting, success, error) remain unchanged from previous step
+  // ... (assuming these are already correctly placed before this return statement)
+
   // Render the wizard steps if status is 'idle'
   return (
     <div className="flex min-h-screen">
       <StepNavigation currentStep={step} steps={steps} />
 
-      <div className="flex-1 p-6">
-        {/* Step 0: Personal Data */}
-        {step === 0 && (
-          <StepPersonalData
-            onNext={(data) => {
-              setPersonalData(data);
-              setStep(1);
-            }}
-          />
-        )}
-
-        {/* Step 1: Equipment Selection (for 'equipment' or 'financing') */}
-        {step === 1 && (type === 'equipment' || type === 'financing') && (
-          <StepSelectEquipment
-            onNext={(equipment) => {
-              setSelectedEquipment(equipment);
-              setStep(2); // Next step is 2 for these types
-            }}
-            preselectedId={equipmentId}
-          />
-        )}
-
-        {/* Step 1: Loan Details (for 'cash') */}
-        {step === 1 && type === 'cash' && (
-          <StepLoanDetails
-            onNext={(data) => {
-              setLoanDetailsData(data);
-              setStep(2); // Next step is 2 for 'cash'
-            }}
-          />
-        )}
-
-        {/* Step 2: Loan Details (for 'financing' - after equipment selection) */}
-        {step === 2 && type === 'financing' && (
-          <StepLoanDetails
-            onNext={(data) => {
-              setLoanDetailsData(data);
-              setStep(3); // Next step is 3 for 'financing'
-            }}
-          />
-        )}
-
-        {/* Step 2 (for 'cash' or 'equipment') or Step 3 (for 'financing'): Confirmation */}
-        {personalData && (
+      <div className="flex-1 p-6 flex flex-col items-center pt-10">
+        {submissionStatus === 'idle' && (
           <>
-            {type === 'cash' && step === 2 && (
+            {steps[step] === 'Datos personales' && (
+              <StepPersonalData
+                onNext={(data) => {
+                  setPersonalData(data);
+                  setStep(step + 1);
+                }}
+              />
+            )}
+
+            {steps[step] === 'Selección de equipo' && !selectedEquipment && ( // Ensure not to show if already selected via URL
+              <StepSelectEquipment
+                onNext={(equipment) => {
+                  setSelectedEquipment(equipment);
+                  setStep(step + 1);
+                }}
+                preselectedId={equipmentId} // This might be redundant if selectedEquipment is already loaded
+              />
+            )}
+
+            {steps[step] === 'Detalles del préstamo' && (
+              <StepLoanDetails
+                onNext={(data) => {
+                  setLoanDetailsData(data);
+                  setStep(step + 1);
+                }}
+              />
+            )}
+
+            {steps[step] === 'Confirmar solicitud' && personalData && (
               <StepConfirmRequest
                 personalData={personalData}
-                equipment={undefined} // No equipment for 'cash'
+                equipment={selectedEquipment} // This will be correctly undefined or set
                 loanDetails={loanDetailsData}
                 onSubmit={handleSubmit}
                 type={type}
-                onNext={() => {}} // Not used in confirm step
-              />
-            )}
-            {type === 'equipment' && step === 2 && (
-              <StepConfirmRequest
-                personalData={personalData}
-                equipment={selectedEquipment}
-                loanDetails={null} // No loan details for 'equipment'
-                onSubmit={handleSubmit}
-                type={type}
-                onNext={() => {}}
-              />
-            )}
-            {type === 'financing' && step === 3 && (
-              <StepConfirmRequest
-                personalData={personalData}
-                equipment={selectedEquipment}
-                loanDetails={loanDetailsData}
-                onSubmit={handleSubmit}
-                type={type}
+                // amount and term props on StepConfirmRequest were originally for the direct values,
+                // but loanDetails object is now the primary source.
+                // Keep them if StepConfirmRequest still uses them, otherwise they can be removed from there.
+                // For now, mirror the previous logic for these specific props.
+                amount={(type === 'cash' || type === 'financing') ? loanDetailsData?.amount?.toString() ?? null : null}
+                term={(type === 'cash' || type === 'financing') ? loanDetailsData?.term?.toString() ?? null : null}
                 onNext={() => {}}
               />
             )}
