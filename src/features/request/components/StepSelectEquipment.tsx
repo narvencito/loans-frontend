@@ -21,12 +21,17 @@ export const StepSelectEquipment = ({ onNext }: Props) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white shadow-md rounded p-6">
-      <h2 className="text-xl font-bold mb-4">Selecciona un equipo</h2>
+    <div className="max-w-2xl mx-auto bg-white shadow-xl rounded-lg p-8">
+      <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">Selecciona un equipo</h2>
 
-      <div className="space-y-3 max-h-96 overflow-y-auto border p-4 rounded">
+      <div className="space-y-2 max-h-[30rem] overflow-y-auto border border-gray-300 rounded-md p-1 custom-scrollbar">
         {equipmentList.map((eq) => (
-          <div key={eq.id} className="flex items-center space-x-3">
+          <div
+            key={eq.id}
+            className={`p-4 rounded-md cursor-pointer transition duration-150 ease-in-out border-b border-gray-200 last:border-b-0
+                        ${selectedId === eq.id ? 'bg-blue-100 border-l-4 border-blue-500' : 'hover:bg-gray-100'}`}
+            onClick={() => setSelectedId(eq.id)}
+          >
             <input
               type="radio"
               id={eq.id}
@@ -34,18 +39,23 @@ export const StepSelectEquipment = ({ onNext }: Props) => {
               value={eq.id}
               checked={selectedId === eq.id}
               onChange={() => setSelectedId(eq.id)}
+              className="sr-only" // Hide the actual radio button
             />
-            <label htmlFor={eq.id} className="cursor-pointer">
-              {eq.name} ({eq.code})
+            <label htmlFor={eq.id} className="cursor-pointer w-full block text-gray-700">
+              <span className="font-semibold">{eq.name}</span>
+              <span className="text-sm text-gray-500 ml-2">({eq.code})</span>
             </label>
           </div>
         ))}
+        {equipmentList.length === 0 && (
+          <p className="text-center text-gray-500 py-4">Cargando equipos...</p>
+        )}
       </div>
 
       <button
         disabled={!selectedId}
         onClick={handleSelect}
-        className="mt-6 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+        className="mt-8 w-full bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
         Continuar
       </button>

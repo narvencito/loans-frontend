@@ -15,8 +15,20 @@ const formSchema = z.object({
     .string()
     .regex(/^\d{8}$/, 'El DNI debe tener exactamente 8 dígitos'),
   email: z.string().email('Correo inválido'),
-  phone: z.string().optional(),
-  address: z.string().optional(),
+  phone: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val) return true; // Optional field, so valid if empty
+      return /^[0-9\s\-()+]{7,20}$/.test(val);
+    }, 'Teléfono inválido (7-20 caracteres, puede incluir números, espacios, -, (, )).'),
+  address: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val) return true; // Optional field, so valid if empty
+      return val.length >= 5;
+    }, 'La dirección debe tener al menos 5 caracteres.'),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -51,46 +63,58 @@ export const StepPersonalData = ({ onNext }: Props) => {
   };
 
   return (
-    <div className="max-w-lg mx-auto bg-white shadow-md rounded p-6">
-      <h2 className="text-xl font-bold mb-4">Datos personales</h2>
+    <div className="max-w-lg mx-auto bg-white shadow-xl rounded-lg p-8">
+      <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">Datos personales</h2>
 
-      <form onSubmit={handleSubmit(handleContinue)} className="space-y-4">
-        <input
-          {...register('name')}
-          placeholder="Nombre completo"
-          className="w-full p-3 border rounded"
-        />
-        {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
+      <form onSubmit={handleSubmit(handleContinue)} className="space-y-6">
+        <div>
+          <input
+            {...register('name')}
+            placeholder="Nombre completo"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+          />
+          {errors.name && <p className="mt-1 text-sm text-red-600 font-medium">{errors.name.message}</p>}
+        </div>
 
-        <input
-          {...register('document')}
-          placeholder="DNI (8 dígitos)"
-          className="w-full p-3 border rounded"
-        />
-        {errors.document && <p className="text-sm text-red-500">{errors.document.message}</p>}
+        <div>
+          <input
+            {...register('document')}
+            placeholder="DNI (8 dígitos)"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+          />
+          {errors.document && <p className="mt-1 text-sm text-red-600 font-medium">{errors.document.message}</p>}
+        </div>
 
-        <input
-          {...register('email')}
-          placeholder="Correo electrónico"
-          className="w-full p-3 border rounded"
-        />
-        {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+        <div>
+          <input
+            {...register('email')}
+            placeholder="Correo electrónico"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+          />
+          {errors.email && <p className="mt-1 text-sm text-red-600 font-medium">{errors.email.message}</p>}
+        </div>
 
-        <input
-          {...register('phone')}
-          placeholder="Teléfono"
-          className="w-full p-3 border rounded"
-        />
+        <div>
+          <input
+            {...register('phone')}
+            placeholder="Teléfono (opcional)"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+          />
+          {errors.phone && <p className="mt-1 text-sm text-red-600 font-medium">{errors.phone.message}</p>}
+        </div>
 
-        <input
-          {...register('address')}
-          placeholder="Dirección"
-          className="w-full p-3 border rounded"
-        />
+        <div>
+          <input
+            {...register('address')}
+            placeholder="Dirección (opcional)"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+          />
+          {errors.address && <p className="mt-1 text-sm text-red-600 font-medium">{errors.address.message}</p>}
+        </div>
 
         <button
           type="submit"
-          className="w-full bg-green-600 text-white font-semibold py-2 rounded hover:bg-green-700"
+          className="w-full bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
         >
           Continuar
         </button>

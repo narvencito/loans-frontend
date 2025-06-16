@@ -11,36 +11,74 @@ interface Props {
   equipment?: EquipmentItem;
   onSubmit: () => void;
   type: string | null;
-  amount: string | null;
-  term: string | null;
-  onNext: () => void;
+  loanDetails?: { amount: number; term: number } | null; // Updated props
+  onNext: () => void; // Kept as it was not requested to be removed
 }
 
-export const StepConfirmRequest = ({ personalData, equipment, onSubmit }: Props) => {
+export const StepConfirmRequest = ({ personalData, equipment, loanDetails, type, onSubmit }: Props) => {
+  const DetailItem = ({ label, value }: { label: string; value?: string | null }) => {
+    if (!value) return null;
+    return (
+      <div className="py-2 sm:grid sm:grid-cols-3 sm:gap-4 border-b border-gray-200 last:border-b-0">
+        <dt className="text-sm font-semibold text-gray-600">{label}:</dt>
+        <dd className="mt-1 text-sm text-gray-800 sm:mt-0 sm:col-span-2">{value}</dd>
+      </div>
+    );
+  };
+
   return (
-    <div className="max-w-2xl mx-auto bg-white shadow-md rounded p-6">
-      <h2 className="text-xl font-bold mb-4">Confirmar solicitud</h2>
+    <div className="max-w-2xl mx-auto bg-white shadow-xl rounded-lg p-8">
+      <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">Confirmar solicitud</h2>
 
-      <div className="space-y-3">
-        <p><strong>Nombre:</strong> {personalData.name}</p>
-        <p><strong>Documento:</strong> {personalData.document}</p>
-        <p><strong>Correo:</strong> {personalData.email}</p>
-        {personalData.phone && <p><strong>Teléfono:</strong> {personalData.phone}</p>}
-        {personalData.address && <p><strong>Dirección:</strong> {personalData.address}</p>}
+      <div className="space-y-6">
+        {/* Personal Data Section */}
+        <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
+          <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Datos Personales</h3>
+          <dl className="space-y-2">
+            <DetailItem label="Nombre completo" value={personalData.name} />
+            <DetailItem label="Documento (DNI)" value={personalData.document} />
+            <DetailItem label="Correo electrónico" value={personalData.email} />
+            <DetailItem label="Teléfono" value={personalData.phone} />
+            <DetailItem label="Dirección" value={personalData.address} />
+          </dl>
+        </div>
 
+        {/* Equipment Section */}
         {equipment && (
-          <>
-            <hr className="my-4" />
-            <p><strong>Equipo:</strong> {equipment.name}</p>
-            <p><strong>Código:</strong> {equipment.code}</p>
-            <p><strong>Serie:</strong> {equipment.serial}</p>
-          </>
+          <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
+            <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Equipo Seleccionado</h3>
+            <dl className="space-y-2">
+              <DetailItem label="Nombre del equipo" value={equipment.name} />
+              <DetailItem label="Código" value={equipment.code} />
+              <DetailItem label="Serie" value={equipment.serial} />
+              {/* Add other equipment details if needed */}
+            </dl>
+          </div>
+        )}
+
+        {/* Loan/Financing Details Section */}
+        {loanDetails && (type === 'cash' || type === 'financing') && (
+          <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
+            <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">
+              {type === 'cash' ? 'Detalles del Préstamo' : 'Detalles del Financiamiento'}
+            </h3>
+            <dl className="space-y-2">
+              <DetailItem
+                label="Monto Solicitado"
+                value={
+                  new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' })
+                    .format(loanDetails.amount)
+                }
+              />
+              <DetailItem label="Plazo" value={`${loanDetails.term} meses`} />
+            </dl>
+          </div>
         )}
       </div>
 
       <button
         onClick={onSubmit}
-        className="mt-6 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+        className="mt-8 w-full bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
       >
         Enviar solicitud
       </button>
