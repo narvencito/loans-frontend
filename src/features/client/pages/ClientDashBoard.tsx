@@ -10,7 +10,7 @@ const ClientDashboardPage = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Trabajador Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-6">Cliente Dashboard</h1>
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

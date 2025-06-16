@@ -1,4 +1,3 @@
-// src/shared/utils/global-dialog.ts
 type DialogType = 'success' | 'error' | 'info';
 
 type DialogOptions = {

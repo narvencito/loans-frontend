@@ -3,6 +3,7 @@ import SectionBlock from '../components/SectionBlock';
 import ContactSection from '../components/ContactSection';
 import LoanOptionsSection from '../components/LoanOptionsSection';
 import { Separator } from '@/components/ui/separator';
+import PromoSlider from '@/shared/components/PromoSlider';
 
 const sections = [
   {
@@ -83,7 +84,7 @@ const sections = [
 ];
 
 export default function HomePage() {
-  return (
+    return (
     <>
       <HeroSection />
 
@@ -91,6 +92,13 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto px-4 space-y-16">
           <LoanOptionsSection />
 
+          <Separator className="my-6 bg-primary h-[2px]" />
+        </div>
+
+        {/* Este bloque estará fuera del contenedor limitado */}
+        <PromoSlider />
+
+        <div className="max-w-5xl mx-auto px-4 space-y-16">
           <Separator className="my-6 bg-primary h-[2px]" />
 
           {sections.map((section, index) => (

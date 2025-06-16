@@ -1,31 +1,54 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
 import { AppSidebar } from '@/shared/layouts/AppSidebar';
+import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
+import { useState } from 'react';
+import { Menu } from 'lucide-react';
+import DrawerApp from '@/shared/components/DrawerApp';
 
 const navItems = [
-  { to: '/client/dashboard', label: 'Dashboard' },
-  { to: '/client/cash-loans', label: 'Préstamo en efectivo' },
-  { to: '/client/equipment-financing', label: 'Financiamiento de equipos' },
+  { to: '/client/dashboard', label: 'Inicio' },
+  { to: '/equipment', label: 'Explorar equipos' },
+  { to: '/client/financing/status', label: 'Mi solicitud' },
+  { to: '/client/loans', label: 'Mis préstamos' },
+  { to: '/client/help', label: 'Ayuda' },
 ];
 
 export default function ClientLayout() {
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
 
   return (
     <div className="min-h-screen flex">
-      {/* Sidebar */}
-      <AppSidebar title="Panel Cliente" navItems={navItems} />
+      {/* Sidebar solo visible en desktop */}
+      <aside className="hidden md:block w-64">
+        <AppSidebar title="Panel Cliente" navItems={navItems} />
+      </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        <header className="p-4 text-lg font-bold border-b border-border bg-background text-white text-primary-foreground">
-          Panel de Administración
+      {/* Mobile Header con botón de menú */}
+      <div className="flex-1 flex flex-col w-full">
+        <header className="flex items-center justify-between p-4 border-b bg-background text-white text-primary-foreground md:hidden">
+          <button onClick={() => setDrawerOpen(true)}>
+            <Menu className="w-6 h-6" />
+          </button>
+          <span className="text-lg font-bold">Panel de Administración</span>
         </header>
-        <Separator />
+        <Separator className="md:hidden" />
+
+        {/* Main Content */}
         <main className="p-6 flex-1 overflow-y-auto">
           <Outlet />
         </main>
       </div>
+
+      {/* Drawer personalizado para mobile */}
+      <DrawerApp open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+        <AppSidebar
+          title="Panel Cliente"
+          navItems={navItems}
+          onNavigate={() => setDrawerOpen(false)} 
+        />
+      </DrawerApp>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+@import "slick-carousel/slick/slick.css";
+@import "slick-carousel/slick/slick-theme.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -117,4 +119,17 @@ input[type="number"] {
   .select-white [data-state='checked'] {
     @apply bg-yellow-100 text-primary font-semibold;
   }
+}
+
+
+.slick-dots li button:before {
+  font-size: 14px; /* 👈 más grande */
+  color: hsl(var(--muted)); /* 👈 color base (puedes usar cualquier var() o valor hex) */
+  opacity: 0.6;
+}
+
+/* Dot activo */
+.slick-dots li.slick-active button:before {
+  color: hsl(var(--primary)); /* 👈 color cuando está activo */
+  opacity: 1;
 }

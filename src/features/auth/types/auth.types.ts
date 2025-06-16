@@ -3,6 +3,11 @@ export interface LoginDto {
     email?: string;
     password: string;
   }
+
+  export interface ChangePasswordDto {
+    userId?: string; 
+    newPassword: string;
+  }
   
   export interface AuthResponse {
     token: string;
@@ -13,6 +18,8 @@ export interface LoginDto {
       role: Role;
       email: string;
       isActive: boolean;
+      mustChangePassword?: boolean;
+      profileIncomplete?: boolean;
     };
   }
 
@@ -22,6 +29,8 @@ export interface LoginDto {
     email: string;
     role: Role;
     isActive: boolean;
+    mustChangePassword?: boolean;
+    profileIncomplete?: boolean;
   }
   
   export interface Role {

@@ -80,16 +80,16 @@ export default function LoanOptionsSection() {
           </div>
         </div>
 
-        <div className="absolute inset-y-1/2 -translate-y-1/2 flex justify-between w-full px-4">
+        <div className="absolute top-1/2 left-0 w-full -translate-y-1/2 flex justify-between px-4 z-10">
           <button
             onClick={handlePrev}
-            className="p-2 bg-background border border-muted rounded-full shadow"
+            className="p-3 bg-background border border-muted rounded-full shadow text-white"
           >
             <FaChevronLeft />
           </button>
           <button
             onClick={handleNext}
-            className="p-2 bg-background border border-muted rounded-full shadow"
+            className="p-3 bg-background border border-muted rounded-full shadow text-white"
           >
             <FaChevronRight />
           </button>
@@ -99,9 +99,8 @@ export default function LoanOptionsSection() {
           {loans.map((_, i) => (
             <span
               key={i}
-              className={`w-2 h-2 rounded-full ${
-                i === activeIndex ? 'bg-primary' : 'bg-muted'
-              }`}
+              className={`w-2 h-2 rounded-full ${i === activeIndex ? 'bg-primary' : 'bg-muted'
+                }`}
             />
           ))}
         </div>

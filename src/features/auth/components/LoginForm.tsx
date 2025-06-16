@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { showError } from '@/shared/utils/global-dialog-utils';
+import { showError, showInfo } from '@/shared/utils/global-dialog-utils';
 
 const loginSchema = z.object({
   email: z.string().min(3, { message: 'Usuario requerido' }).email('email incorrecto'),
@@ -36,16 +36,37 @@ export default function LoginForm({ onClose }: { onClose: () => void }) {
         token: response.token,
         user: response.user,
       });
+      
+      console.log("data del backend en el login ", response)
+      if(!response.user.isActive){
+        showInfo("Usuario no habilitado, comuniquese con el area de sistemas 'email'");
+        return;
+      }
+      
+      if (response.user.mustChangePassword) {
+        console.log("cambiando la contraseña");
+        navigate('/general/change-password');
+        return;
+      }
+      
+      if (response.user.role.name.toUpperCase() === 'CLIENT' && response.user.profileIncomplete) {
+        console.log("actualizando datos necesarios");
+        navigate('/client/complete-profile');
+        return;
+      }
+
       onClose();
+
+      console.log("esta por aqui");
 
       const role = response.user.role.name.toUpperCase();
       if (role === 'ADMIN') {
         navigate('/admin/dashboard');
       } else if (role === 'CLIENT') {
         navigate('/client/dashboard');
-      } else if (role === 'WORKER'){
+      } else if (role === 'WORKER') {
         navigate('/worker/dashboard');
-      }else{
+      } else {
         navigate('/');
       }
     } catch (error: any) {

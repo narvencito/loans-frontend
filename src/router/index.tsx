@@ -19,6 +19,14 @@ import WorkerDashboard from '@/features/worker/pages/WorkerDashboard';
 import WorkerLayout from '@/features/worker/layouts/WorkerLayout';
 import ClientDashboardPage from '@/features/client/pages/ClientDashBoard';
 import EquipmentGeneral from '@/features/equipment/pages/EquipmentGeneral';
+import PersonalDataPage from '@/features/equipment/components/general/PersonalDataPage';
+import ClientFinancingStatusPage from '@/features/client/pages/ClientFinancingStatusPage';
+import ClientLoanListPage from '@/features/client/pages/ClientLoanListPage';
+import ClientHelpPage from '@/features/client/pages/ClientHelpPage';
+import ChangePasswordPage from '@/features/auth/pages/ChangePasswordPage';
+import AuthLayout from '@/shared/layouts/AuthLayout';
+import RequestFormPage from '@/features/request/pages/RequestFormPage';
+import RequestWizardPage from '@/features/request/pages/RequestWizardPage';
 
 export const router = createBrowserRouter([
   {
@@ -26,9 +34,18 @@ export const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       { path: '/', element: <HomePage /> },
-      { path: '/login', element: <LoginPage/> },
-      { path: '/equipment', element: <EquipmentGeneral/> },
-      { path: '/simulator', element: <SimulatorPage/> },
+      { path: '/login', element: <LoginPage /> },
+      { path: '/equipment', element: <EquipmentGeneral /> },
+      { path: '/financing/personal-data', element: <PersonalDataPage /> },
+      { path: '/simulator', element: <SimulatorPage /> },
+    ],
+  },
+  {
+    path: '/general',
+    element: <AuthLayout />,
+    children: [
+      { path: 'change-password', element: <ChangePasswordPage /> },
+      { path: 'request-wizard',element: <RequestWizardPage /> },
     ],
   },
   {
@@ -59,6 +76,11 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: 'dashboard', element: <ClientDashboardPage /> },
+      { path: 'financing/status', element: <ClientFinancingStatusPage /> },
+      { path: 'loans', element: <ClientLoanListPage /> },
+      { path: 'help', element: <ClientHelpPage /> },
+      { path: 'cash-loans', element: <CashLoanListPage /> },
+      { path: 'equipment-financing', element: <EquipmentFinancingListPage /> },
     ],
   },
   {

@@ -1,6 +1,6 @@
-// src/components/ProductCard.tsx
-import { EquipmentDto } from "../../model/EquipmentDto";
 import { useState } from "react";
+import { EquipmentItem } from "../../api/equipment_api";
+import { useNavigate } from "react-router-dom";
 
 function NoImagePlaceholder() {
   return (
@@ -10,15 +10,15 @@ function NoImagePlaceholder() {
   );
 }
 
-export default function ProductCard({ producto }: { producto: EquipmentDto }) {
+interface Props {
+  producto: EquipmentItem;
+  onViewDetail?: () => void;
+}
+
+export default function ProductCard({ producto, onViewDetail }: Props) {
   const {
     name,
     images,
-    pricePerMonth,
-    regularPricePerMonth,
-    promotion,
-    initialFee,
-    termMonths,
   } = producto;
 
   const imagesUrls = images.map((img) => img.url).filter(Boolean);
@@ -34,52 +34,62 @@ export default function ProductCard({ producto }: { producto: EquipmentDto }) {
 
   const hasImages = imagesUrls.length > 0;
 
-  return (
-    <div className="w-[300px] h-[400px] border rounded-xl p-4 shadow hover:shadow-lg transition bg-white flex flex-col items-center justify-between relative">
-      {promotion && (
-        <span className="absolute top-0 left-0 bg-red-600 text-white px-2 py-1 text-xs font-bold rounded-tr-lg rounded-bl-lg">
-          {promotion}
-        </span>
-      )}
+  const navigate = useNavigate();
+  const handleContinue = () => {
+    navigate('/financing/personal-data');
+  };
 
-      <div className="relative w-[200px] h-[200px] flex items-center justify-center">
+  return (
+    <div className="w-[300px] h-[400px] border rounded-xl shadow hover:shadow-lg transition bg-white flex flex-col items-center justify-between relative p-4">
+
+      <div className="relative w-[200px] h-[200px] flex items-center justify-center mx-auto">
         {hasImages ? (
-          <img
-            src={imagesUrls[currentImage]}
-            alt={name}
-            className="w-full h-full object-contain border border-gray-300 rounded-[12px] shadow-md transition-all duration-500 ease-in-out"
-          />
+          <>
+            <img
+              key={currentImage}
+              src={imagesUrls[currentImage]}
+              alt={name}
+              className="w-full h-full object-contain border border-gray-300 rounded-[12px] shadow-md transition-opacity duration-300 ease-in-out"
+            />
+
+            {imagesUrls.length > 1 && (
+              <>
+                <button
+                  onClick={handlePrev}
+                  className="absolute -left-6 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-2 hover:bg-black/60"
+                >
+                  ‹
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="absolute -right-6 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-2 hover:bg-black/60"
+                >
+                  ›
+                </button>
+              </>
+            )}
+          </>
         ) : (
           <NoImagePlaceholder />
         )}
       </div>
 
-      {hasImages && imagesUrls.length > 1 && (
-        <div className="absolute -left-4 top-[85px] flex items-center justify-between w-[calc(100%+32px)] pointer-events-none px-5">
-          <button
-            onClick={handlePrev}
-            className="pointer-events-auto bg-black/40 text-white rounded-full px-2 py-1 "
-          >
-            ‹
-          </button>
-          <button
-            onClick={handleNext}
-            className="pointer-events-auto bg-black/40 text-white rounded-full px-2 py-1 "
-          >
-            ›
-          </button>
-        </div>
-      )}
-
-      <div className="mt-2 text-center">
+      <div className="mt-2 text-center w-full flex-1 flex flex-col justify-between">
         <h2 className="font-semibold text-2xl">{name}</h2>
 
-        <button className="w-full bg-yellow-400 mt-3 py-2 rounded font-bold text-white hover:bg-yellow-500">
+        <button
+          onClick={handleContinue}
+          className="w-full bg-yellow-400 mt-3 py-2 rounded font-bold text-white hover:bg-yellow-500">
           ¡La quiero!
         </button>
 
+        <button onClick={() => navigate(`/client/equipment/request-loan/${producto.id}`)}>Solicitar préstamo</button>
+        <button onClick={() => navigate(`/client/equipment/request-financing/${producto.id}`)}>Solicitar financiamiento</button>
+
         <div className="flex flex-col items-center mt-2 text-sm underline text-blue-600">
-          <a href="#">Ver características</a>
+          <button onClick={onViewDetail} className="hover:text-blue-800">
+            Ver características
+          </button>
         </div>
       </div>
     </div>

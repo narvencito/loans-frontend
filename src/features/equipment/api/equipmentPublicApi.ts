@@ -1,15 +1,15 @@
 import { api } from '@/shared/utils/api';
 import { AxiosResponse } from 'axios';
-import { EquipmentDto } from '../model/EquipmentDto';
+import { EquipmentItem } from './equipment_api';
 
 export const equipmentPublicApi = {
-  async getAll(): Promise<EquipmentDto[]> {
-    const res: AxiosResponse<EquipmentDto[]> = await api.get('/public/equipment');
+  async getAll(): Promise<EquipmentItem[]> {
+    const res: AxiosResponse<EquipmentItem[]> = await api.get('/public/equipment');
     return res.data;
   },
 
-  async getById(id: string): Promise<EquipmentDto> {
-    const res: AxiosResponse<EquipmentDto> = await api.get(`/public/equipment/${id}`);
+  async getById(id: string): Promise<EquipmentItem> {
+    const res: AxiosResponse<EquipmentItem> = await api.get(`/public/equipment/${id}`);
     return res.data;
   },
 };

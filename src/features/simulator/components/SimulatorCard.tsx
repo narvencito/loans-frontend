@@ -6,8 +6,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useNavigate } from 'react-router-dom';
 
 export default function SimulatorCard() {
+  const navigate = useNavigate();
   const [amount, setAmount] = useState('');
   const [term, setTerm] = useState('12');
   const [monthlyPayment, setMonthlyPayment] = useState<number | null>(null);
@@ -61,6 +63,13 @@ export default function SimulatorCard() {
         className="w-full bg-primary text-primary-foreground py-2 rounded-md font-medium hover:opacity-90 transition-colors"
       >
         Calcular cuota mensual
+      </button>
+
+       <button
+        onClick={() => navigate(`/general/request-wizard?type=cash&amount=${1000}&term=${12}`)}
+        className="w-full mt-4 bg-green-600 text-white py-2 rounded-md font-medium hover:bg-green-700 transition-colors"
+      >
+        Solicitar préstamo ahora
       </button>
 
       {monthlyPayment !== null && (
