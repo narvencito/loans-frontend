@@ -29,6 +29,7 @@ export default function RequestFormPage() {
     e.preventDefault();
 
     const exists = await checkEmail(form.email);
+    console.log("existe email en base de datos ", exists);
     if (exists) {
       setShowConflictModal(true);
     } else {

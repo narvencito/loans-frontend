@@ -201,8 +201,6 @@ export default function RequestWizardPage() {
                 loanDetails={loanDetailsData}
                 onSubmit={handleSubmit}
                 type={type}
-                amount={loanDetailsData?.amount?.toString() ?? null} // Pass loan data
-                term={loanDetailsData?.term?.toString() ?? null}   // Pass loan data
                 onNext={() => {}} // Not used in confirm step
               />
             )}
@@ -213,8 +211,6 @@ export default function RequestWizardPage() {
                 loanDetails={null} // No loan details for 'equipment'
                 onSubmit={handleSubmit}
                 type={type}
-                amount={null} // No loan data
-                term={null}   // No loan data
                 onNext={() => {}}
               />
             )}
@@ -225,8 +221,6 @@ export default function RequestWizardPage() {
                 loanDetails={loanDetailsData}
                 onSubmit={handleSubmit}
                 type={type}
-                amount={loanDetailsData?.amount?.toString() ?? null} // Pass loan data
-                term={loanDetailsData?.term?.toString() ?? null}   // Pass loan data
                 onNext={() => {}}
               />
             )}
