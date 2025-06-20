@@ -27,6 +27,7 @@ import ChangePasswordPage from '@/features/auth/pages/ChangePasswordPage';
 import AuthLayout from '@/shared/layouts/AuthLayout';
 import RequestFormPage from '@/features/request/pages/RequestFormPage';
 import RequestWizardPage from '@/features/request/pages/RequestWizardPage';
+import AdminRequestListPage from '@/features/admin/pages/AdminRequestListPage';
 
 export const router = createBrowserRouter([
   {
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <AdminDashboard /> },
       { path: 'users', element: <UserListPage /> },
       { path: 'clients', element: <ClientListPage /> },
+      { path: 'requests', element: <AdminRequestListPage /> },
       { path: 'cash-loans', element: <CashLoanListPage /> },
       { path: 'equipment', element: <EquipmentListPage /> },
       { path: 'equipment-status', element: <EquipmentStatusListPage /> },

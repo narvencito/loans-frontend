@@ -8,6 +8,7 @@ const navItems = [
   { to: '/admin/dashboard', label: 'Dashboard' },
   { to: '/admin/users', label: 'Usuarios' },
   { to: '/admin/clients', label: 'Clientes' },
+  { to: '/admin/requests', label: 'Solicitudes' },
   { to: '/admin/cash-loans', label: 'Préstamo en efectivo' },
   { to: '/admin/equipment', label: 'Gestión de equipos' },
   { to: '/admin/equipment-status', label: 'Estado de equipos' },
