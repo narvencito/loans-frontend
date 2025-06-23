@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -5,178 +6,218 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { getRequestTypeName } from '../utils/requestTypeUtils';
 import { RequestItem } from '../api/request_api';
-import { RequestStatusHistory } from './RequestStatusHistory';
-import { useRequestStore } from '../store/request.store';
-import { useState } from 'react';
+import { requestApi } from '../api/request_api';
+import { RequestDetail } from './RequestDetail';
+import { RequestStatusChangeDialog } from './RequestStatusChangeDialog';
+import { RequestStatusCode } from '../enums/request-status.enum';
 
 interface Props {
   requests: RequestItem[];
-  onView?: (request: RequestItem) => void;
   showActions?: boolean;
+  onRefresh?: () => void;
+  onAlert?: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
-const RequestTable = ({ requests, onView, showActions = true }: Props) => {
-  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
-  const { updateRequestStatus, convertRequest } = useRequestStore();
+export const RequestTable = ({ requests, showActions = false, onRefresh, onAlert }: Props) => {
+  const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleStatusChange = async (requestId: string, newStatusId: string) => {
-    await updateRequestStatus(requestId, newStatusId);
+  const handleOpenDetail = (request: RequestItem) => {
+    if (request.requestStatus.code === RequestStatusCode.PENDING && showActions) {
+      setSelectedRequest(request);
+      setShowStatusDialog(true);
+    } else {
+      setSelectedRequest(request);
+      setShowDetailModal(true);
+    }
   };
 
-  const handleConvert = async (requestId: string) => {
-    await convertRequest(requestId);
+  const handleStatusChange = async () => {
+    if (!selectedRequest) return;
+
+    try {
+      setIsLoading(true);
+      // Solo para solicitudes pendientes usamos el comentario automático
+      const automaticComment = selectedRequest.requestStatus.code === RequestStatusCode.PENDING ? 
+        'Cambio de estado automático por sistema' : undefined;
+      
+      await requestApi.updateStatus(
+        selectedRequest.id, 
+        RequestStatusCode.IN_REVIEW, 
+        automaticComment
+      );
+      onAlert?.('La solicitud ha pasado a revisión', 'success');
+      if (onRefresh) onRefresh();
+      setShowStatusDialog(false);
+      // Abrimos el modal de detalles después del cambio de estado
+      setShowDetailModal(true);
+    } catch (error) {
+      onAlert?.('No se pudo actualizar el estado de la solicitud', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const getStatusActions = (request: RequestItem) => {
-    switch (request.requestStatus.code) {
-      case 'PENDING':
-        return (
-          <>
-            <Button
-              size="sm"
-              variant="outline"
-              className="bg-yellow-100 hover:bg-yellow-200 text-yellow-800"
-              onClick={() => handleStatusChange(request.id, 'IN_REVIEW')}
-            >
-              Revisar
-            </Button>
-          </>
-        );
-      case 'IN_REVIEW':
-        return (
-          <>
-            <Button
-              size="sm"
-              variant="outline"
-              className="bg-green-100 hover:bg-green-200 text-green-800 mr-2"
-              onClick={() => handleStatusChange(request.id, 'APPROVED')}
-            >
-              Aprobar
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="bg-red-100 hover:bg-red-200 text-red-800"
-              onClick={() => handleStatusChange(request.id, 'REJECTED')}
-            >
-              Rechazar
-            </Button>
-          </>
-        );
-      case 'APPROVED':
-        return (
-          <Button
-            size="sm"
-            variant="outline"
-            className="bg-purple-100 hover:bg-purple-200 text-purple-800"
-            onClick={() => handleConvert(request.id)}
-          >
-            Convertir
-          </Button>
-        );
+  const handleCloseDetail = () => {
+    setShowDetailModal(false);
+    if (onRefresh) onRefresh();
+  };
+
+  const getStatusStyle = (statusCode: string) => {
+    switch (statusCode) {
+      case RequestStatusCode.PENDING:
+        return {
+          bg: 'bg-yellow-100',
+          text: 'text-yellow-800',
+          border: 'border-yellow-300'
+        };
+      case RequestStatusCode.IN_REVIEW:
+        return {
+          bg: 'bg-blue-100',
+          text: 'text-blue-800',
+          border: 'border-blue-300'
+        };
+      case RequestStatusCode.APPROVED:
+        return {
+          bg: 'bg-green-100',
+          text: 'text-green-800',
+          border: 'border-green-300'
+        };
+      case RequestStatusCode.CONVERTED:
+        return {
+          bg: 'bg-purple-100',
+          text: 'text-purple-800',
+          border: 'border-purple-300'
+        };
+      case RequestStatusCode.REJECTED:
+        return {
+          bg: 'bg-red-100',
+          text: 'text-red-800',
+          border: 'border-red-300'
+        };
+      case RequestStatusCode.CANCELLED:
+        return {
+          bg: 'bg-gray-100',
+          text: 'text-gray-800',
+          border: 'border-gray-300'
+        };
       default:
-        return null;
+        return {
+          bg: 'bg-gray-100',
+          text: 'text-gray-800',
+          border: 'border-gray-300'
+        };
     }
   };
 
   return (
-    <>
-      <div className="rounded-md border overflow-hidden min-w-[600px] w-full">
-        <Table>
-          <TableHeader>
-            <TableRow className="text-muted-foreground">
-              <TableHead>Cliente</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Equipo</TableHead>
-              <TableHead>Fecha</TableHead>
-              <TableHead className="text-center">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {requests.map((r) => (
-              <TableRow key={r.id}>
-                <TableCell>{r.client.name}</TableCell>
-                <TableCell>{r.requestType.name}</TableCell>
+    <div className="w-full overflow-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Cliente</TableHead>
+            <TableHead>Documento</TableHead>
+            <TableHead>Tipo</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead>Equipo</TableHead>
+            <TableHead>Monto</TableHead>
+            <TableHead>Fecha</TableHead>
+            <TableHead className="text-right w-[200px]">Acciones</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {requests.map((request) => {
+            const statusStyle = getStatusStyle(request.requestStatus.code);
+            return (
+              <TableRow key={request.id}>
+                <TableCell className="font-medium">{request.client.fullName}</TableCell>
+                <TableCell>{request.client.document}</TableCell>
+                <TableCell>{getRequestTypeName(request.requestType.name)}</TableCell>
                 <TableCell>
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium
-                      ${r.requestStatus.code === 'PENDING' && 'bg-yellow-100 text-yellow-800'}
-                      ${r.requestStatus.code === 'IN_REVIEW' && 'bg-blue-100 text-blue-800'}
-                      ${r.requestStatus.code === 'APPROVED' && 'bg-green-100 text-green-800'}
-                      ${r.requestStatus.code === 'CONVERTED' && 'bg-purple-100 text-purple-800'}
-                      ${r.requestStatus.code === 'REJECTED' && 'bg-red-100 text-red-800'}
-                    `}>
-                      {r.requestStatus.name}
+                  <div className="flex flex-col gap-1">
+                    <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${statusStyle.bg} ${statusStyle.text}`}>
+                      {request.requestStatus.name}
                     </span>
+                    <span className={`text-xs ${statusStyle.text}`}>
+                      {request.requestStatus.description}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>{request.equipment?.name || '-'}</TableCell>
+                <TableCell>
+                  {request.amount ? `S/ ${request.amount.toLocaleString()}` : '-'}
+                </TableCell>
+                <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell className="p-2">
+                  <div className="flex justify-end items-center gap-2">
+                    {showActions && (
+                      request.requestStatus.code !== RequestStatusCode.CONVERTED && 
+                      request.requestStatus.code !== RequestStatusCode.PENDING && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-orange-100 hover:bg-orange-200 text-orange-800 border-orange-300"
+                          onClick={() => {
+                            // TODO: Implementar edición
+                            console.log('Editar solicitud:', request.id);
+                          }}
+                        >
+                          Editar
+                        </Button>
+                      )
+                    )}
+
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="text-gray-500 hover:text-gray-700"
-                      onClick={() => setSelectedRequestId(r.id)}
+                      className="bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300"
+                      onClick={() => handleOpenDetail(request)}
                     >
-                      <HistoryIcon className="h-4 w-4" />
+                      Ver Solicitud
                     </Button>
                   </div>
                 </TableCell>
-                <TableCell>{r.equipmentId ? r.equipmentId : '-'}</TableCell>
-                <TableCell>{new Date(r.createdAt).toLocaleDateString()}</TableCell>
-                <TableCell>
-                  <div className="flex justify-center gap-2">
-                    {showActions && getStatusActions(r)}
-                    {onView && (
-                      <Button
-                        size="sm"
-                        variant="default"
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
-                        onClick={() => onView(r)}
-                      >
-                        Ver Detalle
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            );
+          })}
+        </TableBody>
+      </Table>
 
-      <Dialog open={!!selectedRequestId} onOpenChange={() => setSelectedRequestId(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Historial de Estados</DialogTitle>
-          </DialogHeader>
-          {selectedRequestId && <RequestStatusHistory requestId={selectedRequestId} />}
+      {/* Modal de Detalles con Historial y Acciones */}
+      <Dialog open={showDetailModal} onOpenChange={handleCloseDetail}>
+        <DialogContent className="sm:max-w-5xl bg-white">
+          {selectedRequest && (
+            <RequestDetail
+              request={selectedRequest}
+              showActions={showActions}
+              onStatusChange={onRefresh}
+              onAlert={onAlert}
+              isUserView={false}
+            />
+          )}
         </DialogContent>
       </Dialog>
-    </>
+
+      {/* Modal de Confirmación para cambio automático de estado */}
+      {selectedRequest && (
+        <RequestStatusChangeDialog
+          open={showStatusDialog}
+          onClose={() => setShowStatusDialog(false)}
+          onConfirm={handleStatusChange}
+          title="Cambiar Estado de Solicitud"
+          description="La solicitud pasará a estado 'En Revisión' automáticamente."
+          confirmLabel="Confirmar"
+          confirmColor="bg-blue-600 hover:bg-blue-700 text-white"
+          currentStatus={selectedRequest.requestStatus.code as RequestStatusCode}
+        />
+      )}
+    </div>
   );
 };
-
-const HistoryIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M12 8v4l3 3" />
-    <circle cx="12" cy="12" r="10" />
-  </svg>
-);
-
-export default RequestTable;

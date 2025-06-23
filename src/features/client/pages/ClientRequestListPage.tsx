@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { RequestItem, requestApi } from '@/features/request/api/request_api';
-import RequestTable from '@/features/request/components/RequestTable';
+import { RequestTable } from '@/features/request/components/RequestTable';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import type { User } from '@/features/auth/types/auth.types';
+import { showGlobalDialog } from '@/shared/utils/global-dialog';
 
 export default function ClientRequestListPage() {
   const [requests, setRequests] = useState<RequestItem[]>([]);
@@ -31,10 +32,6 @@ export default function ClientRequestListPage() {
     fetchRequests();
   }, [user?.clientId]);
 
-  const handleViewRequest = (request: RequestItem) => {
-    navigate(`/client/requests/${request.id}`);
-  };
-
   if (isLoading) {
     return <div className="p-8 text-center">Cargando solicitudes...</div>;
   }
@@ -57,8 +54,20 @@ export default function ClientRequestListPage() {
         {requests.length > 0 ? (
           <RequestTable
             requests={requests}
-            onView={handleViewRequest}
             showActions={false}
+            onAlert={(message, type) => {
+              showGlobalDialog({
+                type: type === 'success' ? 'success' : 'error',
+                title: type === 'success' ? 'Éxito' : 'Error',
+                message
+              });
+            }}
+            onRefresh={async () => {
+              if (user?.clientId) {
+                const data = await requestApi.getByClient(user.clientId);
+                setRequests(data);
+              }
+            }}
           />
         ) : (
           <div className="text-center py-8 text-gray-500">

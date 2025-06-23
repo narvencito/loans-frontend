@@ -1,14 +1,19 @@
 import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
 import { api } from '@/shared/utils/api';
 import { apiRequest } from '@/shared/utils/apiHelper';
+import { RequestStatusCode } from "../enums/request-status.enum";
 
 export interface CreateRequestDto {
   client: {
+    firstName: string;
+    paternalSurname: string;
+    maternalSurname: string;
     name: string;
     document: string;
-    email?: string;
-    phone?: string;
-    address?: string;
+    email: string;
+    phone: string;
+    address: string;
+    codeStudent: string;
   };
   requestTypeId: string;
   equipmentId?: string;
@@ -29,74 +34,188 @@ export interface CreateRequestAdminDto {
 export interface RequestItem {
   id: string;
   clientId: string;
+  equipmentId: string | null;
+  requestTypeId: string;
+  requestStatusId: string;
+  message: string;
+  status: string;
+  interestRate: number | null;
+  amount: number | null;
+  termInMonths: number | null;
+  termInDays: number | null;
+  createdAt: string;
+  requestType: {
+    id: string;
+    name: string;
+    createdAt: string;
+    updatedAt: string;
+    isActive: boolean;
+  };
+  requestStatus: {
+    id: string;
+    code: string;
+    name: string;
+    description: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
   client: {
     id: string;
     name: string;
+    fullName: string;
+    paternalSurname: string;
+    maternalSurname: string;
     document: string;
     email: string;
     phone: string;
+    address: string;
+    createdAt: string;
+    updatedAt: string;
+    isActive: boolean;
+    userId: string;
+    codeStudent: string;
   };
-  requestTypeId: string;
-  requestStatusId: string;
-  equipmentId?: string;
-  amount?: number;
-  termInMonths?: number;
-  termInDays?: number;
-  interestRate?: number;
-  message?: string;
-  createdAt: string;
-  updatedAt: string;
-  requestType: {
+  equipment?: {
+    id: string;
     name: string;
+    description: string;
     code: string;
-  };
-  requestStatus: {
-    name: string;
-    code: string;
+    number: number;
+    serial: string;
+    location: string;
+    purchasePrice: number;
+    salePrice: number;
+    generalCategoryId: string;
+    createdAt: string;
+    updatedAt: string;
+    isActive: boolean;
+    statusId: string;
+    installmentStatusId: string | null;
+    categoryId: string;
   };
 }
 
-export interface RequestStatusHistory {
+export interface StatusHistoryItem {
   id: string;
   requestId: string;
   statusId: string;
+  previousStatusId: string | null;
+  comments: string;
   createdAt: string;
+  createdBy: string;
   status: {
-    name: string;
-    code: string;
-  };
-  createdBy: {
     id: string;
+    code: string;
     name: string;
+    description: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
   };
+  previousStatus: {
+    id: string;
+    code: string;
+    name: string;
+    description: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+export interface StatusHistoryResponse {
+  request: RequestItem;
+  statusHistory: StatusHistoryItem[];
+}
+
+interface RequestFilters {
+  clientId?: string;
+  type?: string;
+  status?: string;
 }
 
 export const requestApi = {
-  async create(data: CreateRequestDto): Promise<RequestItem> {
-    console.log('🚀 Iniciando creación de solicitud:', {
-      data,
-      requestType: data.requestTypeId,
-      clientInfo: data.client
-    });
+  async getAll(): Promise<RequestItem[]> {
+    return apiRequest(
+      api.get('/requests'),
+      {
+        loading: 'Cargando solicitudes...',
+        error: 'No se pudieron cargar las solicitudes',
+      }
+    );
+  },
 
-    return apiRequest<RequestItem>(
+  async getById(id: string): Promise<RequestItem> {
+    return apiRequest(
+      api.get(`/requests/${id}`),
+      {
+        loading: 'Cargando solicitud...',
+        error: 'No se pudo cargar la solicitud',
+      }
+    );
+  },
+
+  async create(data: CreateRequestDto): Promise<RequestItem> {
+    return apiRequest(
       api.post('/requests', data),
       {
         loading: 'Enviando solicitud...',
         success: 'Solicitud enviada correctamente',
         error: 'No se pudo enviar la solicitud',
       }
-    ).then(response => {
-      console.log('✅ Solicitud creada exitosamente:', response);
-      return response;
-    }).catch(error => {
-      console.error('❌ Error al crear solicitud:', {
-        error,
-        errorMessage: error?.response?.data?.message,
-        errorStatus: error?.response?.status
-      });
-      throw error;
-    });
+    );
+  },
+
+  async update(id: string, data: Partial<CreateRequestDto>): Promise<RequestItem> {
+    return apiRequest(
+      api.patch(`/requests/${id}`, data),
+      {
+        loading: 'Actualizando solicitud...',
+        success: 'Solicitud actualizada correctamente',
+        error: 'No se pudo actualizar la solicitud',
+      }
+    );
+  },
+
+  async delete(id: string): Promise<void> {
+    return apiRequest(
+      api.delete(`/requests/${id}`),
+      {
+        loading: 'Eliminando solicitud...',
+        success: 'Solicitud eliminada correctamente',
+        error: 'No se pudo eliminar la solicitud',
+      }
+    );
+  },
+
+  async createPublic(data: {
+    firstName: string;
+    paternalSurname: string;
+    maternalSurname: string;
+    document: string;
+    email: string;
+    phone: string;
+    address: string;
+    codeStudent: string;
+    type: RequestTypeEnum;
+    equipmentId?: string;
+    message?: string;
+  }): Promise<RequestItem> {
+    return apiRequest(
+      api.post('/requests/public', data),
+      {
+        loading: 'Enviando solicitud...',
+        success: 'Solicitud enviada correctamente',
+        error: 'No se pudo enviar la solicitud',
+      }
+    );
   },
 
   async createAdmin(data: CreateRequestAdminDto): Promise<RequestItem> {
@@ -120,24 +239,12 @@ export const requestApi = {
     );
   },
 
-  async getAll(): Promise<RequestItem[]> {
+  async updateStatus(requestId: string, status: RequestStatusCode, comments?: string): Promise<void> {
     return apiRequest(
-      api.get(`/requests`),
-      {
-        loading: 'Cargando solicitudes...',
-        error: 'No se pudieron cargar las solicitudes',
-      }
-    );
-  },
-
-  async updateStatus(requestId: string, statusId: string): Promise<void> {
-    return apiRequest(
-      api.patch(`/requests/${requestId}/status`, { statusId }),
-      {
-        loading: 'Actualizando estado...',
-        success: 'Estado actualizado correctamente',
-        error: 'No se pudo actualizar el estado',
-      }
+      api.post(`/requests/${requestId}/status`, { 
+        status,
+        comments 
+      })
     );
   },
 
@@ -152,7 +259,7 @@ export const requestApi = {
     );
   },
 
-  async getStatusHistory(requestId: string): Promise<RequestStatusHistory[]> {
+  async getStatusHistory(requestId: string): Promise<StatusHistoryResponse> {
     return apiRequest(
       api.get(`/requests/${requestId}/status-history`),
       {
@@ -162,31 +269,24 @@ export const requestApi = {
     );
   },
 
-  async getById(requestId: string): Promise<RequestItem> {
-    return apiRequest(
-      api.get(`/requests/${requestId}`),
-      {
-        loading: 'Cargando solicitud...',
-        error: 'No se pudo cargar la solicitud',
-      }
-    );
-  },
+  async getByFilter(filters: RequestFilters): Promise<RequestItem[]> {
+    const query = new URLSearchParams();
+    
+    if (filters.clientId) {
+      query.append('clientId', filters.clientId);
+    }
+    if (filters.type && filters.type !== 'all') {
+      query.append('type', filters.type);
+    }
+    if (filters.status && filters.status !== 'all') {
+      query.append('status', filters.status);
+    }
 
-  async createPublic(data: {
-    email: string;
-    fullName: string;
-    documentNumber: string;
-    phone: string;
-    type: RequestTypeEnum;
-    equipmentId?: string;
-    message?: string;
-  }): Promise<RequestItem> {
     return apiRequest(
-      api.post('/requests/public', data),
+      api.get(`/requests?${query.toString()}`),
       {
-        loading: 'Enviando solicitud...',
-        success: 'Solicitud enviada correctamente',
-        error: 'No se pudo enviar la solicitud',
+        loading: 'Buscando solicitudes...',
+        error: 'No se pudieron buscar las solicitudes',
       }
     );
   },

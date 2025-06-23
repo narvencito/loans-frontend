@@ -2,11 +2,16 @@ import { EquipmentItem } from "@/features/equipment/api/equipment_api";
 
 interface Props {
   personalData: {
+    firstName: string;
+    paternalSurname: string;
+    maternalSurname: string;
     name: string;
+    fullName: string;
     document: string;
     email: string;
-    phone?: string;
-    address?: string;
+    phone: string;
+    address: string;
+    codeStudent: string;
   };
   equipment?: EquipmentItem;
   onSubmit: () => void;
@@ -35,7 +40,10 @@ export const StepConfirmRequest = ({ personalData, equipment, loanDetails, type,
         <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
           <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Datos Personales</h3>
           <dl className="space-y-2">
-            <DetailItem label="Nombre completo" value={personalData.name} />
+            <DetailItem label="Nombres" value={personalData.firstName} />
+            <DetailItem label="Apellido Paterno" value={personalData.paternalSurname} />
+            <DetailItem label="Apellido Materno" value={personalData.maternalSurname} />
+            <DetailItem label="Código de Estudiante" value={personalData.codeStudent} />
             <DetailItem label="Documento (DNI)" value={personalData.document} />
             <DetailItem label="Correo electrónico" value={personalData.email} />
             <DetailItem label="Teléfono" value={personalData.phone} />
@@ -48,47 +56,40 @@ export const StepConfirmRequest = ({ personalData, equipment, loanDetails, type,
           <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
             <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Equipo Seleccionado</h3>
             <dl className="space-y-2">
-              <DetailItem label="Nombre del equipo" value={equipment.name} />
+              <DetailItem label="Nombre" value={equipment.name} />
               <DetailItem label="Código" value={equipment.code} />
-              <DetailItem label="Serie" value={equipment.serial} />
-              {/* Add other equipment details if needed */}
+              <DetailItem label="Precio" value={`S/ ${equipment.salePrice.toFixed(2)}`} />
             </dl>
           </div>
         )}
 
-        {/* Loan/Financing Details Section */}
-        {loanDetails && (type === 'cash' || type === 'financing') && (
+        {/* Loan Details Section */}
+        {loanDetails && (
           <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-            <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">
-              {type === 'cash' ? 'Detalles del Préstamo' : 'Detalles del Financiamiento'}
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Detalles del Préstamo</h3>
             <dl className="space-y-2">
-              <DetailItem
-                label="Monto Solicitado"
-                value={
-                  new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' })
-                    .format(loanDetails.amount)
-                }
-              />
+              <DetailItem label="Monto" value={`S/ ${loanDetails.amount.toFixed(2)}`} />
               <DetailItem label="Plazo" value={`${loanDetails.term} meses`} />
             </dl>
           </div>
         )}
-      </div>
 
-      <div className="flex gap-4 mt-8">
-        <button
-          onClick={onPrevious}
-          className="w-1/2 bg-gray-200 text-gray-800 font-semibold py-3 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
-        >
-          Anterior
-        </button>
-        <button
-          onClick={onSubmit}
-          className="w-1/2 bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
-        >
-          Enviar solicitud
-        </button>
+        <div className="flex gap-4 mt-8">
+          <button
+            type="button"
+            onClick={onPrevious}
+            className="w-1/2 bg-gray-200 text-gray-800 font-semibold py-3 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+          >
+            Anterior
+          </button>
+          <button
+            type="button"
+            onClick={onSubmit}
+            className="w-1/2 bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+          >
+            Enviar Solicitud
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,23 +1,52 @@
-import { useEffect, useState } from 'react';
-import { RequestStatusHistory as RequestStatusHistoryType } from '../api/request_api';
+import { useState, useEffect } from 'react';
+import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { requestApi } from '../api/request_api';
 
-interface Props {
+interface StatusHistoryItem {
+  id: string;
+  status: {
+    code: string;
+    name: string;
+  };
+  createdAt: string;
+  createdBy: string;
+  comments?: string;
+}
+
+interface StatusHistoryResponse {
+  statusHistory: StatusHistoryItem[];
+}
+
+interface RequestStatusHistoryProps {
   requestId: string;
 }
 
-export const RequestStatusHistory = ({ requestId }: Props) => {
-  const [history, setHistory] = useState<RequestStatusHistoryType[]>([]);
+export const RequestStatusHistory = ({ requestId }: RequestStatusHistoryProps) => {
+  const [history, setHistory] = useState<StatusHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchHistory = async () => {
+      if (!requestId) return;
+
       setIsLoading(true);
+      setError(null);
+
       try {
-        const data = await requestApi.getStatusHistory(requestId);
-        setHistory(data);
+        const response: StatusHistoryResponse = await requestApi.getStatusHistory(requestId);
+        if (response.statusHistory) {
+          // Ordenamos el historial de más reciente a más antiguo
+          const sortedHistory = [...response.statusHistory].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          setHistory(sortedHistory);
+        } else {
+          setError('No se pudo obtener el historial');
+        }
       } catch (error) {
-        console.error('Error fetching history:', error);
+        setError('No se pudo cargar el historial');
       } finally {
         setIsLoading(false);
       }
@@ -27,44 +56,88 @@ export const RequestStatusHistory = ({ requestId }: Props) => {
   }, [requestId]);
 
   if (isLoading) {
-    return <div className="p-4 text-center">Cargando historial...</div>;
+    return (
+      <Card className="p-4">
+        <div className="flex justify-center items-center h-[200px]">
+          <p className="text-gray-500">Cargando historial...</p>
+        </div>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-4">
+        <div className="flex flex-col items-center justify-center h-[200px] space-y-2">
+          <p className="text-red-500">{error}</p>
+          <p className="text-sm text-gray-500">ID de solicitud: {requestId}</p>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!history || history.length === 0) {
+    return (
+      <Card className="p-4">
+        <div className="flex justify-center items-center h-[200px]">
+          <p className="text-gray-500">No hay historial disponible</p>
+        </div>
+      </Card>
+    );
   }
 
   return (
-    <div className="p-4">
+    <Card className="p-4">
       <h3 className="text-lg font-semibold mb-4">Historial de Estados</h3>
-      <div className="space-y-4">
-        {history.map((item, index) => (
-          <div key={item.id} className="relative pl-8">
-            {/* Timeline connector */}
-            {index < history.length - 1 && (
-              <div className="absolute left-[0.9375rem] top-6 w-0.5 h-full -ml-px bg-gray-200" />
-            )}
-            
-            {/* Status point */}
-            <div className="absolute left-0 w-4 h-4 rounded-full bg-blue-500 mt-1.5" />
-            
-            {/* Content */}
-            <div className="bg-white rounded-lg border p-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="font-medium">{item.status.name}</span>
-                  <p className="text-sm text-gray-500">
-                    Por: {item.createdBy.name}
-                  </p>
+      <ScrollArea className="h-[300px] pr-4">
+        <div className="space-y-4">
+          {history.map((item, index) => (
+            <div
+              key={item.id}
+              className={`relative pl-8 pb-4 ${
+                index !== history.length - 1 ? "border-l-2 border-gray-200" : ""
+              }`}
+            >
+              {/* Círculo indicador */}
+              <div
+                className={`absolute left-[-5px] w-3 h-3 rounded-full ${
+                  index === 0
+                    ? "bg-green-500" // Estado más reciente en verde
+                    : "bg-gray-400" // Estados anteriores en gris
+                }`}
+              />
+              
+              <div className="bg-gray-50 rounded-lg p-4">
+                {/* Encabezado con estado y fecha */}
+                <div className="flex justify-between items-center mb-2">
+                  <span
+                    className={`font-medium ${
+                      index === 0
+                        ? "text-green-600" // Texto del estado más reciente en verde
+                        : "text-gray-600" // Texto de estados anteriores en gris
+                    }`}
+                  >
+                    {item.status.name}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {new Date(item.createdAt).toLocaleString()}
+                  </span>
                 </div>
-                <span className="text-sm text-gray-500">
-                  {new Date(item.createdAt).toLocaleString()}
-                </span>
+                
+                {/* Usuario y comentario */}
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-gray-700">
+                    {item.createdBy}
+                  </p>
+                  {item.comments && (
+                    <p className="text-sm text-gray-600">{item.comments}</p>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-
-        {history.length === 0 && (
-          <p className="text-center text-gray-500">No hay historial disponible</p>
-        )}
-      </div>
-    </div>
+          ))}
+        </div>
+      </ScrollArea>
+    </Card>
   );
 }; 

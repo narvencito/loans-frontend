@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { RequestItem, requestApi } from '@/features/request/api/request_api';
 import { RequestStatusHistory } from '@/features/request/components/RequestStatusHistory';
+import { RequestDetail } from '@/features/request/components/RequestDetail';
+import { showSuccess, showError } from '@/lib/notifications';
 
 export default function ClientRequestDetailPage() {
   const { requestId } = useParams<{ requestId: string }>();
   const [request, setRequest] = useState<RequestItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRequest = async () => {
@@ -86,7 +89,19 @@ export default function ClientRequestDetailPage() {
 
         {/* Historial de estados */}
         <Card className="p-6">
-          <RequestStatusHistory requestId={request.id} />
+          <RequestDetail
+            request={request}
+            showActions={true}
+            isUserView={true}
+            onStatusChange={() => navigate(0)}
+            onAlert={(message, type) => {
+              if (type === 'success') {
+                showSuccess('Éxito', message);
+              } else {
+                showError('Error', message);
+              }
+            }}
+          />
         </Card>
       </div>
     </div>

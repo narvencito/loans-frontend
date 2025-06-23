@@ -14,6 +14,19 @@ import { EmailConflictModal } from '../components/EmailConflictModal';
 type SubmissionStatus = 'idle' | 'submitting' | 'success';
 type RequestUrlType = 'cash' | 'equipment' | 'financing';
 
+interface PersonalDataState {
+  firstName: string;
+  paternalSurname: string;
+  maternalSurname: string;
+  name: string;
+  fullName: string;
+  document: string;
+  email: string;
+  phone: string;
+  address: string;
+  codeStudent: string;
+}
+
 export default function RequestWizardPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -26,13 +39,7 @@ export default function RequestWizardPage() {
     : null;
 
   const [step, setStep] = useState(0);
-  const [personalData, setPersonalData] = useState<{
-    name: string;
-    document: string;
-    email: string;
-    phone?: string;
-    address?: string;
-  } | null>(null);
+  const [personalData, setPersonalData] = useState<PersonalDataState | null>(null);
 
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentItem | undefined>(undefined);
   const [loanDetailsData, setLoanDetailsData] = useState<{ amount: number; term: number } | null>(null);
@@ -111,10 +118,14 @@ export default function RequestWizardPage() {
       const requestType = getRequestTypeFromUrlType(type);
 
       const requestData = {
+        firstName: personalData.firstName,
+        paternalSurname: personalData.paternalSurname,
+        maternalSurname: personalData.maternalSurname,
+        document: personalData.document,
         email: personalData.email,
-        fullName: personalData.name,
-        documentNumber: personalData.document,
-        phone: personalData.phone || '',
+        phone: personalData.phone,
+        address: personalData.address,
+        codeStudent: personalData.codeStudent,
         type: requestType,
         equipmentId: selectedEquipment?.id,
         message: `Solicitud de ${type === 'cash' ? 'préstamo monetario' : type === 'equipment' ? 'préstamo de equipo' : 'financiamiento de equipo'}${loanDetailsData ? ` por S/ ${loanDetailsData.amount} a ${loanDetailsData.term} meses` : ''}`
@@ -158,7 +169,17 @@ export default function RequestWizardPage() {
         <div className="w-full">
           {steps[step] === 'Datos personales' && (
             <StepPersonalData 
-              onNext={(data) => { setPersonalData(data); setStep(step + 1); }}
+              onNext={(data) => { 
+                // Asegurarnos de que todos los campos requeridos estén presentes
+                const fullData: PersonalDataState = {
+                  ...data,
+                  name: `${data.firstName} ${data.paternalSurname} ${data.maternalSurname}`.trim(),
+                  fullName: `${data.firstName} ${data.paternalSurname} ${data.maternalSurname}`.trim(),
+                  address: data.address || '', // Asegurarnos de que address sea string
+                };
+                setPersonalData(fullData);
+                setStep(step + 1);
+              }}
               onPrevious={() => setStep(step - 1)}
               showPreviousButton={step > 0}
             />

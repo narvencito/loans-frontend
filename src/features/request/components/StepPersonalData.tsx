@@ -10,7 +10,12 @@ interface Props {
 }
 
 const formSchema = z.object({
-  name: z.string().min(1, 'Nombre completo requerido'),
+  firstName: z.string().min(1, 'Nombres requeridos'),
+  paternalSurname: z.string().min(1, 'Apellido paterno requerido'),
+  maternalSurname: z.string().min(1, 'Apellido materno requerido'),
+  codeStudent: z.string()
+    .min(6, 'El código de estudiante debe tener al menos 6 caracteres')
+    .refine((val) => val.length >= 6, 'El código de estudiante debe tener al menos 6 caracteres'),
   document: z
     .string()
     .min(8, 'El DNI debe tener 8 dígitos')
@@ -41,7 +46,10 @@ export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = fals
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
+      firstName: '',
+      paternalSurname: '',
+      maternalSurname: '',
+      codeStudent: '',
       document: '',
       email: '',
       phone: '',
@@ -60,12 +68,43 @@ export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = fals
       <form onSubmit={handleSubmit(handleContinue)} className="space-y-6">
         <div>
           <input
-            {...register('name')}
+            {...register('firstName')}
             type="text"
-            placeholder="Nombre completo"
+            placeholder="Nombres"
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
           />
-          {errors.name && <p className="mt-1 text-sm text-red-600 font-medium">{errors.name.message}</p>}
+          {errors.firstName && <p className="mt-1 text-sm text-red-600 font-medium">{errors.firstName.message}</p>}
+        </div>
+
+        <div>
+          <input
+            {...register('paternalSurname')}
+            type="text"
+            placeholder="Apellido paterno"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+          />
+          {errors.paternalSurname && <p className="mt-1 text-sm text-red-600 font-medium">{errors.paternalSurname.message}</p>}
+        </div>
+
+        <div>
+          <input
+            {...register('maternalSurname')}
+            type="text"
+            placeholder="Apellido materno"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+          />
+          {errors.maternalSurname && <p className="mt-1 text-sm text-red-600 font-medium">{errors.maternalSurname.message}</p>}
+        </div>
+
+        <div>
+          <input
+            {...register('codeStudent')}
+            type="text"
+            placeholder="Código de estudiante"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+            minLength={6}
+          />
+          {errors.codeStudent && <p className="mt-1 text-sm text-red-600 font-medium">{errors.codeStudent.message}</p>}
         </div>
 
         <div>

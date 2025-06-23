@@ -1,132 +1,192 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreateRequestAdminDto, requestApi, RequestItem } from '@/features/request/api/request_api';
-import RequestTable from '@/features/request/components/RequestTable';
+import { RequestTable } from '@/features/request/components/RequestTable';
 import AdminRequestFormModal from '@/features/request/pages/AdminRequestFormPage';
 import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
+import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/shared/components/DatePicker';
+import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
+import { setGlobalDialog, showGlobalDialog } from '@/shared/utils/global-dialog';
 
 const AdminRequestListPage = () => {
     const [requests, setRequests] = useState<RequestItem[]>([]);
     const [filteredRequests, setFilteredRequests] = useState<RequestItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
     const [selectedType, setSelectedType] = useState<string>('all');
+    const [selectedStatus, setSelectedStatus] = useState<string>('all');
+    const [fromDate, setFromDate] = useState<Date | undefined>();
+    const [toDate, setToDate] = useState<Date | undefined>();
 
     const loadRequests = async () => {
         setLoading(true);
-        const data = await requestApi.getAll();
-        setRequests(data);
-        setFilteredRequests(data);
-        setLoading(false);
+        try {
+            const data = await requestApi.getAll();
+            setRequests(data);
+            setFilteredRequests(data || []);
+        } catch (error) {
+            console.error('Error al cargar las solicitudes:', error);
+            setFilteredRequests([]);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
         loadRequests();
     }, []);
 
-    useEffect(() => {
-        let filtered = [...requests];
-        
-        // Filtrar por término de búsqueda
-        if (searchTerm) {
-            filtered = filtered.filter(request => 
-                request.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                request.client.document.includes(searchTerm)
-            );
+    const handleSearch = async () => {
+        setLoading(true);
+        try {
+            const filters: {
+                clientId?: string;
+                type?: string;
+                status?: string;
+            } = {};
+            
+            if (selectedClientId) {
+                filters.clientId = selectedClientId;
+            }
+            
+            if (selectedType !== 'all') {
+                filters.type = selectedType;
+            }
+
+            if (selectedStatus !== 'all') {
+                filters.status = selectedStatus;
+            }
+
+            const data = await requestApi.getByFilter(filters);
+            setFilteredRequests(data || []);
+        } catch (error) {
+            console.error('Error al buscar solicitudes:', error);
+            setFilteredRequests([]);
+        } finally {
+            setLoading(false);
         }
-        
-        // Filtrar por tipo de solicitud
-        if (selectedType && selectedType !== 'all') {
-            filtered = filtered.filter(request => 
-                request.requestType.code === selectedType
-            );
-        }
-        
-        setFilteredRequests(filtered);
-    }, [searchTerm, selectedType, requests]);
+    };
 
     const handleCreate = async (data: CreateRequestAdminDto) => {
-        console.log("Creando la solicitud desde el admin");
-        //await requestApi.create(data);
-        //setShowModal(false);
-        //loadRequests();
+        try {
+            await requestApi.createAdmin(data);
+            setShowModal(false);
+            await loadRequests();
+        } catch (error) {
+            console.error('Error al crear la solicitud:', error);
+        }
     };
 
     const handleView = (request: RequestItem) => {
-        // Aquí puedes abrir un modal o redirigir a otra ruta
         console.log('Ver solicitud:', request);
+    };
+
+    const handleTypeChange = (value: string) => {
+        setSelectedType(value);
+    };
+
+    const handleStatusChange = (value: string) => {
+        setSelectedStatus(value);
+    };
+
+    const handleClearFilters = () => {
+        setSelectedClientId(null);
+        setSelectedType('all');
+        setSelectedStatus('all');
+        loadRequests();
     };
 
     return (
         <div className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="mb-6">
                 <h1 className="text-xl sm:text-2xl font-bold">Solicitudes Registradas</h1>
-                <div className="flex flex-col sm:flex-row gap-4 items-end sm:items-center">
-                    <div className="flex-1 sm:w-[300px]">
-                        <Input
-                            placeholder="Buscar por nombre o documento..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full"
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                }
-                            }}
-                        />
-                    </div>
-                    <Select value={selectedType} onValueChange={setSelectedType}>
-                        <SelectTrigger className="w-full sm:w-[200px]">
-                            <SelectValue placeholder="Tipo de solicitud" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todos</SelectItem>
-                            <SelectItem value={RequestTypeEnum.CASH}>Préstamo en efectivo</SelectItem>
-                            <SelectItem value={RequestTypeEnum.EQUIPMENT_LOAN}>Préstamo de equipo</SelectItem>
-                            <SelectItem value={RequestTypeEnum.EQUIPMENT_FINANCING}>Financiamiento de equipo</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <div className="flex gap-2">
-                        <Button 
-                            variant="secondary"
-                            className="shrink-0 bg-blue-600 text-white hover:bg-blue-700"
-                            onClick={() => {
-                                // La búsqueda ya se realiza automáticamente por el useEffect
-                            }}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4 mr-2"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
+            </div>
+
+            <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
+                <div className="flex flex-col gap-4">
+                    {/* Fila de filtros */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="flex flex-col gap-2">
+                            <AsyncClientCombobox
+                                selectedClientId={selectedClientId}
+                                onSelect={setSelectedClientId}
+                                placeholder="Buscar cliente..."
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label>Tipo de solicitud</Label>
+                            <Select value={selectedType} onValueChange={handleTypeChange}>
+                                <SelectTrigger className="bg-white">
+                                    <SelectValue placeholder="Tipo de solicitud" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
+                                    <SelectItem value="all">Todos</SelectItem>
+                                    <SelectItem value={RequestTypeEnum.CASH}>Préstamo en efectivo</SelectItem>
+                                    <SelectItem value={RequestTypeEnum.EQUIPMENT_LOAN}>Préstamo de equipo</SelectItem>
+                                    <SelectItem value={RequestTypeEnum.EQUIPMENT_FINANCING}>Financiamiento de equipo</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label>Estado</Label>
+                            <Select value={selectedStatus} onValueChange={handleStatusChange}>
+                                <SelectTrigger className="bg-white">
+                                    <SelectValue placeholder="Estado" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
+                                    <SelectItem value="all">Todos</SelectItem>
+                                    <SelectItem value="pending">Pendiente</SelectItem>
+                                    <SelectItem value="in-review">En revisión</SelectItem>
+                                    <SelectItem value="approved">Aprobado</SelectItem>
+                                    <SelectItem value="rejected">Rechazado</SelectItem>
+                                    <SelectItem value="converted">Convertido</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="flex gap-2 items-end justify-end">
+                            <Button onClick={() => setShowModal(true)}>
+                                Crear
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                className="bg-blue-600 text-white hover:bg-blue-700"
+                                onClick={handleSearch}
+                                type="button"
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                />
-                            </svg>
-                            Buscar
-                        </Button>
-                        <Button onClick={() => setShowModal(true)}>
-                            Crear Solicitud
-                        </Button>
+                                Buscar
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {loading ? (
-                <p>Cargando...</p>
+                <div className="flex justify-center items-center p-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span className="ml-2">Cargando...</span>
+                </div>
             ) : filteredRequests.length === 0 ? (
                 <p className="text-center text-muted-foreground">No hay solicitudes que coincidan con los filtros.</p>
             ) : (
                 <div className="overflow-x-auto">
-                    <RequestTable requests={filteredRequests} onView={handleView} />
+                    <RequestTable 
+                        requests={filteredRequests} 
+                        showActions={true}
+                        onAlert={(message, type) => {
+                            showGlobalDialog({
+                                type: type === 'success' ? 'success' : 'error',
+                                title: type === 'success' ? 'Éxito' : 'Error',
+                                message
+                            });
+                        }}
+                        onRefresh={loadRequests}
+                    />
                 </div>
             )}
 
