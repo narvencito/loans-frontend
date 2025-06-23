@@ -28,6 +28,8 @@ import AuthLayout from '@/shared/layouts/AuthLayout';
 import RequestFormPage from '@/features/request/pages/RequestFormPage';
 import RequestWizardPage from '@/features/request/pages/RequestWizardPage';
 import AdminRequestListPage from '@/features/admin/pages/AdminRequestListPage';
+import ClientRequestListPage from '@/features/client/pages/ClientRequestListPage';
+import ClientRequestDetailPage from '@/features/client/pages/ClientRequestDetailPage';
 
 export const router = createBrowserRouter([
   {
@@ -77,10 +79,12 @@ export const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
-      { path: 'dashboard', element: <ClientDashboardPage /> },
-      { path: 'financing/status', element: <ClientFinancingStatusPage /> },
-      { path: 'loans', element: <ClientLoanListPage /> },
+      { path: '', element: <ClientDashboardPage /> },
+      { path: 'requests', element: <ClientRequestListPage /> },
+      { path: 'requests/:requestId', element: <ClientRequestDetailPage /> },
       { path: 'help', element: <ClientHelpPage /> },
+      { path: 'financing-status', element: <ClientFinancingStatusPage /> },
+      { path: 'loans', element: <ClientLoanListPage /> },
       { path: 'cash-loans', element: <CashLoanListPage /> },
       { path: 'equipment-financing', element: <EquipmentFinancingListPage /> },
     ],

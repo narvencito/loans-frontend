@@ -2,26 +2,26 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { EmailConflictModal } from './EmailConflictModal';
-import { useCheckEmail } from '../hooks/useCheckEmail';
 
 interface Props {
   onNext: (data: FormData) => void;
+  onPrevious?: () => void;
+  showPreviousButton?: boolean;
 }
 
 const formSchema = z.object({
-  name: z.string().min(1, 'Nombre requerido'),
+  name: z.string().min(1, 'Nombre completo requerido'),
   document: z
     .string()
-    .regex(/^\d{8}$/, 'El DNI debe tener exactamente 8 dígitos'),
+    .min(8, 'El DNI debe tener 8 dígitos')
+    .max(8, 'El DNI debe tener 8 dígitos')
+    .regex(/^\d+$/, 'El DNI solo debe contener números')
+    .refine((val) => val.length === 8, 'El DNI debe tener exactamente 8 dígitos'),
   email: z.string().email('Correo inválido'),
   phone: z
     .string()
-    .optional()
-    .refine((val) => {
-      if (!val) return true; // Optional field, so valid if empty
-      return /^[0-9\s\-()+]{7,20}$/.test(val);
-    }, 'Teléfono inválido (7-20 caracteres, puede incluir números, espacios, -, (, )).'),
+    .min(1, 'Teléfono requerido')
+    .regex(/^[0-9\s\-()+]{7,20}$/, 'Teléfono inválido (7-20 caracteres, puede incluir números, espacios, -, (, )).'),
   address: z
     .string()
     .optional()
@@ -33,12 +33,11 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export const StepPersonalData = ({ onNext }: Props) => {
+export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = false }: Props) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-    getValues,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -50,15 +49,7 @@ export const StepPersonalData = ({ onNext }: Props) => {
     },
   });
 
-  const checkEmail = useCheckEmail(); // ⚠️ esta es la forma correcta
-  const [showConflict, setShowConflict] = useState(false);
-
   const handleContinue = async (data: FormData) => {
-    const exists = await checkEmail(data.email);
-    if (exists) {
-      setShowConflict(true);
-      return;
-    }
     onNext(data);
   };
 
@@ -70,6 +61,7 @@ export const StepPersonalData = ({ onNext }: Props) => {
         <div>
           <input
             {...register('name')}
+            type="text"
             placeholder="Nombre completo"
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
           />
@@ -79,8 +71,16 @@ export const StepPersonalData = ({ onNext }: Props) => {
         <div>
           <input
             {...register('document')}
+            type="text"
             placeholder="DNI (8 dígitos)"
+            maxLength={8}
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+            onKeyPress={(e) => {
+              // Solo permitir números
+              if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
+              }
+            }}
           />
           {errors.document && <p className="mt-1 text-sm text-red-600 font-medium">{errors.document.message}</p>}
         </div>
@@ -88,6 +88,7 @@ export const StepPersonalData = ({ onNext }: Props) => {
         <div>
           <input
             {...register('email')}
+            type="email"
             placeholder="Correo electrónico"
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
           />
@@ -97,7 +98,8 @@ export const StepPersonalData = ({ onNext }: Props) => {
         <div>
           <input
             {...register('phone')}
-            placeholder="Teléfono (opcional)"
+            type="tel"
+            placeholder="Teléfono"
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
           />
           {errors.phone && <p className="mt-1 text-sm text-red-600 font-medium">{errors.phone.message}</p>}
@@ -106,29 +108,31 @@ export const StepPersonalData = ({ onNext }: Props) => {
         <div>
           <input
             {...register('address')}
+            type="text"
             placeholder="Dirección (opcional)"
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
           />
           {errors.address && <p className="mt-1 text-sm text-red-600 font-medium">{errors.address.message}</p>}
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
-        >
-          Continuar
-        </button>
+        <div className="flex gap-4">
+          {showPreviousButton && (
+            <button
+              type="button"
+              onClick={onPrevious}
+              className="w-1/2 bg-gray-200 text-gray-800 font-semibold py-3 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+            >
+              Anterior
+            </button>
+          )}
+          <button
+            type="submit"
+            className={`${showPreviousButton ? 'w-1/2' : 'w-full'} bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out`}
+          >
+            Continuar
+          </button>
+        </div>
       </form>
-
-      {showConflict && (
-        <EmailConflictModal
-          email={getValues('email')}
-          onClose={() => setShowConflict(false)}
-          onOpenLogin={() => {
-            window.location.href = '/login';
-          }}
-        />
-      )}
     </div>
   );
 };

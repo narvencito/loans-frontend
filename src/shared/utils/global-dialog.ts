@@ -8,10 +8,10 @@ type DialogOptions = {
 
 type ConfirmDialogOptions = DialogOptions;
 
-let showDialogInternal: ((opts: DialogOptions) => void) | null = null;
+let showDialogInternal: ((opts: DialogOptions) => Promise<void>) | null = null;
 let confirmDialogInternal: ((opts: ConfirmDialogOptions) => Promise<boolean>) | null = null;
 
-export const setGlobalDialog = (fn: (opts: DialogOptions) => void) => {
+export const setGlobalDialog = (fn: (opts: DialogOptions) => Promise<void>) => {
   showDialogInternal = fn;
 };
 
@@ -19,11 +19,12 @@ export const setConfirmDialog = (fn: (opts: ConfirmDialogOptions) => Promise<boo
   confirmDialogInternal = fn;
 };
 
-export const showGlobalDialog = (opts: DialogOptions) => {
-  showDialogInternal?.(opts);
+export const showGlobalDialog = async (opts: DialogOptions): Promise<void> => {
+  if (!showDialogInternal) throw new Error('GlobalDialog not initialized');
+  return showDialogInternal(opts);
 };
 
-export const confirmDialog = (opts: ConfirmDialogOptions): Promise<boolean> => {
+export const confirmDialog = async (opts: ConfirmDialogOptions): Promise<boolean> => {
   if (!confirmDialogInternal) throw new Error('ConfirmDialog not initialized');
   return confirmDialogInternal(opts);
 };

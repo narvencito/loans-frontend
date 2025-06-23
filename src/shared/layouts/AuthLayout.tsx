@@ -7,7 +7,7 @@ export default function AuthLayout() {
       <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-primary/30 to-transparent z-0 rounded-b-[50%]" />
 
       {/* Bottom Decoration */}
-      <div className="absolute bottom-0 left-0 w-full h-48 bg-gradient-to-t from-primary/30 to-transparent z-0 rounded-t-[50%]" />
+      <div className="absolute bottom-0  left-0 w-full h-48 bg-gradient-to-t from-primary/30 to-transparent z-0 rounded-t-[50%]" />
         <Outlet />
     </div>
   );

@@ -10,21 +10,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
 import AsyncEquipmentCombobox from '@/features/equipment/components/AsyncEquipmentCombobox';
-import { CreateRequestAdminDto } from '../api/request_api';
+import { CreateRequestAdminDto, CreateRequestDto, requestApi } from '../api/request_api';
 import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
+import { showError, showSuccess } from '@/shared/utils/global-dialog-utils';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onCreate: (data: CreateRequestAdminDto) => void;
+  onSuccess?: (data: CreateRequestAdminDto) => void;
 }
 
-const AdminRequestFormModal = ({ open, onClose, onCreate }: Props) => {
+const DEFAULT_INTEREST_RATE = 10;
+
+const AdminRequestFormModal = ({ open, onClose, onSuccess }: Props) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [type, setType] = useState<RequestTypeEnum | ''>('');
   const [form, setForm] = useState<CreateRequestAdminDto>({
     clientId: '',
     requestTypeId: RequestTypeEnum.CASH,
     equipmentId: undefined,
+    amount: undefined,
+    termInMonths: undefined,
+    termInDays: undefined,
+    interestRate: DEFAULT_INTEREST_RATE,
     message: '',
   });
 
@@ -34,20 +42,77 @@ const AdminRequestFormModal = ({ open, onClose, onCreate }: Props) => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ 
+      ...prev, 
+      [name]: name === 'message' ? value : Number(value) 
+    }));
   };
 
   const handleEquipmentChange = (id: string | null) => {
     setForm((prev) => ({ ...prev, equipmentId: id || undefined }));
   };
 
-  const handleSubmit = () => {
-    if (!type || !form.clientId) return;
-    onCreate({ ...form, requestTypeId: type });
+  const validateForm = (): string | null => {
+    if (!type) return 'Seleccione un tipo de solicitud';
+    if (!form.clientId) return 'Seleccione un cliente';
+    
+    if (type === RequestTypeEnum.CASH) {
+      if (!form.amount || form.amount <= 0) return 'Ingrese un monto válido';
+      if (!form.termInMonths || form.termInMonths <= 0) return 'Ingrese un plazo válido';
+      if (!form.interestRate || form.interestRate < 0) return 'Ingrese una tasa de interés válida';
+    }
+
+    if (type === RequestTypeEnum.EQUIPMENT_LOAN) {
+      if (!form.equipmentId) return 'Seleccione un equipo';
+      if (!form.termInDays || form.termInDays <= 0) return 'Ingrese un tiempo de préstamo válido';
+    }
+
+    if (type === RequestTypeEnum.EQUIPMENT_FINANCING && !form.equipmentId) {
+      return 'Seleccione un equipo';
+    }
+
+    return null;
+  };
+
+  const handleSubmit = async () => {
+    const error = validateForm();
+    if (error) {
+      showError('Error de validación', error);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await requestApi.createAdmin({
+        ...form,
+        requestTypeId: type as RequestTypeEnum,
+      });
+      showSuccess('Solicitud creada', 'La solicitud se ha creado correctamente');
+      onSuccess?.(form);
+      onClose();
+    } catch (error) {
+      showError('Error', 'No se pudo crear la solicitud');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setType('');
+    setForm({
+      clientId: '',
+      requestTypeId: RequestTypeEnum.CASH,
+      equipmentId: undefined,
+      amount: undefined,
+      termInMonths: undefined,
+      termInDays: undefined,
+      interestRate: DEFAULT_INTEREST_RATE,
+      message: '',
+    });
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={() => { resetForm(); onClose(); }}>
       <DialogContent className="sm:max-w-lg bg-white">
         <DialogHeader>
           <DialogTitle>Registrar Solicitud</DialogTitle>
@@ -57,7 +122,7 @@ const AdminRequestFormModal = ({ open, onClose, onCreate }: Props) => {
           <div>
             <Label>Tipo de solicitud</Label>
             <select
-              className="border rounded px-2 py-1 w-full"
+              className="w-full border rounded px-2 py-1.5"
               value={type}
               onChange={(e) => setType(e.target.value as RequestTypeEnum)}
             >
@@ -81,33 +146,84 @@ const AdminRequestFormModal = ({ open, onClose, onCreate }: Props) => {
           )}
 
           {type === RequestTypeEnum.CASH && (
-            <div>
-              <Label>Monto</Label>
-              <Input name="message" value={form.message || ''} onChange={handleInputChange} />
-            </div>
+            <>
+              <div>
+                <Label>Monto del préstamo</Label>
+                <Input
+                  type="number"
+                  name="amount"
+                  value={form.amount || ''}
+                  onChange={handleInputChange}
+                  placeholder="Ingrese el monto"
+                  min="1"
+                />
+              </div>
+
+              <div>
+                <Label>Plazo (meses)</Label>
+                <Input
+                  type="number"
+                  name="termInMonths"
+                  value={form.termInMonths || ''}
+                  onChange={handleInputChange}
+                  placeholder="Ingrese el plazo en meses"
+                  min="1"
+                />
+              </div>
+
+              <div>
+                <Label>Tasa de interés (%)</Label>
+                <Input
+                  type="number"
+                  name="interestRate"
+                  value={form.interestRate || DEFAULT_INTEREST_RATE}
+                  onChange={handleInputChange}
+                  placeholder="Ingrese la tasa de interés"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            </>
           )}
 
           {type === RequestTypeEnum.EQUIPMENT_LOAN && (
             <div>
               <Label>Tiempo de préstamo (días)</Label>
-              <Input name="message" value={form.message || ''} onChange={handleInputChange} />
+              <Input
+                type="number"
+                name="termInDays"
+                value={form.termInDays || ''}
+                onChange={handleInputChange}
+                placeholder="Ingrese el tiempo en días"
+                min="1"
+              />
             </div>
           )}
 
-          {type === RequestTypeEnum.EQUIPMENT_FINANCING && (
-            <div>
-              <Label>Cuota inicial</Label>
-              <Input name="message" value={form.message || ''} onChange={handleInputChange} />
-            </div>
-          )}
+          <div>
+            <Label>Mensaje adicional</Label>
+            <Input
+              name="message"
+              value={form.message || ''}
+              onChange={handleInputChange}
+              placeholder="Ingrese un mensaje adicional"
+            />
+          </div>
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
-          <Button className="bg-gray-300 text-black" onClick={onClose}>
+          <Button 
+            variant="outline" 
+            onClick={() => { resetForm(); onClose(); }}
+            disabled={isSubmitting}
+          >
             Cancelar
           </Button>
-          <Button className="bg-green-600 text-white" onClick={handleSubmit}>
-            Guardar
+          <Button 
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Guardando...' : 'Guardar'}
           </Button>
         </div>
       </DialogContent>

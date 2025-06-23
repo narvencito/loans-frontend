@@ -12,15 +12,7 @@ export interface LoginDto {
   export interface AuthResponse {
     token: string;
     refreshToken?: string;
-    user: {
-      id: string;
-      name: string;
-      role: Role;
-      email: string;
-      isActive: boolean;
-      mustChangePassword?: boolean;
-      profileIncomplete?: boolean;
-    };
+    user: User;
   }
 
   export interface User {
@@ -28,9 +20,12 @@ export interface LoginDto {
     name: string;
     email: string;
     role: Role;
+    clientId?: string;
     isActive: boolean;
     mustChangePassword?: boolean;
     profileIncomplete?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
   }
   
   export interface Role {

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   email: string;
@@ -8,31 +9,32 @@ interface Props {
 
 export const EmailConflictModal = ({ email, onClose, onOpenLogin }: Props) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded shadow-lg w-full max-w-sm">
-        <h2 className="text-xl font-semibold mb-4">Ya tienes una cuenta</h2>
-        <p className="mb-4">El correo <strong>{email}</strong> ya está registrado.</p>
-        <div className="flex flex-col gap-2">
-          <button
-            onClick={onOpenLogin}
-            className="bg-green-600 text-white py-2 rounded hover:bg-green-700"
-          >
-            Iniciar sesión
-          </button>
-          <button
-            onClick={() => window.location.href = `/recover-password?email=${email}`}
-            className="text-blue-600 hover:underline"
-          >
-            Recuperar contraseña
-          </button>
-          <button
-            onClick={onClose}
-            className="text-gray-500 text-sm mt-2 hover:underline"
-          >
-            Cancelar
-          </button>
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Correo electrónico existente</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p>
+            El correo electrónico <strong>{email}</strong> ya está registrado en nuestro sistema.
+          </p>
+          <p>
+            Para continuar con la solicitud, puedes:
+          </p>
+          <ul className="list-disc list-inside space-y-2">
+            <li>Iniciar sesión con tu cuenta existente</li>
+            <li>Usar un correo electrónico diferente</li>
+          </ul>
         </div>
-      </div>
-    </div>
+        <div className="flex justify-end gap-3 mt-4">
+          <Button variant="outline" onClick={onClose}>
+            Usar otro correo
+          </Button>
+          <Button onClick={onOpenLogin}>
+            Iniciar sesión
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

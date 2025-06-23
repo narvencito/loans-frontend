@@ -26,11 +26,12 @@ type LoanFormData = z.infer<typeof loanDetailsSchema>;
 
 interface Props {
   onNext: (data: LoanFormData) => void;
+  onPrevious: () => void;
   // We can add preselectedData here later if needed
   // preselectedData?: Partial<LoanFormData>;
 }
 
-export const StepLoanDetails = ({ onNext }: Props) => {
+export const StepLoanDetails = ({ onNext, onPrevious }: Props) => {
   const {
     register,
     handleSubmit,
@@ -82,12 +83,21 @@ export const StepLoanDetails = ({ onNext }: Props) => {
           {errors.term && <p className="mt-1 text-sm text-red-600 font-medium">{errors.term.message}</p>}
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
-        >
-          Continuar
-        </button>
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={onPrevious}
+            className="w-1/2 bg-gray-200 text-gray-800 font-semibold py-3 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+          >
+            Anterior
+          </button>
+          <button
+            type="submit"
+            className="w-1/2 bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+          >
+            Continuar
+          </button>
+        </div>
       </form>
     </div>
   );

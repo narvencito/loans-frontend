@@ -10,12 +10,12 @@ interface Props {
   };
   equipment?: EquipmentItem;
   onSubmit: () => void;
+  onPrevious: () => void;
   type: string | null;
-  loanDetails?: { amount: number; term: number } | null; // Updated props
-  onNext: () => void; // Kept as it was not requested to be removed
+  loanDetails?: { amount: number; term: number } | null;
 }
 
-export const StepConfirmRequest = ({ personalData, equipment, loanDetails, type, onSubmit }: Props) => {
+export const StepConfirmRequest = ({ personalData, equipment, loanDetails, type, onSubmit, onPrevious }: Props) => {
   const DetailItem = ({ label, value }: { label: string; value?: string | null }) => {
     if (!value) return null;
     return (
@@ -76,12 +76,20 @@ export const StepConfirmRequest = ({ personalData, equipment, loanDetails, type,
         )}
       </div>
 
-      <button
-        onClick={onSubmit}
-        className="mt-8 w-full bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
-      >
-        Enviar solicitud
-      </button>
+      <div className="flex gap-4 mt-8">
+        <button
+          onClick={onPrevious}
+          className="w-1/2 bg-gray-200 text-gray-800 font-semibold py-3 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+        >
+          Anterior
+        </button>
+        <button
+          onClick={onSubmit}
+          className="w-1/2 bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+        >
+          Enviar solicitud
+        </button>
+      </div>
     </div>
   );
 };

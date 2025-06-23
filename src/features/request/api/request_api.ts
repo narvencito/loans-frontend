@@ -19,16 +19,31 @@ export interface CreateRequestAdminDto {
   clientId: string;
   requestTypeId: RequestTypeEnum;
   equipmentId?: string;
+  amount?: number;
+  termInMonths?: number;
+  interestRate?: number;
+  termInDays?: number;
   message?: string;
 }
 
 export interface RequestItem {
   id: string;
   clientId: string;
+  client: {
+    id: string;
+    name: string;
+    document: string;
+    email: string;
+    phone: string;
+  };
   requestTypeId: string;
   requestStatusId: string;
-  message?: string;
   equipmentId?: string;
+  amount?: number;
+  termInMonths?: number;
+  termInDays?: number;
+  interestRate?: number;
+  message?: string;
   createdAt: string;
   updatedAt: string;
   requestType: {
@@ -58,12 +73,39 @@ export interface RequestStatusHistory {
 
 export const requestApi = {
   async create(data: CreateRequestDto): Promise<RequestItem> {
-    return apiRequest(
+    console.log('🚀 Iniciando creación de solicitud:', {
+      data,
+      requestType: data.requestTypeId,
+      clientInfo: data.client
+    });
+
+    return apiRequest<RequestItem>(
       api.post('/requests', data),
       {
         loading: 'Enviando solicitud...',
         success: 'Solicitud enviada correctamente',
         error: 'No se pudo enviar la solicitud',
+      }
+    ).then(response => {
+      console.log('✅ Solicitud creada exitosamente:', response);
+      return response;
+    }).catch(error => {
+      console.error('❌ Error al crear solicitud:', {
+        error,
+        errorMessage: error?.response?.data?.message,
+        errorStatus: error?.response?.status
+      });
+      throw error;
+    });
+  },
+
+  async createAdmin(data: CreateRequestAdminDto): Promise<RequestItem> {
+    return apiRequest(
+      api.post('/requests/admin', data),
+      {
+        loading: 'Creando solicitud...',
+        success: 'Solicitud creada correctamente',
+        error: 'No se pudo crear la solicitud',
       }
     );
   },
@@ -116,6 +158,35 @@ export const requestApi = {
       {
         loading: 'Cargando historial...',
         error: 'No se pudo cargar el historial',
+      }
+    );
+  },
+
+  async getById(requestId: string): Promise<RequestItem> {
+    return apiRequest(
+      api.get(`/requests/${requestId}`),
+      {
+        loading: 'Cargando solicitud...',
+        error: 'No se pudo cargar la solicitud',
+      }
+    );
+  },
+
+  async createPublic(data: {
+    email: string;
+    fullName: string;
+    documentNumber: string;
+    phone: string;
+    type: RequestTypeEnum;
+    equipmentId?: string;
+    message?: string;
+  }): Promise<RequestItem> {
+    return apiRequest(
+      api.post('/requests/public', data),
+      {
+        loading: 'Enviando solicitud...',
+        success: 'Solicitud enviada correctamente',
+        error: 'No se pudo enviar la solicitud',
       }
     );
   },

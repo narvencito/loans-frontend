@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 
 interface Props {
   onNext: (equipment: EquipmentItem) => void;
+  onPrevious: () => void;
   preselectedId?: string | null;
 }
 
-export const StepSelectEquipment = ({ onNext }: Props) => {
+export const StepSelectEquipment = ({ onNext, onPrevious, preselectedId }: Props) => {
   const [equipmentList, setEquipmentList] = useState<EquipmentItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -52,13 +53,21 @@ export const StepSelectEquipment = ({ onNext }: Props) => {
         )}
       </div>
 
-      <button
-        disabled={!selectedId}
-        onClick={handleSelect}
-        className="mt-8 w-full bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed"
-      >
-        Continuar
-      </button>
+      <div className="flex gap-4 mt-8">
+        <button
+          onClick={onPrevious}
+          className="w-1/2 bg-gray-200 text-gray-800 font-semibold py-3 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+        >
+          Anterior
+        </button>
+        <button
+          disabled={!selectedId}
+          onClick={handleSelect}
+          className="w-1/2 bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          Continuar
+        </button>
+      </div>
     </div>
   );
 };
