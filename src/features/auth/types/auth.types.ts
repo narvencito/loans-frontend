@@ -28,6 +28,8 @@ export interface LoginDto {
     updatedAt?: string;
   }
   
-  export interface Role {
-    name: string;
+  export enum Role {
+    ADMIN = 'ADMIN',
+    CLIENT = 'CLIENT',
+    WORKER = 'WORKER'
   }

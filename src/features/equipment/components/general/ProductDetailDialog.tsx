@@ -1,81 +1,116 @@
-import DialogAppCustom from '@/shared/components/DialogAppCustom';
-import { EquipmentItem } from '../../api/equipment_api';
-import { useState } from 'react';
-import ImageCarousel from './ImageCarousel';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { PublicEquipmentItem } from "../../api/equipmentPublicApi";
+import ImageCarousel from "./ImageCarousel";
+import { useNavigate } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Props {
-    open: boolean;
-    onClose: () => void;
-    equipment: EquipmentItem;
+  product: PublicEquipmentItem | null;
+  open: boolean;
+  onClose: () => void;
 }
 
-const EquipmentDetailsDialog = ({ open, onClose, equipment }: Props) => {
-    const [currentImage, setCurrentImage] = useState(0);
+const ProductDetailDialog = ({ product, open, onClose }: Props) => {
+  const navigate = useNavigate();
 
-    const handleNext = () => {
-        setCurrentImage((prev) => (prev + 1) % equipment.images.length);
-    };
+  if (!product) return null;
 
-    const handlePrev = () => {
-        setCurrentImage((prev) => (prev - 1 + equipment.images.length) % equipment.images.length);
-    };
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="bg-white max-w-5xl max-h-[90vh] p-6">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{product.name}</DialogTitle>
+        </DialogHeader>
 
-    return (
-        <DialogAppCustom
-            open={open}
-            onClose={onClose}
-            title={equipment.name}
-            maxWidth="4xl"
-            childrenFooter={
-                <button
-                    onClick={onClose}
-                    className="bg-indigo-600 text-white font-bold px-6 py-2 rounded hover:bg-indigo-700"
-                >
-                    ¡La quiero! ✔
-                </button>
-            }
-        >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 overflow-y-auto">
-                {/* Left: Imagen + Descripcion */}
-                <div>
-                    <ImageCarousel images={equipment.images} />
-                    <h2 className="text-xl font-bold text-indigo-700 mt-4">{equipment.name}</h2>
-                    <h3 className="text-sm font-semibold text-blue-600 mt-2">Potente y económica</h3>
-                    <p className="text-sm text-gray-700 mt-2 text-justify">
-                        Este equipo cuenta con excelentes especificaciones para tareas de oficina, estudio o entretenimiento. Su diseño versátil permite un uso confortable y eficiente. Incluye componentes de calidad que garantizan buen rendimiento.
-                    </p>
-                </div>
+        <ScrollArea className="h-full pr-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Columna izquierda */}
+            <div className="space-y-6">
+              <div className="aspect-square">
+                <ImageCarousel images={product.images} />
+              </div>
 
-                {/* Right: Caracteristicas destacadas + Features */}
-                <div className="border-l pl-6">
-                    <h4 className="font-semibold text-blue-700 mb-3">Características destacadas</h4>
-                    <div className="text-sm space-y-2">
-                        <p><strong>Categoría:</strong> {equipment.categoryName}</p>
-                        <p><strong>Estado:</strong> {equipment.statusName}</p>
-                        <p><strong>Ubicación:</strong> {equipment.location}</p>
-                        <p><strong>Serie:</strong> {equipment.serial}</p>
-                        <p><strong>Precio Venta:</strong> S/ {equipment.salePrice}</p>
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Información general</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Marca</p>
+                    <p className="font-medium">{product.brandName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Categoría</p>
+                    <p className="font-medium">{product.categoryName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Perfil de uso</p>
+                    <p className="font-medium">{product.generalCategoryName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Estado</p>
+                    <div className={`inline-block px-2 py-1 rounded text-sm mt-1 ${product.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                      {product.status === 'AVAILABLE' ? 'Disponible' : 'No disponible'}
                     </div>
-
-                    <h5 className="font-semibold text-blue-700 mt-6 mb-2">Características adicionales</h5>
-                    {equipment.features.length === 0 ? (
-                        <p className="text-gray-500 italic text-sm">No tiene características registradas.</p>
-                    ) : (
-                        <ul className="list-disc list-inside text-sm space-y-1">
-                            {equipment.features.map((f) => (
-                                <li key={f.id}>{f.name}</li>
-                            ))}
-                        </ul>
-                    )}
-
-
+                  </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-6 italic">
-                    El equipo no incluye MS Office ni Antivirus.
-                </p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Precios</h3>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-600 mb-1">Precio de venta</p>
+                    <p className="text-2xl font-bold text-blue-700">
+                      S/ {product.salePrice.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <p className="text-sm text-green-600 mb-1">Tarifa diaria</p>
+                    <p className="text-2xl font-bold text-green-700">
+                      S/ {product.rentalDailyRate.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-        </DialogAppCustom>
-    );
+
+            {/* Columna derecha */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Descripción</h3>
+                <p className="text-gray-600 whitespace-pre-wrap">{product.description}</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Características</h3>
+                <div className="grid grid-cols-1 gap-3">
+                  {product.features.map((feature) => (
+                    <div key={feature.id} className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm font-medium mb-1">{feature.name}</p>
+                      <p className="text-sm text-gray-600">{feature.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onClick={() => {
+                    onClose();
+                    navigate('/request/new', { state: { equipmentId: product.id } });
+                  }}
+                >
+                  Solicitar equipo
+                </Button>
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
 };
 
-export default EquipmentDetailsDialog;
+export default ProductDetailDialog;

@@ -22,6 +22,7 @@ const EquipmentFeatureSelectCheckboxList = ({ selected, onChange }: Props) => {
   }, []);
 
   const handleToggle = (id: string) => {
+    console.log("id de los features en el componente",id);
     if (selected.includes(id)) {
       onChange(selected.filter((fid) => fid !== id));
     } else {

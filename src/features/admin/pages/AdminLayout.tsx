@@ -3,19 +3,7 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { AppSidebar } from '@/shared/layouts/AppSidebar';
-
-const navItems = [
-  { to: '/admin/dashboard', label: 'Dashboard' },
-  { to: '/admin/users', label: 'Usuarios' },
-  { to: '/admin/clients', label: 'Clientes' },
-  { to: '/admin/requests', label: 'Solicitudes' },
-  { to: '/admin/cash-loans', label: 'Préstamo en efectivo' },
-  { to: '/admin/equipment', label: 'Gestión de equipos' },
-  { to: '/admin/equipment-status', label: 'Estado de equipos' },
-  { to: '/admin/equipment-category', label: 'Categoría de equipos' },
-  { to: '/admin/equipment-feature', label: 'Caracteristica de equipos' },
-  { to: '/admin/equipment-financing', label: 'Financiamiento de equipos' },
-];
+import { adminMenuLinks } from '@/constants/menuLinks';
 
 export default function AdminLayout() {
   const location = useLocation();
@@ -23,7 +11,14 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen flex">
       {/* Sidebar */}
-      <AppSidebar title="Panel Admin" navItems={navItems} />
+      <AppSidebar 
+        title="Panel Admin" 
+        navItems={adminMenuLinks.map(item => ({ 
+          to: item.path, 
+          label: item.label,
+          group: item.group 
+        }))} 
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">

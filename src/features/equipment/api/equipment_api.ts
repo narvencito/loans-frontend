@@ -5,13 +5,16 @@ import { apiRequest } from '@/shared/utils/apiHelper';
 export interface CreateEquipmentDto {
   code: string;
   name: string;
+  description: string;
   categoryId: string;
+  generalCategoryId: string;
   statusId: string;
   location?: string;
   serial?: string;
   number?: string;
-  purchasePrice: number,
-  salePrice: number,
+  purchasePrice: number;
+  salePrice: number;
+  rentalDailyRate: number;
   featureIds?: string[];
   images?: ImageApp[];
 }
@@ -24,18 +27,59 @@ export interface EquipmentItem {
   id: string;
   code: string;
   name: string;
+  description: string;
   serial: string;
   number: string;
   purchasePrice: number;
   salePrice: number;
+  rentalDailyRate: number;
   categoryId: string;
   categoryName: string;
+  generalCategoryId: string;
+  generalCategory: {
+    id: string;
+    name: string;
+    isActive: boolean;
+  };
   statusId: string;
   statusName: string;
   location?: string;
   isActive: boolean;
   features: EquipmentFeature[];
   images: ImageApp[];
+}
+
+export interface Equipment {
+  id: string;
+  name: string;
+  description: string;
+  salePrice: number;
+  rentalDailyRate: number;
+  isActive: boolean;
+  images: { url: string }[];
+  features: {
+    id: string;
+    name: string;
+    value: string;
+  }[];
+  brand?: {
+    id: string;
+    name: string;
+  };
+  generalCategory?: {
+    id: string;
+    name: string;
+  };
+  equipmentCategory?: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface EquipmentFilters {
+  brandId?: string;
+  generalCategoryId?: string;
+  equipmentCategoryId?: string;
 }
 
 export const equipmentApi = {
@@ -103,6 +147,21 @@ export const equipmentApi = {
         loading: 'Eliminando imagen...',
         success: 'Imagen eliminada correctamente',
         error: 'No se pudo eliminar la imagen',
+      }
+    );
+  },
+
+  getPublic(filters: EquipmentFilters = {}): Promise<Equipment[]> {
+    const params = new URLSearchParams();
+    if (filters.brandId) params.append('brandId', filters.brandId);
+    if (filters.generalCategoryId) params.append('generalCategoryId', filters.generalCategoryId);
+    if (filters.equipmentCategoryId) params.append('equipmentCategoryId', filters.equipmentCategoryId);
+
+    return apiRequest(
+      api.get(`/equipment/public?${params.toString()}`),
+      {
+        loading: 'Cargando equipos...',
+        error: 'Error al cargar equipos',
       }
     );
   },

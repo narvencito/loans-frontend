@@ -18,7 +18,38 @@ interface Props {
   onEdit: (item: EquipmentItem) => void;
 }
 
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('es-PE', {
+    style: 'currency',
+    currency: 'PEN'
+  }).format(price);
+};
 
+const formatNumber = (num: string | number | undefined) => {
+  if (!num) return '-';
+  const numStr = String(num);
+  return numStr.length >= 6 ? numStr : '0'.repeat(6 - numStr.length) + numStr;
+};
+
+// Mapa de traducción de estados
+const statusTranslations: { [key: string]: string } = {
+  'AVAILABLE': 'Disponible',
+  'IN_USE': 'En Uso',
+  'UNDER_MAINTENANCE': 'En Mantenimiento',
+  'OUT_OF_SERVICE': 'Fuera de Servicio',
+  'RESERVED': 'Reservado',
+  'PENDING_RETURN': 'Pendiente de Devolución',
+  'LOST': 'Perdido',
+  'DAMAGED': 'Dañado',
+  'NEW': 'Nuevo',
+  'USED': 'Usado',
+  'REFURBISHED': 'Reacondicionado'
+};
+
+const getStatusTranslation = (statusName: string) => {
+  const normalizedStatus = statusName.toUpperCase().replace(/ /g, '_');
+  return statusTranslations[normalizedStatus] || statusName;
+};
 
 const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,44 +62,49 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
     <div className="rounded-md border">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-muted">
             <TableHead>Código</TableHead>
             <TableHead>Nombre</TableHead>
-            <TableHead>Características</TableHead>
+            <TableHead>Descripción</TableHead>
             <TableHead>Categoría</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Ubicación</TableHead>
-            <TableHead className="text-center">Activo</TableHead>
+            <TableHead>Perfil de uso</TableHead>
+            <TableHead className="text-right">Precio venta</TableHead>
+            <TableHead className="text-right">Tarifa diaria</TableHead>
+            <TableHead className="text-center">Estado</TableHead>
             <TableHead className="text-center">Acciones</TableHead>
           </TableRow>
         </TableHeader>
-        
         <TableBody>
-          {equipos.map((eq) => (
-            <TableRow key={eq.id}>
-              <TableCell>{eq.code}</TableCell>
-              <TableCell>{eq.name}</TableCell>
-              <TruncatedWithTooltip text={eq.features.map(f => f.name).join(" / ")} />
-              <TableCell>{eq.categoryName}</TableCell>
-              <TableCell>{eq.statusName}</TableCell>
-              <TableCell>{eq.location || '-'}</TableCell>
+          {paginated.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell>{item.code}</TableCell>
+              <TableCell>{item.name}</TableCell>
+              <TableCell>
+                <TruncatedWithTooltip text={item.description} />
+              </TableCell>
+              <TableCell>{item.categoryName}</TableCell>
+              <TableCell>{item.generalCategory?.name || '-'}</TableCell>
+              <TableCell className="text-right">S/ {item.salePrice.toFixed(2)}</TableCell>
+              <TableCell className="text-right">S/ {item.rentalDailyRate.toFixed(2)}</TableCell>
               <TableCell className="text-center">
-                <span className={eq.isActive ? 'text-green-600' : 'text-red-600'}>
-                  {eq.isActive ? 'Sí' : 'No'}
+                <span className={`px-2 py-1 rounded text-sm ${
+                  item.statusName === 'AVAILABLE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                }`}>
+                  {getStatusTranslation(item.statusName)}
                 </span>
               </TableCell>
               <TableCell className="text-center space-x-2">
                 <Button
                   size="sm"
                   className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => onEdit(eq)}
+                  onClick={() => onEdit(item)}
                 >
                   Editar
                 </Button>
                 <Button
                   size="sm"
                   variant="destructive"
-                  onClick={() => onDelete(eq.id)}
+                  onClick={() => onDelete(item.id)}
                 >
                   Eliminar
                 </Button>

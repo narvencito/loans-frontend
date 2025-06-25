@@ -1,78 +1,56 @@
 import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import DialogApp from '@/shared/components/DialogApp';
 import ColumnApp from '@/shared/components/ColumnApp';
 import LabelApp from '@/shared/components/LabelApp';
 import { Input } from '@/components/ui/input';
-
-interface FormData {
-  firstName: string;
-  paternalSurname: string;
-  maternalSurname: string;
-  name: string;
-  fullName: string;
-  document: string;
-  email: string;
-  phone: string;
-  address: string;
-  codeStudent: string;
-}
+import { CreateClientDto } from '../api/client_api';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onCreate: (data: {
-    name: string;
-    document: string;
-    email: string;
-    phone?: string;
-    address?: string;
-    firstName: string;
-    paternalSurname: string;
-    maternalSurname: string;
-    fullName: string;
-    codeStudent: string;
-  }) => void;
+  onCreate: (data: CreateClientDto) => void;
 }
 
 const ClientFormModal = ({ open, onClose, onCreate }: Props) => {
-  const [form, setForm] = useState<FormData>({
-    firstName: '',
+  const [form, setForm] = useState<CreateClientDto>({
+    name: '',
     paternalSurname: '',
     maternalSurname: '',
-    name: '',
-    fullName: '',
     document: '',
     email: '',
     phone: '',
     address: '',
-    codeStudent: '',
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof CreateClientDto, string>>>({});
 
   const validateForm = () => {
-    const newErrors: Partial<Record<keyof FormData, string>> = {};
+    const newErrors: Partial<Record<keyof CreateClientDto, string>> = {};
 
     // Validaciones básicas
-    if (!form.firstName.trim()) newErrors.firstName = 'El nombre es requerido';
-    if (!form.paternalSurname.trim()) newErrors.paternalSurname = 'El apellido paterno es requerido';
-    if (!form.maternalSurname.trim()) newErrors.maternalSurname = 'El apellido materno es requerido';
-    if (!form.document.trim()) newErrors.document = 'El documento es requerido';
-    if (!form.email.trim()) newErrors.email = 'El correo es requerido';
-    if (!form.phone.trim()) newErrors.phone = 'El teléfono es requerido';
-    
-    // Validación específica para codeStudent
-    if (!form.codeStudent.trim()) {
-      newErrors.codeStudent = 'El código de estudiante es requerido';
-    } else if (form.codeStudent.length < 6) {
-      newErrors.codeStudent = 'El código de estudiante debe tener al menos 6 caracteres';
+    if (!form.name.trim()) {
+      newErrors.name = 'El nombre es requerido';
+    }
+    if (!form.paternalSurname.trim()) {
+      newErrors.paternalSurname = 'El apellido paterno es requerido';
+    }
+    if (!form.maternalSurname.trim()) {
+      newErrors.maternalSurname = 'El apellido materno es requerido';
+    }
+    if (!form.document.trim()) {
+      newErrors.document = 'El documento es requerido';
+    } else if (!/^\d{8,12}$/.test(form.document.trim())) {
+      newErrors.document = 'El documento debe tener entre 8 y 12 dígitos';
+    }
+    if (!form.email.trim()) {
+      newErrors.email = 'El correo es requerido';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      newErrors.email = 'El correo no tiene un formato válido';
+    }
+    if (!form.phone.trim()) {
+      newErrors.phone = 'El teléfono es requerido';
+    } else if (!/^\d{9}$/.test(form.phone.trim())) {
+      newErrors.phone = 'El teléfono debe tener 9 dígitos';
     }
 
     setErrors(newErrors);
@@ -81,57 +59,61 @@ const ClientFormModal = ({ open, onClose, onCreate }: Props) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm(prev => {
-      const updatedForm = { ...prev, [name]: value };
-      
-      // Si se actualiza cualquiera de los campos de nombre, actualizar name y fullName
-      if (name === 'firstName' || name === 'paternalSurname' || name === 'maternalSurname') {
-        const combinedName = `${name === 'firstName' ? value : prev.firstName} ${name === 'paternalSurname' ? value : prev.paternalSurname} ${name === 'maternalSurname' ? value : prev.maternalSurname}`.trim();
-        updatedForm.name = combinedName;
-        updatedForm.fullName = combinedName;
-      }
-      
-      return updatedForm;
-    });
+    setForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
 
     // Limpiar error del campo cuando se modifica
-    if (errors[name as keyof FormData]) {
+    if (errors[name as keyof CreateClientDto]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
   const handleSubmit = () => {
     if (validateForm()) {
-      const submitData = {
-        ...form,
-        name: form.fullName, // Asegurarnos que name tenga el valor correcto
-      };
-      onCreate(submitData);
+      onCreate(form);
     }
+  };
+
+  const handleReset = () => {
+    setForm({
+      name: '',
+      paternalSurname: '',
+      maternalSurname: '',
+      document: '',
+      email: '',
+      phone: '',
+      address: '',
+    });
+    setErrors({});
   };
 
   return (
     <DialogApp
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        handleReset();
+        onClose();
+      }}
       onConfirm={handleSubmit}
       maxWidth='md'
-      title={"Registrar nuevo cliente"}
+      title="Registrar nuevo cliente"
     >
-      <ColumnApp className="overflow-y-auto px-6 py-4 px-5 space-y-4 flex-1">
+      <ColumnApp className="overflow-y-auto px-6 py-4 space-y-4 flex-1">
         <ColumnApp>
           <LabelApp>Nombres</LabelApp>
           <Input
-            id="firstName"
-            name="firstName"
+            id="name"
+            name="name"
             type="text"
             placeholder="Ej: Juan"
-            value={form.firstName}
+            value={form.name}
             onChange={handleChange}
             className="border border-primary rounded px-3 py-2 w-full"
           />
-          {errors.firstName && (
-            <span className="text-sm text-red-500">{errors.firstName}</span>
+          {errors.name && (
+            <span className="text-sm text-red-500">{errors.name}</span>
           )}
         </ColumnApp>
 
@@ -168,24 +150,6 @@ const ClientFormModal = ({ open, onClose, onCreate }: Props) => {
         </ColumnApp>
 
         <ColumnApp>
-          <LabelApp>Código de Estudiante</LabelApp>
-          <Input
-            id="codeStudent"
-            name="codeStudent"
-            type="text"
-            placeholder="Ej: 2024-12345"
-            value={form.codeStudent}
-            onChange={handleChange}
-            className="border border-primary rounded px-3 py-2 w-full"
-            required
-            minLength={6}
-          />
-          {errors.codeStudent && (
-            <span className="text-sm text-red-500">{errors.codeStudent}</span>
-          )}
-        </ColumnApp>
-
-        <ColumnApp>
           <LabelApp>Documento de identidad</LabelApp>
           <Input
             id="document"
@@ -195,6 +159,7 @@ const ClientFormModal = ({ open, onClose, onCreate }: Props) => {
             value={form.document}
             onChange={handleChange}
             className="border border-primary rounded px-3 py-2 w-full"
+            maxLength={12}
           />
           {errors.document && (
             <span className="text-sm text-red-500">{errors.document}</span>
@@ -222,11 +187,12 @@ const ClientFormModal = ({ open, onClose, onCreate }: Props) => {
           <Input
             id="phone"
             name="phone"
-            type="text"
+            type="tel"
             placeholder="Ej: 987654321"
             value={form.phone}
             onChange={handleChange}
             className="border border-primary rounded px-3 py-2 w-full"
+            maxLength={9}
           />
           {errors.phone && (
             <span className="text-sm text-red-500">{errors.phone}</span>

@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getRequestTypeName } from '../utils/requestTypeUtils';
 import { RequestItem } from '../api/request_api';
 import { requestApi } from '../api/request_api';
@@ -193,6 +193,9 @@ export const RequestTable = ({ requests, showActions = false, onRefresh, onAlert
       {/* Modal de Detalles con Historial y Acciones */}
       <Dialog open={showDetailModal} onOpenChange={handleCloseDetail}>
         <DialogContent className="sm:max-w-5xl bg-white">
+          <DialogHeader>
+            <DialogTitle>Detalle de la Solicitud</DialogTitle>
+          </DialogHeader>
           {selectedRequest && (
             <RequestDetail
               request={selectedRequest}

@@ -1,107 +1,76 @@
-import { useState } from "react";
-import { EquipmentItem } from "../../api/equipment_api";
-import { useNavigate } from "react-router-dom";
-
-function NoImagePlaceholder() {
-  return (
-    <div className="w-[200px] h-[200px] flex items-center justify-center bg-white border border-gray-400 rounded-[12px] shadow-md">
-      <span className="text-gray-600 font-bold text-lg">SIN IMAGEN</span>
-    </div>
-  );
-}
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { PublicEquipmentItem } from "../../api/equipmentPublicApi";
+import ImageCarousel from "./ImageCarousel";
 
 interface Props {
-  producto: EquipmentItem;
-  onViewDetail?: () => void;
+  product: PublicEquipmentItem;
+  onClick: () => void;
 }
 
-export default function ProductCard({ producto, onViewDetail }: Props) {
-  const {
-    name,
-    images,
-  } = producto;
-
-  const imagesUrls = images.map((img) => img.url).filter(Boolean);
-  const [currentImage, setCurrentImage] = useState(0);
-
-  const handleNext = () => {
-    setCurrentImage((prev) => (prev + 1) % imagesUrls.length);
-  };
-
-  const handlePrev = () => {
-    setCurrentImage((prev) => (prev - 1 + imagesUrls.length) % imagesUrls.length);
-  };
-
-  const hasImages = imagesUrls.length > 0;
-
-  const navigate = useNavigate();
-  // const handleContinue = () => { // This function will be removed
-  //   navigate('/financing/personal-data');
-  // };
-
+const ProductCard = ({ product, onClick }: Props) => {
   return (
-    <div className="w-[300px] h-[400px] border rounded-xl shadow hover:shadow-lg transition bg-white flex flex-col items-center justify-between relative p-4">
-
-      <div className="relative w-[200px] h-[200px] flex items-center justify-center mx-auto">
-        {hasImages ? (
-          <>
-            <img
-              key={currentImage}
-              src={imagesUrls[currentImage]}
-              alt={name}
-              className="w-full h-full object-contain border border-gray-300 rounded-[12px] shadow-md transition-opacity duration-300 ease-in-out"
-            />
-
-            {imagesUrls.length > 1 && (
-              <>
-                <button
-                  onClick={handlePrev}
-                  className="absolute -left-6 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-2 hover:bg-black/60"
-                >
-                  ‹
-                </button>
-                <button
-                  onClick={handleNext}
-                  className="absolute -right-6 top-1/2 -translate-y-1/2 bg-black/40 text-white rounded-full p-2 hover:bg-black/60"
-                >
-                  ›
-                </button>
-              </>
-            )}
-          </>
-        ) : (
-          <NoImagePlaceholder />
-        )}
+    <Card className="overflow-hidden flex flex-col">
+      <div className="aspect-square overflow-hidden">
+        <ImageCarousel images={product.images} />
       </div>
-
-      <div className="mt-2 text-center w-full flex-1 flex flex-col justify-between">
-        <h2 className="font-semibold text-2xl">{name}</h2>
-
-        <button
-          onClick={() => navigate(`/general/request-wizard?type=financing&equipmentId=${producto.id}`)}
-          className="w-full bg-yellow-400 mt-3 py-2 rounded font-bold text-white hover:bg-yellow-500">
-          ¡La quiero!
-        </button>
-
-        <button
-          onClick={() => navigate(`/general/request-wizard?type=equipment&equipmentId=${producto.id}`)}
-          className="w-full bg-blue-500 mt-3 py-2 rounded font-bold text-white hover:bg-blue-600" // Added some basic styling for visibility
-        >
-          Solicitar préstamo
-        </button>
-        <button
-          onClick={() => navigate(`/general/request-wizard?type=financing&equipmentId=${producto.id}`)}
-          className="w-full bg-green-500 mt-3 py-2 rounded font-bold text-white hover:bg-green-600" // Added some basic styling for visibility
-        >
-          Solicitar financiamiento
-        </button>
-
-        <div className="flex flex-col items-center mt-2 text-sm underline text-blue-600">
-          <button onClick={onViewDetail} className="hover:text-blue-800">
-            Ver características
-          </button>
+      <CardContent className="p-4 flex-1">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-semibold text-lg line-clamp-2 flex-1">{product.name}</h3>
+          <div className={`px-2 py-1 rounded text-sm ${product.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+            {product.status === 'AVAILABLE' ? 'Disponible' : 'No disponible'}
+          </div>
         </div>
-      </div>
-    </div>
+        
+        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
+        
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <p className="text-sm text-gray-500">Marca:</p>
+            <p className="text-sm font-medium">{product.brandName}</p>
+          </div>
+          <div className="flex justify-between">
+            <p className="text-sm text-gray-500">Categoría:</p>
+            <p className="text-sm font-medium">{product.categoryName}</p>
+          </div>
+          <div className="flex justify-between">
+            <p className="text-sm text-gray-500">Perfil de uso:</p>
+            <p className="text-sm font-medium">{product.generalCategoryName}</p>
+          </div>
+        </div>
+
+        <div className="mt-3 space-y-1">
+          {product.features.slice(0, 2).map((feature) => (
+            <div key={feature.id} className="text-sm">
+              <span className="text-gray-500">{feature.name}:</span>
+              <span className="ml-1 font-medium">{feature.value}</span>
+            </div>
+          ))}
+          {product.features.length > 2 && (
+            <p className="text-sm text-blue-600">+ {product.features.length - 2} características más</p>
+          )}
+        </div>
+      </CardContent>
+      <CardFooter className="p-4 pt-0 flex flex-col gap-2">
+        <div className="flex justify-between items-center w-full">
+          <div>
+            <p className="text-sm text-gray-500">Precio de venta</p>
+            <p className="text-lg font-bold">S/ {product.salePrice.toFixed(2)}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-500">Alquiler diario</p>
+            <p className="text-lg font-bold">S/ {product.rentalDailyRate.toFixed(2)}</p>
+          </div>
+        </div>
+        <Button 
+          onClick={onClick}
+          className="w-full"
+        >
+          Ver detalles
+        </Button>
+      </CardFooter>
+    </Card>
   );
-}
+};
+
+export default ProductCard;

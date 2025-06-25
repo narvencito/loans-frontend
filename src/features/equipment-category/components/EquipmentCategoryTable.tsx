@@ -1,4 +1,4 @@
-import { EquipmentCategory } from "../api/equipment-category-api";
+import { useEffect, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -6,57 +6,104 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Pencil, Trash2 } from 'lucide-react';
+import { equipmentCategoryApi } from '../api/equipment-category-api';
+import { EquipmentCategory } from '../types/equipment-category.types';
+import { showConfirm } from '@/shared/utils/global-dialog-utils';
 
 interface Props {
-  data: EquipmentCategory[];
-  onEdit: (category: EquipmentCategory) => void;
-  onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
 }
 
-const EquipmentCategoryTable = ({ data, onEdit, onDelete }: Props) => {
+export default function EquipmentCategoryTable({ onEdit }: Props) {
+  const [categories, setCategories] = useState<EquipmentCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadCategories = async () => {
+    try {
+      setLoading(true);
+      const data = await equipmentCategoryApi.getAll();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error al cargar categorías:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    const confirmed = await showConfirm('¿Estás seguro de eliminar esta categoría?');
+    if (!confirmed) return;
+
+    try {
+      await equipmentCategoryApi.delete(id);
+      await loadCategories();
+    } catch (error) {
+      console.error('Error al eliminar categoría:', error);
+    }
+  };
+
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+
   return (
-    <div className="rounded-md border">
+    <div className="border rounded-lg">
       <Table>
         <TableHeader>
-          <TableRow className="text-muted-foreground">
+          <TableRow>
             <TableHead>Nombre</TableHead>
-            <TableHead className="text-center">Activo</TableHead>
-            <TableHead className="text-center">Acciones</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead className="w-[100px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((c) => (
-            <TableRow key={c.id}>
-              <TableCell className="text-foreground">{c.name}</TableCell>
-              <TableCell className="text-center">
-                <span className={c.isActive ? 'text-green-600' : 'text-red-600'}>
-                  {c.isActive ? 'Sí' : 'No'}
-                </span>
-              </TableCell>
-              <TableCell className="text-center space-x-2">
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => onEdit(c)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => onDelete(c.id)}
-                >
-                  Eliminar
-                </Button>
+          {categories.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={3} className="text-center">
+                No hay categorías registradas
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            categories.map((category) => (
+              <TableRow key={category.id}>
+                <TableCell>{category.name}</TableCell>
+                <TableCell>
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {category.isActive ? 'Activo' : 'Inactivo'}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEdit(category.id)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(category.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>
   );
-};
-
-export default EquipmentCategoryTable;
+}

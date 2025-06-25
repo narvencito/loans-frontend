@@ -1,68 +1,111 @@
-import React, { useEffect, useState } from 'react';
-import { equipmentCategoryApi, EquipmentCategory } from '../api/equipment-category-api';
+import { useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { equipmentCategoryApi } from '../api/equipment-category-api';
 import { Label } from '@/components/ui/label';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSuccess: () => void;
-  category: EquipmentCategory | null;
+  categoryId: string | null;
 }
 
-const EquipmentCategoryFormModal = ({ open, onClose, onSuccess, category }: Props) => {
-  const [name, setName] = useState('');
+export default function EquipmentCategoryFormModal({ open, onClose, categoryId }: Props) {
+  const [form, setForm] = useState({ name: '' });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (category) {
-      setName(category.name);
-    } else {
-      setName('');
+    const loadCategory = async () => {
+      if (!categoryId) {
+        setForm({ name: '' });
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const data = await equipmentCategoryApi.getById(categoryId);
+        setForm({ name: data.name });
+      } catch (error) {
+        console.error('Error al cargar categoría:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (open) {
+      loadCategory();
     }
-  }, [category]);
+  }, [categoryId, open]);
 
   const handleSubmit = async () => {
-    if (category) {
-      await equipmentCategoryApi.update(category.id, { name });
-    } else {
-      await equipmentCategoryApi.create({ name });
+    if (!form.name.trim()) {
+      setError('El nombre es requerido');
+      return;
     }
-    onSuccess();
-    onClose();
+
+    try {
+      setLoading(true);
+      if (categoryId) {
+        await equipmentCategoryApi.update(categoryId, form);
+      } else {
+        await equipmentCategoryApi.create(form);
+      }
+      onClose();
+    } catch (error) {
+      console.error('Error al guardar categoría:', error);
+      setError('Ocurrió un error al guardar la categoría');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (!open) return null;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError(null);
+  };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded w-full max-w-md">
-        <h2 className="text-lg font-bold mb-4">
-          {category ? 'Editar' : 'Crear'} Categoría
-        </h2>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {categoryId ? 'Editar Categoría' : 'Nueva Categoría'}
+          </DialogTitle>
+        </DialogHeader>
 
-        <div className="space-y-2">
-          <Label htmlFor="name">Nombre de la categoría</Label>
-          <Input
-            id="name"
-            type="text"
-            placeholder="Ej: Laptops"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Nombre</Label>
+            <Input
+              id="name"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Ej: Maquinaria pesada"
+              disabled={loading}
+            />
+            {error && <p className="text-sm text-red-500">{error}</p>}
+          </div>
         </div>
 
-        <div className="flex justify-end mt-6 gap-2">
-          <Button variant="outline" onClick={onClose} className="hover:bg-gray-200">
+        <div className="flex justify-end gap-3">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={loading}
+          >
             Cancelar
           </Button>
-          <Button onClick={handleSubmit}>
-            Guardar
+          <Button
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {categoryId ? 'Guardar cambios' : 'Crear categoría'}
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
-};
-
-export default EquipmentCategoryFormModal;
+}

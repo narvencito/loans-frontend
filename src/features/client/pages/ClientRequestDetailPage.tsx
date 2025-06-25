@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card';
 import { RequestItem, requestApi } from '@/features/request/api/request_api';
 import { RequestStatusHistory } from '@/features/request/components/RequestStatusHistory';
 import { RequestDetail } from '@/features/request/components/RequestDetail';
-import { showSuccess, showError } from '@/lib/notifications';
 
 export default function ClientRequestDetailPage() {
   const { requestId } = useParams<{ requestId: string }>();
@@ -55,7 +54,7 @@ export default function ClientRequestDetailPage() {
               {request.requestStatus.name}
             </span>
             <span className="text-gray-500">
-              Actualizado: {new Date(request.updatedAt).toLocaleString()}
+              Última actualización: {new Date(request.createdAt).toLocaleString()}
             </span>
           </div>
         </Card>
@@ -94,13 +93,6 @@ export default function ClientRequestDetailPage() {
             showActions={true}
             isUserView={true}
             onStatusChange={() => navigate(0)}
-            onAlert={(message, type) => {
-              if (type === 'success') {
-                showSuccess('Éxito', message);
-              } else {
-                showError('Error', message);
-              }
-            }}
           />
         </Card>
       </div>

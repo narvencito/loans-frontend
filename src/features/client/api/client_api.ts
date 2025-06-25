@@ -2,7 +2,7 @@ import { api } from "@/shared/utils/api";
 import { apiRequest } from "@/shared/utils/apiHelper";
 
 export interface CreateClientDto {
-  firstName: string;
+  name: string;
   paternalSurname: string;
   maternalSurname: string;
   document: string;
@@ -13,10 +13,9 @@ export interface CreateClientDto {
 
 export interface ClientItem {
   id: string;
-  firstName: string;
+  name: string;
   paternalSurname: string;
   maternalSurname: string;
-  name: string;
   document: string;
   email: string;
   phone: string;

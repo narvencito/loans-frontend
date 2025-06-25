@@ -9,21 +9,18 @@ import { showConfirm } from '../utils/global-dialog-utils';
 import { equipmentApi } from '@/features/equipment/api/equipment_api';
 
 interface Props {
-  existingImages?: ImageApp[];
-  onChange: (files: File[], keptImages: ImageApp[]) => void;
+  existingFiles?: ImageApp[];
+  onDrop: (files: File[]) => void;
+  onRemoveExisting: (url: string) => void;
+  onRemoveNew: (file: File) => void;
 }
 
 const MAX_IMAGES = 5;
 
-const FileDropzone = ({ existingImages = [], onChange }: Props) => {
+const FileDropzone = ({ existingFiles = [], onDrop, onRemoveExisting, onRemoveNew }: Props) => {
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const [existing, setExisting] = useState<ImageApp[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setExisting(existingImages);
-  }, [existingImages]);
 
   useEffect(() => {
     const objectUrls = newFiles.map((file) => URL.createObjectURL(file));
@@ -33,67 +30,69 @@ const FileDropzone = ({ existingImages = [], onChange }: Props) => {
     };
   }, [newFiles]);
 
-  useEffect(() => {
-    onChange(newFiles, existing);
-  }, [newFiles, existing, onChange]);
-
-const onDrop = useCallback(
-  (acceptedFiles: File[], fileRejections: FileRejection[]) => {
-    const validImages = acceptedFiles.filter(file =>
-      file.type.startsWith('image/')
-    );
-
-    const totalCurrent = existing.length + newFiles.length;
-    const remainingSlots = MAX_IMAGES - totalCurrent;
- 
-    // ⚠️ Caso 1: no hay espacio para más imágenes
-    if (remainingSlots <= 0) {
-      setError(`Solo se permiten hasta ${MAX_IMAGES} imágenes en total.`);
-      return;
-    }
-    const imagesToAdd = validImages.slice(0, remainingSlots);
-
-    if (fileRejections.length > 0 || validImages.length > imagesToAdd.length) {
-      setError(
-        `Algunas imágenes fueron omitidas. Solo se permiten archivos de imagen y hasta ${MAX_IMAGES} en total.`
+  const handleDrop = useCallback(
+    (acceptedFiles: File[], fileRejections: FileRejection[]) => {
+      const validImages = acceptedFiles.filter(file =>
+        file.type.startsWith('image/')
       );
-    } else {
-      setError(null);
-    }
 
-    // ✅ Agregar solo las válidas y permitidas
-    if (imagesToAdd.length > 0) {
-      setNewFiles(prev => [...prev, ...imagesToAdd]);
-    }
-  },
-  [existing, newFiles]
-);
+      const totalCurrent = existingFiles.length + newFiles.length;
+      const remainingSlots = MAX_IMAGES - totalCurrent;
+   
+      // ⚠️ Caso 1: no hay espacio para más imágenes
+      if (remainingSlots <= 0) {
+        setError(`Solo se permiten hasta ${MAX_IMAGES} imágenes en total.`);
+        return;
+      }
+      const imagesToAdd = validImages.slice(0, remainingSlots);
 
+      if (fileRejections.length > 0 || validImages.length > imagesToAdd.length) {
+        setError(
+          `Algunas imágenes fueron omitidas. Solo se permiten archivos de imagen y hasta ${MAX_IMAGES} en total.`
+        );
+      } else {
+        setError(null);
+      }
+
+      // ✅ Agregar solo las válidas y permitidas
+      if (imagesToAdd.length > 0) {
+        setNewFiles(prev => {
+          const updatedFiles = [...prev, ...imagesToAdd];
+          return updatedFiles;
+        });
+        onDrop(imagesToAdd);
+      }
+    },
+    [existingFiles, newFiles, onDrop]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
+    onDrop: handleDrop,
     accept: { 'image/*': [] },
     multiple: true,
-    //maxFiles: MAX_IMAGES,
   });
 
-  const removeNewFile = (index: number) => {
-    setNewFiles((prev) => prev.filter((_, i) => i !== index));
+  const handleRemoveNew = (index: number) => {
+    const fileToRemove = newFiles[index];
+    setNewFiles((prev) => {
+      const updated = prev.filter((_, i) => i !== index);
+      onRemoveNew(fileToRemove);
+      return updated;
+    });
   };
 
-  const removeExistingImage = async (id: string, url: string) => {
+  const handleRemoveExisting = async (id: string, url: string) => {
+    const isConfirmed = await showConfirm('Eliminar imagen', '¿Estás seguro de que deseas eliminar esta imagen?');
+    if (!isConfirmed) return;
 
-  const isConfirmed = await showConfirm('¿Estás seguro de que deseas eliminar esta imagen?');
-      if (!isConfirmed) return;
-
-  try {
-    await equipmentApi.deleteImageByUrl(url);
-    setExisting((prev) => prev.filter((img) => img.id !== id));
-  } catch (err) {
-    console.error(err);
-    setError('Error al eliminar la imagen. Intenta nuevamente.');
-  }
-};
+    try {
+      await equipmentApi.deleteImageByUrl(url);
+      onRemoveExisting(url);
+    } catch (err) {
+      console.error(err);
+      setError('Error al eliminar la imagen. Intenta nuevamente.');
+    }
+  };
 
   useEffect(() => {
     if (error) {
@@ -121,12 +120,12 @@ const onDrop = useCallback(
       </Card>
 
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-        {existing.map((img) => (
+        {existingFiles.map((img) => (
           <div key={img.id} className="relative">
             <img src={img.url} alt="imagen" className="h-24 w-full object-cover rounded" />
             <button
               className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
-              onClick={() => removeExistingImage(img.id, img.url)}
+              onClick={() => handleRemoveExisting(img.id, img.url)}
               type="button"
             >
               <X className="w-4 h-4" />
@@ -139,7 +138,7 @@ const onDrop = useCallback(
             <img src={previews[idx]} alt={file.name} className="h-24 w-full object-cover rounded" />
             <button
               className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
-              onClick={() => removeNewFile(idx)}
+              onClick={() => handleRemoveNew(idx)}
               type="button"
             >
               <X className="w-4 h-4" />

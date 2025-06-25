@@ -141,6 +141,10 @@ interface RequestFilters {
   status?: string;
 }
 
+interface ConvertRequestDto {
+  downPayment?: number;
+}
+
 export const requestApi = {
   async getAll(): Promise<RequestItem[]> {
     return apiRequest(
@@ -248,13 +252,12 @@ export const requestApi = {
     );
   },
 
-  async convert(requestId: string): Promise<void> {
+  async convert(requestId: string, data?: ConvertRequestDto): Promise<void> {
     return apiRequest(
-      api.post(`/requests/${requestId}/convert`),
+      api.post(`/requests/${requestId}/convert`, data),
       {
         loading: 'Convirtiendo solicitud...',
         success: 'Solicitud convertida correctamente',
-        error: 'No se pudo convertir la solicitud',
       }
     );
   },

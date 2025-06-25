@@ -17,13 +17,30 @@ interface Props {
   onChange: (value: string) => void;
   label?: string;
   disabled?: boolean;
+  required?: boolean;
 }
+
+// Mapa de traducción de estados
+const statusTranslations: { [key: string]: string } = {
+  'AVAILABLE': 'Disponible',
+  'IN_USE': 'En Uso',
+  'UNDER_MAINTENANCE': 'En Mantenimiento',
+  'OUT_OF_SERVICE': 'Fuera de Servicio',
+  'RESERVED': 'Reservado',
+  'PENDING_RETURN': 'Pendiente de Devolución',
+  'LOST': 'Perdido',
+  'DAMAGED': 'Dañado',
+  'NEW': 'Nuevo',
+  'USED': 'Usado',
+  'REFURBISHED': 'Reacondicionado'
+};
 
 const EquipmentStatusSelect = ({
   value,
   onChange,
   label = 'Estado',
   disabled = false,
+  required = false
 }: Props) => {
   const [options, setOptions] = useState<EquipmentStatus[]>([]);
 
@@ -31,9 +48,18 @@ const EquipmentStatusSelect = ({
     equipmentStatusApi.getAll().then(setOptions);
   }, []);
 
+  const getStatusTranslation = (statusName: string) => {
+    // Convertir el nombre del estado a mayúsculas y reemplazar espacios con guiones bajos
+    const normalizedStatus = statusName.toUpperCase().replace(/ /g, '_');
+    return statusTranslations[normalizedStatus] || statusName;
+  };
+
   return (
     <ColumnApp className='w-full'>
-      <LabelApp className="text-sm">{label}</LabelApp>
+      <LabelApp className="text-sm">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </LabelApp>
 
       <Select
         value={value}
@@ -44,10 +70,10 @@ const EquipmentStatusSelect = ({
           <SelectValue placeholder="Seleccione..." />
         </SelectTrigger>
 
-        <SelectContent  className="select-white">
+        <SelectContent className="select-white">
           {options.map((s) => (
             <SelectItem key={s.id} value={s.id}>
-              {s.name}
+              {getStatusTranslation(s.name)}
             </SelectItem>
           ))}
         </SelectContent>

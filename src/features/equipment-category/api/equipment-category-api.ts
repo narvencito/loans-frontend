@@ -1,41 +1,37 @@
 import { api } from '@/shared/utils/api';
 import { apiRequest } from '@/shared/utils/apiHelper';
+import { EquipmentCategory } from "../types/equipment-category.types";
 
-export interface EquipmentCategory {
-  id: string;
-  name: string;
-  isActive: boolean;
-}
+const BASE_URL = "/equipment-categories";
 
 export const equipmentCategoryApi = {
-  async getAll(): Promise<EquipmentCategory[]> {
-    return apiRequest(api.get('/equipment-categories'), {
-      loading: 'Cargando categorías...',
-      error: 'Error al cargar categorías',
-    });
+  getAll: async (): Promise<EquipmentCategory[]> => {
+    const response = await api.get(BASE_URL);
+    return response.data;
   },
 
-  async create(data: { name: string }): Promise<EquipmentCategory> {
-    return apiRequest(api.post('/equipment-categories', data), {
-      loading: 'Creando categoría...',
-      success: 'Categoría creada correctamente',
-      error: 'No se pudo crear la categoría',
-    });
+  getActive: async (): Promise<EquipmentCategory[]> => {
+    const response = await api.get(`${BASE_URL}`);
+    return response.data;
   },
 
-  async update(id: string, data: { name: string }): Promise<EquipmentCategory> {
-    return apiRequest(api.put(`/equipment-categories/${id}`, data), {
-      loading: 'Actualizando categoría...',
-      success: 'Categoría actualizada',
-      error: 'No se pudo actualizar la categoría',
-    });
+  getById: async (id: string): Promise<EquipmentCategory> => {
+    const response = await api.get(`${BASE_URL}/${id}`);
+    return response.data;
   },
 
-  async delete(id: string): Promise<void> {
-    return apiRequest(api.delete(`/equipment-categories/${id}`), {
-      loading: 'Eliminando categoría...',
-      success: 'Categoría eliminada correctamente',
-      error: 'No se pudo eliminar la categoría',
-    });
+  create: async (data: { name: string }): Promise<EquipmentCategory> => {
+    const response = await api.post(BASE_URL, data);
+    return response.data;
   },
+
+  update: async (id: string, data: { name: string }): Promise<EquipmentCategory> => {
+    const response = await api.put(`${BASE_URL}/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string): Promise<EquipmentCategory> => {
+    const response = await api.delete(`${BASE_URL}/${id}`);
+    return response.data;
+  }
 };

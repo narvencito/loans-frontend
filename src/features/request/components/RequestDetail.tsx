@@ -6,10 +6,13 @@ import { RequestStatusHistory } from "./RequestStatusHistory";
 import { requestApi, RequestItem } from '../api/request_api';
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { RequestStatusChangeDialog } from './RequestStatusChangeDialog';
 import { RequestStatusCode } from '../enums/request-status.enum';
 import { CancelButton, ConfirmButton } from '@/components/common/ActionButtons';
 import { getRequestTypeName } from '../utils/requestTypeUtils';
+import { showConfirm } from '@/shared/utils/global-dialog-utils';
+import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
 
 interface RequestDetailProps {
   request: RequestItem;
@@ -23,7 +26,9 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
-  const [actionType, setActionType] = useState<'approve' | 'reject' | 'convert' | 'cancel' | null>(null);
+  const [showConvertDialog, setShowConvertDialog] = useState(false);
+  const [actionType, setActionType] = useState<'approve' | 'reject' | 'cancel' | null>(null);
+  const [downPayment, setDownPayment] = useState<number>(0);
 
   // Verificamos si se pueden mostrar acciones
   const canShowActions = showActions && 
@@ -32,7 +37,7 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
     request.requestStatus.code !== RequestStatusCode.REJECTED;
 
   const handleStatusChange = async (comments?: string) => {
-    if (!showActions || !actionType || !comments) return;
+    if (!showActions || !actionType) return;
 
     let newStatus: RequestStatusCode;
     let actionText = '';
@@ -45,10 +50,6 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
       case 'reject':
         newStatus = RequestStatusCode.REJECTED;
         actionText = 'rechazada';
-        break;
-      case 'convert':
-        newStatus = RequestStatusCode.CONVERTED;
-        actionText = 'convertida a préstamo';
         break;
       case 'cancel':
         newStatus = RequestStatusCode.CANCELLED;
@@ -72,9 +73,40 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
     }
   };
 
+  const handleConvert = async () => {
+    try {
+      setIsLoading(true);
+
+      // Solo enviamos downPayment si es préstamo o financiamiento de equipo
+      if (request.requestType.name === RequestTypeEnum.EQUIPMENT_LOAN || 
+          request.requestType.name === RequestTypeEnum.EQUIPMENT_FINANCING) {
+        await requestApi.convert(request.id, { downPayment });
+      } else {
+        await requestApi.convert(request.id);
+      }
+
+      onAlert?.('La solicitud ha sido convertida a préstamo', 'success');
+      if (onStatusChange) onStatusChange();
+      setShowConvertDialog(false);
+    } catch (error :any) {
+      onAlert?.( error.message || 'No se pudo convertir la solicitud', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const openStatusDialog = (type: 'approve' | 'reject' | 'convert' | 'cancel') => {
-    setActionType(type);
-    setShowStatusDialog(true);
+    if (type === 'convert') {
+      if (request.requestType.name === RequestTypeEnum.EQUIPMENT_LOAN || 
+          request.requestType.name === RequestTypeEnum.EQUIPMENT_FINANCING) {
+        setShowConvertDialog(true);
+      } else {
+        handleConvert();
+      }
+    } else {
+      setActionType(type);
+      setShowStatusDialog(true);
+    }
   };
 
   const getStatusStyle = (statusCode: string) => {
@@ -113,11 +145,6 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
         title: 'Rechazar Solicitud',
         description: 'Por favor, ingrese un comentario para rechazar la solicitud.',
         confirmLabel: 'Rechazar',
-      },
-      convert: {
-        title: 'Convertir a Préstamo',
-        description: 'Por favor, ingrese un comentario para convertir la solicitud a préstamo.',
-        confirmLabel: 'Convertir',
       },
       cancel: {
         title: 'Cancelar Solicitud',
@@ -329,6 +356,50 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
           currentStatus={request.requestStatus.code as RequestStatusCode}
         />
       )}
+
+      {/* Modal de Conversión */}
+      <Dialog open={showConvertDialog} onOpenChange={() => setShowConvertDialog(false)}>
+        <DialogContent className="sm:max-w-md bg-white">
+          <DialogHeader>
+            <DialogTitle>Convertir a Préstamo</DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4">
+            <p className="text-sm text-gray-600 mb-4">
+              Por favor, ingrese el pago inicial para el {
+                request.requestType.name === RequestTypeEnum.EQUIPMENT_LOAN ? 'préstamo' : 'financiamiento'
+              } del equipo.
+            </p>
+
+            <div className="space-y-2">
+              <Label htmlFor="downPayment">Pago Inicial (S/)</Label>
+              <Input
+                id="downPayment"
+                type="number"
+                min="0"
+                step="0.01"
+                value={downPayment}
+                onChange={(e) => setDownPayment(Number(e.target.value))}
+                className="bg-white"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <CancelButton
+              onClick={() => setShowConvertDialog(false)}
+              disabled={isLoading}
+            />
+            <ConfirmButton
+              onClick={handleConvert}
+              disabled={isLoading || downPayment < 0}
+              loading={isLoading}
+            >
+              Convertir
+            </ConfirmButton>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }; 

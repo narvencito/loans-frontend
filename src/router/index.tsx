@@ -14,6 +14,7 @@ import EquipmentStatusListPage from '@/features/equipment-status/pages/Equipment
 import EquipmentCategoryListPage from '@/features/equipment-category/pages/EquipmentCategoryListPage';
 import EquipmentFeatureListPage from '@/features/equipment-feature/pages/EquipmentFeatureListPage';
 import EquipmentFinancingListPage from '@/features/equipment-financing/pages/EquipmentFinancingListPage ';
+import EquipmentLoanListPage from '@/features/equipment-loan/pages/EquipmentLoanListPage';
 import MainLayout from '@/shared/layouts/MainLayout';
 import WorkerDashboard from '@/features/worker/pages/WorkerDashboard';
 import WorkerLayout from '@/features/worker/layouts/WorkerLayout';
@@ -30,6 +31,9 @@ import RequestWizardPage from '@/features/request/pages/RequestWizardPage';
 import AdminRequestListPage from '@/features/admin/pages/AdminRequestListPage';
 import ClientRequestListPage from '@/features/client/pages/ClientRequestListPage';
 import ClientRequestDetailPage from '@/features/client/pages/ClientRequestDetailPage';
+import EquipmentLoanDetailPage from '@/features/equipment-loan/pages/EquipmentLoanDetailPage';
+import AdminGeneralCategoryPage from '@/features/general-category/pages/AdminGeneralCategoryPage';
+import AdminBrandPage from '@/features/brand/pages/AdminBrandPage';
 
 export const router = createBrowserRouter([
   {
@@ -66,9 +70,12 @@ export const router = createBrowserRouter([
       { path: 'cash-loans', element: <CashLoanListPage /> },
       { path: 'equipment', element: <EquipmentListPage /> },
       { path: 'equipment-status', element: <EquipmentStatusListPage /> },
-      { path: 'equipment-category', element: <EquipmentCategoryListPage /> },
+      { path: 'equipment-categories', element: <EquipmentCategoryListPage /> },
       { path: 'equipment-feature', element: <EquipmentFeatureListPage /> },
       { path: 'equipment-financing', element: <EquipmentFinancingListPage /> },
+      { path: 'equipment-loans', element: <EquipmentLoanListPage /> },
+      { path: 'general-categories', element: <PrivateRoute><AdminGeneralCategoryPage /></PrivateRoute> },
+      { path: 'brands', element: <PrivateRoute><AdminBrandPage /></PrivateRoute> },
     ],
   },
   {
@@ -103,6 +110,11 @@ export const router = createBrowserRouter([
       { path: 'equipment', element: <EquipmentListPage /> },
       { path: 'equipment-feature', element: <EquipmentFeatureListPage /> },
       { path: 'equipment-financing', element: <EquipmentFinancingListPage /> },
+      { path: 'equipment-loans', element: <EquipmentLoanListPage /> },
     ],
+  },
+  {
+    path: '/equipment-loans/:id',
+    element: <PrivateRoute><EquipmentLoanDetailPage /></PrivateRoute>
   },
 ]);
