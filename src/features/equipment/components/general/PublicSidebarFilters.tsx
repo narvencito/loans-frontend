@@ -3,19 +3,19 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import PublicBrandSelect from './PublicBrandSelect';
-import PublicGeneralCategorySelect from './PublicGeneralCategorySelect';
-import PublicEquipmentCategorySelect from './PublicEquipmentCategorySelect';
+import PublicBrandCheckboxList from './PublicBrandCheckboxList';
+import PublicGeneralCategoryCheckboxList from './PublicGeneralCategoryCheckboxList';
+import PublicEquipmentCategoryCheckboxList from './PublicEquipmentCategoryCheckboxList';
 
 interface Props {
   search: string;
   onSearchChange: (value: string) => void;
-  selectedBrand: string;
-  onBrandChange: (value: string) => void;
-  selectedGeneralCategory: string;
-  onGeneralCategoryChange: (value: string) => void;
-  selectedCategory: string;
-  onCategoryChange: (value: string) => void;
+  selectedBrands: string[];
+  onBrandsChange: (value: string[]) => void;
+  selectedGeneralCategories: string[];
+  onGeneralCategoriesChange: (value: string[]) => void;
+  selectedCategories: string[];
+  onCategoriesChange: (value: string[]) => void;
   minPrice: string;
   onMinPriceChange: (value: string) => void;
   maxPrice: string;
@@ -27,12 +27,12 @@ interface Props {
 const PublicSidebarFilters = ({
   search,
   onSearchChange,
-  selectedBrand,
-  onBrandChange,
-  selectedGeneralCategory,
-  onGeneralCategoryChange,
-  selectedCategory,
-  onCategoryChange,
+  selectedBrands,
+  onBrandsChange,
+  selectedGeneralCategories,
+  onGeneralCategoriesChange,
+  selectedCategories,
+  onCategoriesChange,
   minPrice,
   onMinPriceChange,
   maxPrice,
@@ -61,11 +61,9 @@ const PublicSidebarFilters = ({
           <AccordionItem value="brand">
             <AccordionTrigger>Marca</AccordionTrigger>
             <AccordionContent>
-              <PublicBrandSelect
-                value={selectedBrand}
-                onChange={onBrandChange}
-                label=""
-                includeAll
+              <PublicBrandCheckboxList
+                selectedBrands={selectedBrands}
+                onChange={onBrandsChange}
               />
             </AccordionContent>
           </AccordionItem>
@@ -74,11 +72,9 @@ const PublicSidebarFilters = ({
           <AccordionItem value="generalCategory">
             <AccordionTrigger>Perfil de uso</AccordionTrigger>
             <AccordionContent>
-              <PublicGeneralCategorySelect
-                value={selectedGeneralCategory}
-                onChange={onGeneralCategoryChange}
-                label=""
-                includeAll
+              <PublicGeneralCategoryCheckboxList
+                selectedCategories={selectedGeneralCategories}
+                onChange={onGeneralCategoriesChange}
               />
             </AccordionContent>
           </AccordionItem>
@@ -87,11 +83,9 @@ const PublicSidebarFilters = ({
           <AccordionItem value="category">
             <AccordionTrigger>Categoría</AccordionTrigger>
             <AccordionContent>
-              <PublicEquipmentCategorySelect
-                value={selectedCategory}
-                onChange={onCategoryChange}
-                label=""
-                includeAll
+              <PublicEquipmentCategoryCheckboxList
+                selectedCategories={selectedCategories}
+                onChange={onCategoriesChange}
               />
             </AccordionContent>
           </AccordionItem>

@@ -15,12 +15,14 @@ const EquipmentGeneral = () => {
 
   // Estados para los filtros
   const [search, setSearch] = useState<string>(searchParams.get('search') || '');
-  const [selectedBrand, setSelectedBrand] = useState<string>(searchParams.get('brandId') || '');
-  const [selectedGeneralCategory, setSelectedGeneralCategory] = useState<string>(
-    searchParams.get('generalCategoryId') || ''
+  const [selectedBrands, setSelectedBrands] = useState<string[]>(
+    searchParams.getAll('brandIds') || []
   );
-  const [selectedCategory, setSelectedCategory] = useState<string>(
-    searchParams.get('categoryId') || ''
+  const [selectedGeneralCategories, setSelectedGeneralCategories] = useState<string[]>(
+    searchParams.getAll('generalCategoryIds') || []
+  );
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    searchParams.getAll('categoryIds') || []
   );
   const [minPrice, setMinPrice] = useState<string>(searchParams.get('minPrice') || '');
   const [maxPrice, setMaxPrice] = useState<string>(searchParams.get('maxPrice') || '');
@@ -30,9 +32,9 @@ const EquipmentGeneral = () => {
     try {
       const filters = {
         name: search || undefined,
-        brandId: selectedBrand === 'all' ? undefined : selectedBrand || undefined,
-        generalCategoryId: selectedGeneralCategory === 'all' ? undefined : selectedGeneralCategory || undefined,
-        categoryId: selectedCategory === 'all' ? undefined : selectedCategory || undefined,
+        brandIds: selectedBrands.length > 0 ? selectedBrands : undefined,
+        generalCategoryIds: selectedGeneralCategories.length > 0 ? selectedGeneralCategories : undefined,
+        categoryIds: selectedCategories.length > 0 ? selectedCategories : undefined,
         minPrice: minPrice ? Number(minPrice) : undefined,
         maxPrice: maxPrice ? Number(maxPrice) : undefined,
         statusId: 'active' // Solo mostrar equipos activos
@@ -44,9 +46,9 @@ const EquipmentGeneral = () => {
       // Actualizar URL después de una búsqueda exitosa
       const params = new URLSearchParams();
       if (search) params.set('search', search);
-      if (selectedBrand && selectedBrand !== 'all') params.set('brandId', selectedBrand);
-      if (selectedGeneralCategory && selectedGeneralCategory !== 'all') params.set('generalCategoryId', selectedGeneralCategory);
-      if (selectedCategory && selectedCategory !== 'all') params.set('categoryId', selectedCategory);
+      selectedBrands.forEach(brandId => params.append('brandIds', brandId));
+      selectedGeneralCategories.forEach(catId => params.append('generalCategoryIds', catId));
+      selectedCategories.forEach(catId => params.append('categoryIds', catId));
       if (minPrice) params.set('minPrice', minPrice);
       if (maxPrice) params.set('maxPrice', maxPrice);
       setSearchParams(params);
@@ -64,16 +66,15 @@ const EquipmentGeneral = () => {
   }, []); // Solo se ejecuta al montar el componente
 
   const handleSearch = () => {
-    console.log("busqueda de wquipos del lado publico");
     loadEquipment();
     setDrawerOpen(false);
   };
 
   const handleClearFilters = () => {
     setSearch('');
-    setSelectedBrand('');
-    setSelectedGeneralCategory('');
-    setSelectedCategory('');
+    setSelectedBrands([]);
+    setSelectedGeneralCategories([]);
+    setSelectedCategories([]);
     setMinPrice('');
     setMaxPrice('');
     setDrawerOpen(false);
@@ -84,12 +85,12 @@ const EquipmentGeneral = () => {
     <PublicSidebarFilters
       search={search}
       onSearchChange={setSearch}
-      selectedBrand={selectedBrand}
-      onBrandChange={setSelectedBrand}
-      selectedGeneralCategory={selectedGeneralCategory}
-      onGeneralCategoryChange={setSelectedGeneralCategory}
-      selectedCategory={selectedCategory}
-      onCategoryChange={setSelectedCategory}
+      selectedBrands={selectedBrands}
+      onBrandsChange={setSelectedBrands}
+      selectedGeneralCategories={selectedGeneralCategories}
+      onGeneralCategoriesChange={setSelectedGeneralCategories}
+      selectedCategories={selectedCategories}
+      onCategoriesChange={setSelectedCategories}
       minPrice={minPrice}
       onMinPriceChange={setMinPrice}
       maxPrice={maxPrice}

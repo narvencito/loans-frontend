@@ -3,9 +3,9 @@ import { apiRequest } from '@/shared/utils/apiHelper';
 
 export interface PublicEquipmentFilters {
   name?: string;
-  brandId?: string;
-  categoryId?: string;
-  generalCategoryId?: string;
+  brandIds?: string[];
+  categoryIds?: string[];
+  generalCategoryIds?: string[];
   statusId?: string;
   minPrice?: number;
   maxPrice?: number;
