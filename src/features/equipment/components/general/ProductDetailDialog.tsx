@@ -11,32 +11,70 @@ interface Props {
   onClose: () => void;
 }
 
+// Mapa de traducción de estados
+const statusTranslations: { [key: string]: { label: string; className: string } } = {
+  'AVAILABLE': { label: 'Disponible', className: 'bg-green-100 text-green-800' },
+  'IN_USE': { label: 'En Uso', className: 'bg-blue-100 text-blue-800' },
+  'UNDER_MAINTENANCE': { label: 'En Mantenimiento', className: 'bg-yellow-100 text-yellow-800' },
+  'OUT_OF_SERVICE': { label: 'Fuera de Servicio', className: 'bg-red-100 text-red-800' },
+  'RESERVED': { label: 'Reservado', className: 'bg-purple-100 text-purple-800' },
+  'PENDING_RETURN': { label: 'Pendiente de Devolución', className: 'bg-orange-100 text-orange-800' },
+  'LOST': { label: 'Perdido', className: 'bg-gray-100 text-gray-800' },
+  'DAMAGED': { label: 'Dañado', className: 'bg-red-100 text-red-800' },
+  'NEW': { label: 'Nuevo', className: 'bg-green-100 text-green-800' },
+  'USED': { label: 'Usado', className: 'bg-blue-100 text-blue-800' },
+  'REFURBISHED': { label: 'Reacondicionado', className: 'bg-yellow-100 text-yellow-800' }
+};
+
 const ProductDetailDialog = ({ product, open, onClose }: Props) => {
   const navigate = useNavigate();
 
   if (!product) return null;
 
+  const getStatusInfo = (status: string) => {
+    const normalizedStatus = status.toUpperCase();
+    return statusTranslations[normalizedStatus] || { label: status, className: 'bg-gray-100 text-gray-800' };
+  };
+
+  // Agrupar características por tipo
+  const groupedFeatures = product.features.reduce((acc: { [key: string]: typeof product.features }, feature) => {
+    // Asumimos que todas las características son del mismo tipo para este caso
+    const type = 'Especificaciones';
+    if (!acc[type]) {
+      acc[type] = [];
+    }
+    acc[type].push(feature);
+    return acc;
+  }, {});
+
+  const statusInfo = getStatusInfo(product.status);
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="bg-white max-w-5xl max-h-[90vh] p-6">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{product.name}</DialogTitle>
+          <DialogTitle className="text-2xl flex items-center justify-between">
+            <span>{product.name}</span>
+            <div className={`px-2 py-1 rounded text-sm ${statusInfo.className}`}>
+              {statusInfo.label}
+            </div>
+          </DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="h-full pr-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Columna izquierda */}
             <div className="space-y-6">
-              <div className="aspect-square">
+              <div className="aspect-square rounded-lg overflow-hidden border">
                 <ImageCarousel images={product.images} />
               </div>
 
-              <div>
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-3">Información general</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500">Marca</p>
-                    <p className="font-medium">{product.brandName}</p>
+                    <p className="font-medium">{product.brandName || 'No especificada'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Categoría</p>
@@ -46,16 +84,10 @@ const ProductDetailDialog = ({ product, open, onClose }: Props) => {
                     <p className="text-sm text-gray-500">Perfil de uso</p>
                     <p className="font-medium">{product.generalCategoryName}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Estado</p>
-                    <div className={`inline-block px-2 py-1 rounded text-sm mt-1 ${product.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                      {product.status === 'AVAILABLE' ? 'Disponible' : 'No disponible'}
-                    </div>
-                  </div>
                 </div>
               </div>
 
-              <div>
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-3">Precios</h3>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="p-4 bg-blue-50 rounded-lg">
@@ -76,35 +108,40 @@ const ProductDetailDialog = ({ product, open, onClose }: Props) => {
 
             {/* Columna derecha */}
             <div className="space-y-6">
-              <div>
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-3">Descripción</h3>
                 <p className="text-gray-600 whitespace-pre-wrap">{product.description}</p>
               </div>
 
-              <div>
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-3">Características</h3>
-                <div className="grid grid-cols-1 gap-3">
-                  {product.features.map((feature) => (
-                    <div key={feature.id} className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm font-medium mb-1">{feature.name}</p>
-                      <p className="text-sm text-gray-600">{feature.value}</p>
+                <div className="space-y-4">
+                  {Object.entries(groupedFeatures).map(([type, features]) => (
+                    <div key={type}>
+                      <h4 className="font-medium text-gray-700 mb-2">{type}</h4>
+                      <div className="grid grid-cols-1 gap-2">
+                        {features.map((feature) => (
+                          <div key={feature.id} className="p-3 bg-white rounded-lg border">
+                            <p className="text-sm font-medium">{feature.name}</p>
+                            <p className="text-sm text-gray-600">{feature.value}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="pt-4">
-                <Button
-                  size="lg"
-                  className="w-full"
-                  onClick={() => {
-                    onClose();
-                    navigate('/request/new', { state: { equipmentId: product.id } });
-                  }}
-                >
-                  Solicitar equipo
-                </Button>
-              </div>
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={() => {
+                  onClose();
+                  navigate('/request/new', { state: { equipmentId: product.id } });
+                }}
+              >
+                Solicitar equipo
+              </Button>
             </div>
           </div>
         </ScrollArea>

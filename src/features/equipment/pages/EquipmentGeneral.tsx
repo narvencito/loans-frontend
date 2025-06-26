@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PublicEquipmentItem, equipmentPublicApi } from '../api/equipmentPublicApi';
 import ProductGrid from '../components/general/ProductGrid';
-import SidebarFilters from '../components/general/SidebarFilters';
+import PublicSidebarFilters from '../components/general/PublicSidebarFilters';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import DrawerApp from '@/shared/components/DrawerApp';
@@ -15,14 +15,12 @@ const EquipmentGeneral = () => {
 
   // Estados para los filtros
   const [search, setSearch] = useState<string>(searchParams.get('search') || '');
-  const [selectedBrands, setSelectedBrands] = useState<string[]>(
-    searchParams.get('brands')?.split(',').filter(Boolean) || []
+  const [selectedBrand, setSelectedBrand] = useState<string>(searchParams.get('brandId') || '');
+  const [selectedGeneralCategory, setSelectedGeneralCategory] = useState<string>(
+    searchParams.get('generalCategoryId') || ''
   );
-  const [selectedGeneralCategories, setSelectedGeneralCategories] = useState<string[]>(
-    searchParams.get('generalCategories')?.split(',').filter(Boolean) || []
-  );
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    searchParams.get('categories')?.split(',').filter(Boolean) || []
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    searchParams.get('categoryId') || ''
   );
   const [minPrice, setMinPrice] = useState<string>(searchParams.get('minPrice') || '');
   const [maxPrice, setMaxPrice] = useState<string>(searchParams.get('maxPrice') || '');
@@ -31,17 +29,27 @@ const EquipmentGeneral = () => {
     setLoading(true);
     try {
       const filters = {
-        search: search || undefined,
-        brandIds: selectedBrands.length > 0 ? selectedBrands : undefined,
-        generalCategoryIds: selectedGeneralCategories.length > 0 ? selectedGeneralCategories : undefined,
-        categoryIds: selectedCategories.length > 0 ? selectedCategories : undefined,
+        name: search || undefined,
+        brandId: selectedBrand === 'all' ? undefined : selectedBrand || undefined,
+        generalCategoryId: selectedGeneralCategory === 'all' ? undefined : selectedGeneralCategory || undefined,
+        categoryId: selectedCategory === 'all' ? undefined : selectedCategory || undefined,
         minPrice: minPrice ? Number(minPrice) : undefined,
         maxPrice: maxPrice ? Number(maxPrice) : undefined,
-        status: 'active' // Solo mostrar equipos activos
+        statusId: 'active' // Solo mostrar equipos activos
       };
 
       const data = await equipmentPublicApi.getByFilter(filters);
       setEquipment(data);
+
+      // Actualizar URL después de una búsqueda exitosa
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (selectedBrand && selectedBrand !== 'all') params.set('brandId', selectedBrand);
+      if (selectedGeneralCategory && selectedGeneralCategory !== 'all') params.set('generalCategoryId', selectedGeneralCategory);
+      if (selectedCategory && selectedCategory !== 'all') params.set('categoryId', selectedCategory);
+      if (minPrice) params.set('minPrice', minPrice);
+      if (maxPrice) params.set('maxPrice', maxPrice);
+      setSearchParams(params);
     } catch (error) {
       console.error('Error al cargar equipos:', error);
       setEquipment([]);
@@ -50,48 +58,38 @@ const EquipmentGeneral = () => {
     }
   };
 
-  // Actualizar URL cuando cambien los filtros
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (search) params.set('search', search);
-    if (selectedBrands.length > 0) params.set('brands', selectedBrands.join(','));
-    if (selectedGeneralCategories.length > 0) params.set('generalCategories', selectedGeneralCategories.join(','));
-    if (selectedCategories.length > 0) params.set('categories', selectedCategories.join(','));
-    if (minPrice) params.set('minPrice', minPrice);
-    if (maxPrice) params.set('maxPrice', maxPrice);
-    setSearchParams(params);
-  }, [search, selectedBrands, selectedGeneralCategories, selectedCategories, minPrice, maxPrice]);
-
-  // Cargar equipos cuando cambien los filtros
+  // Cargar equipos inicialmente
   useEffect(() => {
     loadEquipment();
-  }, [search, selectedBrands, selectedGeneralCategories, selectedCategories, minPrice, maxPrice]);
+  }, []); // Solo se ejecuta al montar el componente
 
   const handleSearch = () => {
+    console.log("busqueda de wquipos del lado publico");
     loadEquipment();
     setDrawerOpen(false);
   };
 
   const handleClearFilters = () => {
     setSearch('');
-    setSelectedBrands([]);
-    setSelectedGeneralCategories([]);
-    setSelectedCategories([]);
+    setSelectedBrand('');
+    setSelectedGeneralCategory('');
+    setSelectedCategory('');
     setMinPrice('');
     setMaxPrice('');
     setDrawerOpen(false);
+    loadEquipment(); // Cargar equipos después de limpiar filtros
   };
 
   const filters = (
-    <SidebarFilters
+    <PublicSidebarFilters
       search={search}
       onSearchChange={setSearch}
-      selectedBrands={selectedBrands}
-      onBrandsChange={setSelectedBrands}
-      selectedGeneralCategories={selectedGeneralCategories}
-      onGeneralCategoriesChange={setSelectedGeneralCategories}
-      selectedCategories={selectedCategories}
-      onCategoriesChange={setSelectedCategories}
+      selectedBrand={selectedBrand}
+      onBrandChange={setSelectedBrand}
+      selectedGeneralCategory={selectedGeneralCategory}
+      onGeneralCategoryChange={setSelectedGeneralCategory}
+      selectedCategory={selectedCategory}
+      onCategoryChange={setSelectedCategory}
       minPrice={minPrice}
       onMinPriceChange={setMinPrice}
       maxPrice={maxPrice}

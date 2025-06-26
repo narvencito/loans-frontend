@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { generalCategoryApi } from '../api/general_category_api';
-import { GeneralCategory } from '../types/general-category.types';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import ColumnApp from '@/shared/components/ColumnApp';
 import LabelApp from '@/shared/components/LabelApp';
+import { equipmentCategoryApi } from '@/features/equipment-category/api/equipment-category-api';
+import { EquipmentCategory } from '@/features/equipment-category/types/equipment-category.types';
 
 interface Props {
   value: string;
@@ -11,28 +17,28 @@ interface Props {
   label?: string;
   disabled?: boolean;
   required?: boolean;
-  showAll?: boolean;
+  includeAll?: boolean;
 }
 
-const GeneralCategorySelect = ({
+const PublicEquipmentCategorySelect = ({
   value,
   onChange,
-  label = "Perfil de uso",
+  label = 'Categoría',
   disabled = false,
   required = false,
-  showAll = false
+  includeAll = false
 }: Props) => {
-  const [options, setOptions] = useState<GeneralCategory[]>([]);
+  const [options, setOptions] = useState<EquipmentCategory[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadCategories = async () => {
       setLoading(true);
       try {
-        const data = await generalCategoryApi.getActive();
+        const data = await equipmentCategoryApi.getAll();
         setOptions(data);
       } catch (error) {
-        console.error('Error al cargar perfiles de uso:', error);
+        console.error('Error al cargar categorías:', error);
       } finally {
         setLoading(false);
       }
@@ -58,7 +64,7 @@ const GeneralCategorySelect = ({
         </SelectTrigger>
 
         <SelectContent className="select-white">
-          {showAll && (
+          {includeAll && (
             <SelectItem value="all">Todos</SelectItem>
           )}
           {options.map((category) => (
@@ -72,4 +78,4 @@ const GeneralCategorySelect = ({
   );
 };
 
-export default GeneralCategorySelect; 
+export default PublicEquipmentCategorySelect; 

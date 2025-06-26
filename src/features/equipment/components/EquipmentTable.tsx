@@ -62,9 +62,10 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
     <div className="rounded-md border">
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted">
+          <TableRow className="text-muted-foreground">
             <TableHead>Código</TableHead>
             <TableHead>Nombre</TableHead>
+            <TableHead>Marca</TableHead>
             <TableHead>Descripción</TableHead>
             <TableHead>Categoría</TableHead>
             <TableHead>Perfil de uso</TableHead>
@@ -77,19 +78,18 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
         <TableBody>
           {paginated.map((item) => (
             <TableRow key={item.id}>
-              <TableCell>{item.code}</TableCell>
-              <TableCell>{item.name}</TableCell>
-              <TableCell>
+              <TableCell className="text-foreground">{item.code}</TableCell>
+              <TableCell className="text-foreground">{item.name}</TableCell>
+              <TableCell className="text-foreground">{item.brandRelation?.name || '-'}</TableCell>
+              <TableCell className="text-foreground">
                 <TruncatedWithTooltip text={item.description} />
               </TableCell>
-              <TableCell>{item.categoryName}</TableCell>
-              <TableCell>{item.generalCategory?.name || '-'}</TableCell>
-              <TableCell className="text-right">S/ {item.salePrice.toFixed(2)}</TableCell>
-              <TableCell className="text-right">S/ {item.rentalDailyRate.toFixed(2)}</TableCell>
+              <TableCell className="text-foreground">{item.category?.name || '-'}</TableCell>
+              <TableCell className="text-foreground">{item.generalCategory?.name || '-'}</TableCell>
+              <TableCell className="text-foreground text-right">{formatPrice(item.salePrice)}</TableCell>
+              <TableCell className="text-foreground text-right">{formatPrice(item.rentalDailyRate)}</TableCell>
               <TableCell className="text-center">
-                <span className={`px-2 py-1 rounded text-sm ${
-                  item.statusName === 'AVAILABLE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                }`}>
+                <span className={`text-green-600`}>
                   {getStatusTranslation(item.statusName)}
                 </span>
               </TableCell>
@@ -103,7 +103,7 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
                 </Button>
                 <Button
                   size="sm"
-                  variant="destructive"
+                  className="bg-red-600 hover:bg-red-700 text-white"
                   onClick={() => onDelete(item.id)}
                 >
                   Eliminar

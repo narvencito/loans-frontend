@@ -18,6 +18,7 @@ interface Props {
   label?: string;
   disabled?: boolean;
   required?: boolean;
+  showAll?: boolean;
 }
 
 // Mapa de traducción de estados
@@ -40,7 +41,8 @@ const EquipmentStatusSelect = ({
   onChange,
   label = 'Estado',
   disabled = false,
-  required = false
+  required = false,
+  showAll = false
 }: Props) => {
   const [options, setOptions] = useState<EquipmentStatus[]>([]);
 
@@ -71,6 +73,9 @@ const EquipmentStatusSelect = ({
         </SelectTrigger>
 
         <SelectContent className="select-white">
+          {showAll && (
+            <SelectItem value="all">Todos</SelectItem>
+          )}
           {options.map((s) => (
             <SelectItem key={s.id} value={s.id}>
               {getStatusTranslation(s.name)}

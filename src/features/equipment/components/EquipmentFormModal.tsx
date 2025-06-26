@@ -5,6 +5,7 @@ import FileDropzone from '@/shared/components/FileDropzone';
 import EquipmentStatusSelect from '@/features/equipment-status/components/EquipmentStatusSelect';
 import EquipmentCategorySelect from '@/features/equipment-category/components/EquipmentCategorySelect';
 import GeneralCategorySelect from '@/features/general-category/components/GeneralCategorySelect';
+import BrandSelect from '@/features/brand/components/BrandSelect';
 import EquipmentFeatureSelectCheckboxList from '@/features/equipment-feature/components/EquipmentFeatureSelectedCheckboxList';
 import { CreateEquipmentDto, EquipmentItem } from '../api/equipment_api';
 import { ImageApp } from '@/features/equipment-feature/api/equipment-feature-api';
@@ -34,7 +35,7 @@ const formatNumber = (num: string | number | undefined) => {
 };
 
 const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) => {
-  const [form, setForm] = useState<CreateEquipmentDto & { newImages?: File[]; number?: string; serial?: string; description?: string }>(
+  const [form, setForm] = useState<CreateEquipmentDto & { newImages?: File[]; number?: string; serial?: string; description?: string; brandId?: string }>(
     {
       code: '',
       name: '',
@@ -42,6 +43,7 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
       categoryId: '',
       generalCategoryId: '',
       statusId: '',
+      brandId: '',
       location: '',
       serial: '',
       number: '',
@@ -71,6 +73,7 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
         statusId: defaultValues.statusId,
         categoryId: defaultValues.categoryId,
         generalCategoryId: defaultValues.generalCategoryId || '',
+        brandId: defaultValues.brandId || '',
         purchasePrice: defaultValues.purchasePrice || 0,
         salePrice: defaultValues.salePrice || 0,
         rentalDailyRate: defaultValues.rentalDailyRate || 0,
@@ -89,6 +92,7 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
         statusId: '',
         categoryId: '',
         generalCategoryId: '',
+        brandId: '',
         purchasePrice: 0,
         salePrice: 0,
         rentalDailyRate: 0,
@@ -116,6 +120,7 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
     if (!form.categoryId) newErrors.categoryId = 'La categoría es requerida';
     if (!form.generalCategoryId) newErrors.generalCategoryId = 'El perfil de uso es requerido';
     if (!form.statusId) newErrors.statusId = 'El estado es requerido';
+    if (!form.brandId) newErrors.brandId = 'La marca es requerida';
     if (form.purchasePrice <= 0) newErrors.purchasePrice = 'El precio de compra debe ser mayor a 0';
     if (form.salePrice <= 0) newErrors.salePrice = 'El precio de venta debe ser mayor a 0';
     if (form.rentalDailyRate <= 0) newErrors.rentalDailyRate = 'La tarifa diaria debe ser mayor a 0';
@@ -135,12 +140,12 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
     formData.append('statusId', form.statusId);
     formData.append('categoryId', form.categoryId);
     formData.append('generalCategoryId', form.generalCategoryId);
+    formData.append('brandId', form.brandId || '');
     formData.append('serial', form.serial || '');
     formData.append('purchasePrice', String(form.purchasePrice || 0));
     formData.append('salePrice', String(form.salePrice || 0));
     formData.append('rentalDailyRate', String(form.rentalDailyRate || 0));
     
-    console.log("featureIds de los features en el form ",form.featureIds);
     // Asegurarnos de que featureIds siempre se envíe como array
     const featureIds = form.featureIds || [];
     if (featureIds.length > 0) {
@@ -172,33 +177,45 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
       maxWidth='4xl'
       title={defaultValues ? "Editar equipo" : "Registrar nuevo equipo"}
     >
-      <ColumnApp className="overflow-y-auto px-6 py-4 space-y-4 flex-1">
+      <ColumnApp className="overflow-y-auto px-6 py-4 space-y-4 flex-1 max-h-[calc(100vh-200px)]">
         <RowApp className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <RowApp>
-            <ColumnApp>
+          <RowApp className="grid grid-cols-3 gap-4 w-full">
+            <ColumnApp className="w-full">
               <LabelApp className="text-sm font-medium">Código *</LabelApp>
               <Input 
                 name="code" 
                 value={form.code} 
                 onChange={handleChange} 
-                className={errors.code ? 'border-red-500' : ''}
+                className={`w-full ${errors.code ? 'border-red-500' : ''}`}
               />
               {errors.code && <span className="text-red-500 text-xs">{errors.code}</span>}
             </ColumnApp>
 
-            <ColumnApp>
+            <ColumnApp className="w-full">
               <LabelApp className="text-sm font-medium">Nombre *</LabelApp>
               <Input 
                 name="name" 
                 value={form.name} 
                 onChange={handleChange}
-                className={errors.name ? 'border-red-500' : ''}
+                className={`w-full ${errors.name ? 'border-red-500' : ''}`}
               />
               {errors.name && <span className="text-red-500 text-xs">{errors.name}</span>}
             </ColumnApp>
+
+            <ColumnApp className="w-full">
+              <BrandSelect 
+                value={form.brandId} 
+                onChange={val => {
+                  setForm(prev => ({ ...prev, brandId: val }));
+                  setErrors(prev => ({ ...prev, brandId: '' }));
+                }}
+                required
+              />
+              {errors.brandId && <span className="text-red-500 text-xs">{errors.brandId}</span>}
+            </ColumnApp>
           </RowApp>
 
-          <RowApp>
+          <RowApp className="grid grid-cols-2 gap-4 w-full">
             <EquipmentCategorySelect 
               value={form.categoryId} 
               onChange={val => {
@@ -218,7 +235,9 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
               required
             />
             {errors.generalCategoryId && <span className="text-red-500 text-xs">{errors.generalCategoryId}</span>}
-            
+          </RowApp>
+
+          <RowApp className="grid grid-cols-2 gap-4 w-full">
             <EquipmentStatusSelect 
               value={form.statusId} 
               onChange={val => {
@@ -228,14 +247,18 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
               required
             />
             {errors.statusId && <span className="text-red-500 text-xs">{errors.statusId}</span>}
+            
+            <ColumnApp className="w-full">
+              <LabelApp className="text-sm font-medium">Ubicación</LabelApp>
+              <Input 
+                name="location" 
+                value={form.location} 
+                onChange={handleChange}
+              />
+            </ColumnApp>
           </RowApp>
 
           <RowApp>
-            <ColumnApp>
-              <LabelApp className="text-sm font-medium">Ubicación</LabelApp>
-              <Input name="location" value={form.location} onChange={handleChange} />
-            </ColumnApp>
-
             <ColumnApp>
               <LabelApp className="text-sm font-medium">Serie</LabelApp>
               <Input name="serial" value={form.serial} onChange={handleChange} />
@@ -311,7 +334,6 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
             <EquipmentFeatureSelectCheckboxList
               selected={form.featureIds || []}
               onChange={(ids) => {
-                console.log("ids de los features ",ids);
                 setForm(prev => ({ ...prev, featureIds: ids }));
               }}
             />
@@ -337,7 +359,7 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
               onRemoveNew={(file) => setForm(prev => ({ ...prev, newImages: prev.newImages?.filter(f => f !== file) || [] }))}
             />
           </ColumnApp>
-cur        </RowApp>
+        </RowApp>
       </ColumnApp>
     </DialogApp>
   );

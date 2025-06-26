@@ -1,24 +1,27 @@
 import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Brand, brandApi } from '../api/brand_api';
+import ColumnApp from '@/shared/components/ColumnApp';
+import LabelApp from '@/shared/components/LabelApp';
 
 interface Props {
-  value: string | null;
-  onChange: (value: string | null) => void;
+  value: string;
+  onChange: (value: string) => void;
   label?: string;
-  placeholder?: string;
+  disabled?: boolean;
   required?: boolean;
+  showAll?: boolean;
 }
 
 const BrandSelect = ({
   value,
   onChange,
   label = "Marca",
-  placeholder = "Seleccione una marca",
-  required = false
+  disabled = false,
+  required = false,
+  showAll = false
 }: Props) => {
-  const [brands, setBrands] = useState<Brand[]>([]);
+  const [options, setOptions] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,7 +29,7 @@ const BrandSelect = ({
       setLoading(true);
       try {
         const data = await brandApi.getActive();
-        setBrands(data);
+        setOptions(data);
       } catch (error) {
         console.error('Error al cargar marcas:', error);
       } finally {
@@ -38,26 +41,33 @@ const BrandSelect = ({
   }, []);
 
   return (
-    <div className="flex flex-col gap-1.5">
-      {label && <Label>{label}{required && <span className="text-red-500 ml-1">*</span>}</Label>}
+    <ColumnApp className='w-full'>
+      <LabelApp className="text-sm">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </LabelApp>
+
       <Select
-        value={value || 'all'}
-        onValueChange={(val) => onChange(val === 'all' ? null : val)}
-        disabled={loading}
+        value={value}
+        onValueChange={onChange}
+        disabled={disabled || loading}
       >
-        <SelectTrigger className="bg-white">
-          <SelectValue placeholder={placeholder} />
+        <SelectTrigger className="w-full bg-white">
+          <SelectValue placeholder="Seleccione..." />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Todas las marcas</SelectItem>
-          {brands.map((brand) => (
+
+        <SelectContent className="select-white">
+          {showAll && (
+            <SelectItem value="all">Todos</SelectItem>
+          )}
+          {options.map((brand) => (
             <SelectItem key={brand.id} value={brand.id}>
               {brand.name}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-    </div>
+    </ColumnApp>
   );
 };
 

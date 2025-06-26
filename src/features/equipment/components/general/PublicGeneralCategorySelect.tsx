@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { generalCategoryApi } from '../api/general_category_api';
-import { GeneralCategory } from '../types/general-category.types';
+import { generalCategoryApi } from '@/features/general-category/api/general_category_api';
+import { GeneralCategory } from '@/features/general-category/types/general-category.types';
 import ColumnApp from '@/shared/components/ColumnApp';
 import LabelApp from '@/shared/components/LabelApp';
 
@@ -11,16 +11,16 @@ interface Props {
   label?: string;
   disabled?: boolean;
   required?: boolean;
-  showAll?: boolean;
+  includeAll?: boolean;
 }
 
-const GeneralCategorySelect = ({
+const PublicGeneralCategorySelect = ({
   value,
   onChange,
   label = "Perfil de uso",
   disabled = false,
   required = false,
-  showAll = false
+  includeAll = false
 }: Props) => {
   const [options, setOptions] = useState<GeneralCategory[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,7 +58,7 @@ const GeneralCategorySelect = ({
         </SelectTrigger>
 
         <SelectContent className="select-white">
-          {showAll && (
+          {includeAll && (
             <SelectItem value="all">Todos</SelectItem>
           )}
           {options.map((category) => (
@@ -72,4 +72,4 @@ const GeneralCategorySelect = ({
   );
 };
 
-export default GeneralCategorySelect; 
+export default PublicGeneralCategorySelect; 

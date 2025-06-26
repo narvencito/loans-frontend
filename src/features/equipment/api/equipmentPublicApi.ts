@@ -2,28 +2,54 @@ import { api } from '@/shared/utils/api';
 import { apiRequest } from '@/shared/utils/apiHelper';
 
 export interface PublicEquipmentFilters {
-  search?: string;
-  brandIds?: string[];
-  categoryIds?: string[];
-  generalCategoryIds?: string[];
+  name?: string;
+  brandId?: string;
+  categoryId?: string;
+  generalCategoryId?: string;
+  statusId?: string;
   minPrice?: number;
   maxPrice?: number;
-  status?: string;
+  location?: string;
+  serial?: string;
+  code?: string;
 }
 
 export interface PublicEquipmentItem {
   id: string;
+  code: string;
   name: string;
   description: string;
+  serial: string;
+  number: string | number;
+  purchasePrice: number;
   salePrice: number;
   rentalDailyRate: number;
-  status: string;
-  brandId: string;
-  brandName: string;
   categoryId: string;
-  categoryName: string;
+  category: {
+    id: string;
+    name: string;
+    isActive: boolean;
+  };
   generalCategoryId: string;
-  generalCategoryName: string;
+  generalCategory: {
+    id: string;
+    name: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  brandId: string;
+  brandRelation: {
+    id: string;
+    name: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  statusId: string;
+  statusName: string;
+  location?: string;
+  isActive: boolean;
   features: {
     id: string;
     name: string;
@@ -34,21 +60,16 @@ export interface PublicEquipmentItem {
     url: string;
     isMain: boolean;
   }[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const equipmentPublicApi = {
   getByFilter(filters: PublicEquipmentFilters): Promise<PublicEquipmentItem[]> {
-    const params = new URLSearchParams();
-    if (filters.search) params.append('search', filters.search);
-    if (filters.brandIds?.length) params.append('brandIds', filters.brandIds.join(','));
-    if (filters.categoryIds?.length) params.append('categoryIds', filters.categoryIds.join(','));
-    if (filters.generalCategoryIds?.length) params.append('generalCategoryIds', filters.generalCategoryIds.join(','));
-    if (filters.minPrice) params.append('minPrice', filters.minPrice.toString());
-    if (filters.maxPrice) params.append('maxPrice', filters.maxPrice.toString());
-    if (filters.status) params.append('status', filters.status);
-
+    console.log('listado de equipos publicos ');
+    console.log(filters);
     return apiRequest(
-      api.get(`/public/equipment?${params.toString()}`),
+      api.post('/public/equipment/list', filters),
       {
         loading: 'Cargando equipos...',
         error: 'Error al cargar equipos',

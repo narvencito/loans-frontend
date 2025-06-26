@@ -9,6 +9,7 @@ export interface CreateEquipmentDto {
   categoryId: string;
   generalCategoryId: string;
   statusId: string;
+  brandId: string;
   location?: string;
   serial?: string;
   number?: string;
@@ -29,17 +30,31 @@ export interface EquipmentItem {
   name: string;
   description: string;
   serial: string;
-  number: string;
+  number: string | number;
   purchasePrice: number;
   salePrice: number;
   rentalDailyRate: number;
   categoryId: string;
-  categoryName: string;
+  category: {
+    id: string;
+    name: string;
+    isActive: boolean;
+  };
   generalCategoryId: string;
   generalCategory: {
     id: string;
     name: string;
     isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  brandId: string;
+  brandRelation: {
+    id: string;
+    name: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
   };
   statusId: string;
   statusName: string;
@@ -47,6 +62,8 @@ export interface EquipmentItem {
   isActive: boolean;
   features: EquipmentFeature[];
   images: ImageApp[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Equipment {
@@ -77,15 +94,19 @@ export interface Equipment {
 }
 
 export interface EquipmentFilters {
+  name?: string;
+  brand?: string;
   brandId?: string;
+  categoryId?: string;
   generalCategoryId?: string;
+  statusId?: string;
   equipmentCategoryId?: string;
 }
 
 export const equipmentApi = {
-  async getAll(): Promise<EquipmentItem[]> {
+  async getAll(filters: EquipmentFilters = {}): Promise<EquipmentItem[]> {
     return apiRequest(
-      api.get('/equipment'),
+      api.post('/equipment/list', filters),
       {
         loading: 'Cargando equipos...',
         error: 'No se pudieron cargar los equipos',
@@ -140,7 +161,7 @@ export const equipmentApi = {
     });
   },
 
-   async deleteImageByUrl(url: string): Promise<void> {
+  async deleteImageByUrl(url: string): Promise<void> {
     return apiRequest(
       api.delete('/equipment/images/by-url', { params: { url } }),
       {
@@ -151,18 +172,13 @@ export const equipmentApi = {
     );
   },
 
-  getPublic(filters: EquipmentFilters = {}): Promise<Equipment[]> {
-    const params = new URLSearchParams();
-    if (filters.brandId) params.append('brandId', filters.brandId);
-    if (filters.generalCategoryId) params.append('generalCategoryId', filters.generalCategoryId);
-    if (filters.equipmentCategoryId) params.append('equipmentCategoryId', filters.equipmentCategoryId);
-
-    return apiRequest(
-      api.get(`/equipment/public?${params.toString()}`),
-      {
-        loading: 'Cargando equipos...',
-        error: 'Error al cargar equipos',
-      }
-    );
-  },
+  //getPublic(filters: EquipmentFilters = {}): Promise<Equipment[]> {
+  //  return apiRequest(
+  //    api.post('/equipment/public/list', filters),
+  //    {
+  //      loading: 'Cargando equipos...',
+  //      error: 'Error al cargar equipos',
+  //    }
+  //  );
+  //},
 };

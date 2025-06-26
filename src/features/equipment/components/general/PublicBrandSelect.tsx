@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { generalCategoryApi } from '../api/general_category_api';
-import { GeneralCategory } from '../types/general-category.types';
+import { Brand, brandApi } from '@/features/brand/api/brand_api';
 import ColumnApp from '@/shared/components/ColumnApp';
 import LabelApp from '@/shared/components/LabelApp';
 
@@ -11,34 +10,34 @@ interface Props {
   label?: string;
   disabled?: boolean;
   required?: boolean;
-  showAll?: boolean;
+  includeAll?: boolean;
 }
 
-const GeneralCategorySelect = ({
+const PublicBrandSelect = ({
   value,
   onChange,
-  label = "Perfil de uso",
+  label = "Marca",
   disabled = false,
   required = false,
-  showAll = false
+  includeAll = false
 }: Props) => {
-  const [options, setOptions] = useState<GeneralCategory[]>([]);
+  const [options, setOptions] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const loadCategories = async () => {
+    const loadBrands = async () => {
       setLoading(true);
       try {
-        const data = await generalCategoryApi.getActive();
+        const data = await brandApi.getActive();
         setOptions(data);
       } catch (error) {
-        console.error('Error al cargar perfiles de uso:', error);
+        console.error('Error al cargar marcas:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadCategories();
+    loadBrands();
   }, []);
 
   return (
@@ -58,12 +57,12 @@ const GeneralCategorySelect = ({
         </SelectTrigger>
 
         <SelectContent className="select-white">
-          {showAll && (
+          {includeAll && (
             <SelectItem value="all">Todos</SelectItem>
           )}
-          {options.map((category) => (
-            <SelectItem key={category.id} value={category.id}>
-              {category.name}
+          {options.map((brand) => (
+            <SelectItem key={brand.id} value={brand.id}>
+              {brand.name}
             </SelectItem>
           ))}
         </SelectContent>
@@ -72,4 +71,4 @@ const GeneralCategorySelect = ({
   );
 };
 
-export default GeneralCategorySelect; 
+export default PublicBrandSelect; 
