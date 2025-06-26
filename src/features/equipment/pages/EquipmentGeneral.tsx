@@ -101,40 +101,42 @@ const EquipmentGeneral = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-20">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Catálogo de Equipos</h1>
-        <Button
-          variant="outline"
-          className="md:hidden"
-          onClick={() => setDrawerOpen(true)}
-        >
-          <Menu className="h-4 w-4 mr-2" />
-          Filtros
-        </Button>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="h-20 flex items-center justify-between fixed top-10 left-0 right-0 bg-white z-10 border-b px-4">
+          <h1 className="text-3xl font-bold">Catálogo de Equipos</h1>
+          <Button
+            variant="outline"
+            className="md:hidden"
+            onClick={() => setDrawerOpen(true)}
+          >
+            <Menu className="h-4 w-4 mr-2" />
+            Filtros
+          </Button>
+        </div>
 
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Filtros laterales en desktop */}
-        <aside className="hidden md:block w-80">
-          {filters}
-        </aside>
+        <div className="flex pt-40">
+          {/* Filtros laterales en desktop */}
+          <aside className="hidden md:block w-80 fixed top-40 bottom-0 overflow-auto pr-4">
+            {filters}
+          </aside>
 
-        {/* Contenido principal */}
-        <main className="flex-1">
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-2">Cargando...</span>
-            </div>
-          ) : equipment.length === 0 ? (
-            <div className="text-center text-gray-500">
-              <p>No se encontraron equipos que coincidan con los filtros seleccionados.</p>
-            </div>
-          ) : (
-            <ProductGrid products={equipment} />
-          )}
-        </main>
+          {/* Contenido principal */}
+          <main className="flex-1 md:ml-80">
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-2">Cargando...</span>
+              </div>
+            ) : equipment.length === 0 ? (
+              <div className="text-center text-gray-500">
+                <p>No se encontraron equipos que coincidan con los filtros seleccionados.</p>
+              </div>
+            ) : (
+              <ProductGrid products={equipment} />
+            )}
+          </main>
+        </div>
       </div>
 
       {/* Drawer para filtros en móvil */}

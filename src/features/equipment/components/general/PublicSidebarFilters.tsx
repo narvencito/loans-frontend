@@ -41,12 +41,13 @@ const PublicSidebarFilters = ({
   onClearFilters
 }: Props) => {
   return (
-    <div className="bg-white p-4 rounded-lg">
-      <h2 className="text-lg font-bold mb-4">Filtros</h2>
+    <div className="bg-white rounded-lg flex flex-col h-full">
+      <div className="p-4 border-b">
+        <h2 className="text-lg font-bold">Filtros de Búsqueda</h2>
+      </div>
       
-      <div className="space-y-6">
-        {/* Búsqueda */}
-        <div className="space-y-2">
+      <div className="p-4 space-y-6 overflow-auto flex-1">
+        {/* Búsqueda  <div className="space-y-2">
           <Label>Búsqueda</Label>
           <Input
             type="text"
@@ -55,6 +56,7 @@ const PublicSidebarFilters = ({
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
+         */}
 
         <Accordion type="multiple" className="w-full">
           {/* Marca */}
@@ -113,22 +115,22 @@ const PublicSidebarFilters = ({
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+      </div>
 
-        <div className="space-y-2 pt-4">
-          <Button 
-            onClick={onSearch}
-            className="w-full"
-          >
-            Aplicar filtros
-          </Button>
-          <Button 
-            onClick={onClearFilters}
-            variant="outline"
-            className="w-full"
-          >
-            Limpiar filtros
-          </Button>
-        </div>
+      <div className="p-4 border-t space-y-2">
+        <Button 
+          onClick={onSearch}
+          className="w-full"
+        >
+          Aplicar filtros
+        </Button>
+        <Button 
+          onClick={onClearFilters}
+          variant="outline"
+          className="w-full"
+        >
+          Limpiar filtros
+        </Button>
       </div>
     </div>
   );

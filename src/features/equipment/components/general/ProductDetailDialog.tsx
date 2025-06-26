@@ -32,8 +32,8 @@ const ProductDetailDialog = ({ product, open, onClose }: Props) => {
   if (!product) return null;
 
   const getStatusInfo = (status: string) => {
-    const normalizedStatus = status.toUpperCase();
-    return statusTranslations[normalizedStatus] || { label: status, className: 'bg-gray-100 text-gray-800' };
+    const normalizedStatus = status?.toUpperCase() || 'UNKNOWN';
+    return statusTranslations[normalizedStatus] || { label: status || 'Desconocido', className: 'bg-gray-100 text-gray-800' };
   };
 
   // Agrupar características por tipo
@@ -47,7 +47,7 @@ const ProductDetailDialog = ({ product, open, onClose }: Props) => {
     return acc;
   }, {});
 
-  const statusInfo = getStatusInfo(product.status);
+  const statusInfo = getStatusInfo(product.statusName);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -65,38 +65,38 @@ const ProductDetailDialog = ({ product, open, onClose }: Props) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Columna izquierda */}
             <div className="space-y-6">
-              <div className="aspect-square rounded-lg overflow-hidden border">
+              <div className="max-w-lg mx-auto aspect-[4/2] rounded-lg overflow-hidden border">
                 <ImageCarousel images={product.images} />
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-gray-50 rounded-lg">
                 <h3 className="text-lg font-semibold mb-3">Información general</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <p className="text-sm text-gray-500">Marca</p>
-                    <p className="font-medium">{product.brandName || 'No especificada'}</p>
+                    <p className="font-medium">{product.brandRelation?.name || 'No especificada'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Categoría</p>
-                    <p className="font-medium">{product.categoryName}</p>
+                    <p className="font-medium">{product.category?.name}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Perfil de uso</p>
-                    <p className="font-medium">{product.generalCategoryName}</p>
+                    <p className="font-medium">{product.generalCategory?.name}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-gray-50 rounded-lg">
                 <h3 className="text-lg font-semibold mb-3">Precios</h3>
                 <div className="grid grid-cols-2 gap-6">
-                  <div className="p-4 bg-blue-50 rounded-lg">
+                  <div className=" bg-blue-50 rounded-lg">
                     <p className="text-sm text-blue-600 mb-1">Precio de venta</p>
                     <p className="text-2xl font-bold text-blue-700">
                       S/ {product.salePrice.toFixed(2)}
                     </p>
                   </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
+                  <div className=" bg-green-50 rounded-lg">
                     <p className="text-sm text-green-600 mb-1">Tarifa diaria</p>
                     <p className="text-2xl font-bold text-green-700">
                       S/ {product.rentalDailyRate.toFixed(2)}
@@ -119,11 +119,14 @@ const ProductDetailDialog = ({ product, open, onClose }: Props) => {
                   {Object.entries(groupedFeatures).map(([type, features]) => (
                     <div key={type}>
                       <h4 className="font-medium text-gray-700 mb-2">{type}</h4>
-                      <div className="grid grid-cols-1 gap-2">
+                      <div className="flex flex-wrap gap-2">
                         {features.map((feature) => (
-                          <div key={feature.id} className="p-3 bg-white rounded-lg border">
+                          <div 
+                            key={feature.id} 
+                            className="p-1 bg-white rounded-lg border inline-flex flex-col"
+                          >
                             <p className="text-sm font-medium">{feature.name}</p>
-                            <p className="text-sm text-gray-600">{feature.value}</p>
+                            <p className="text-sm text-gray-600 mt-1">{feature.value}</p>
                           </div>
                         ))}
                       </div>

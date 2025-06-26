@@ -69,7 +69,7 @@ export const equipmentPublicApi = {
     console.log('listado de equipos publicos ');
     console.log(filters);
     return apiRequest(
-      api.post('/public/equipment/list', filters),
+      api.post('/public/equipment/filter', filters),
       {
         loading: 'Cargando equipos...',
         error: 'Error al cargar equipos',
