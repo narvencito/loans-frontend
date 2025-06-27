@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import Pagination from '@/shared/components/Pagination';
 import { EquipmentFinancingItem } from '../api/equipment-financing-api';
+import { formatDate } from "@/shared/utils/dateUtils";
 
 interface Props {
   items: EquipmentFinancingItem[];
@@ -26,16 +27,31 @@ const EquipmentFinancingTable = ({ items, onEdit, onDelete, onViewSchedule }: Pr
   const totalPages = Math.ceil(items.length / pageSize);
   const paginatedItems = items.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PAID':
+        return 'bg-green-100 text-green-700';
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'OVERDUE':
+        return 'bg-red-100 text-red-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow className="text-muted-foreground">
             <TableHead>Cliente</TableHead>
-            <TableHead>Equipo</TableHead>
-            <TableHead>Precio Total</TableHead>
+            <TableHead>Monto Total</TableHead>
             <TableHead>Inicial</TableHead>
-            <TableHead>Fecha</TableHead>
+            <TableHead>Monto Financiado</TableHead>
+            <TableHead>Plazo</TableHead>
+            <TableHead>Tasa Anual</TableHead>
+            <TableHead>Fecha Inicio</TableHead>
             <TableHead className="text-center">Estado</TableHead>
             <TableHead className="text-center">Acciones</TableHead>
           </TableRow>
@@ -44,17 +60,19 @@ const EquipmentFinancingTable = ({ items, onEdit, onDelete, onViewSchedule }: Pr
           {paginatedItems.map((item) => (
             <TableRow key={item.id}>
               <TableCell className="text-foreground">{item.clientName}</TableCell>
-              <TableCell className="text-foreground">{item.equipmentName}</TableCell>
-              <TableCell className="text-foreground">S/ {item.totalPrice}</TableCell>
-              <TableCell className="text-foreground">S/ {item.downPayment}</TableCell>
+              <TableCell className="text-foreground">S/ {item.totalAmount.toFixed(2)}</TableCell>
+              <TableCell className="text-foreground">S/ {item.downPayment.toFixed(2)}</TableCell>
+              <TableCell className="text-foreground">S/ {item.financedAmount.toFixed(2)}</TableCell>
+              <TableCell className="text-foreground">{item.term} meses</TableCell>
+              <TableCell className="text-foreground">{item.annualRate}%</TableCell>
               <TableCell className="text-foreground">
-                {new Date(item.createdAt).toLocaleDateString()}
+                {formatDate(item.startDate)}
               </TableCell>
               <TableCell className="text-center">
-                <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                  item.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                }`}>
-                  {item.isActive ? 'Activo' : 'Inactivo'}
+                <span className={`px-2 py-0.5 rounded text-xs font-semibold ${getStatusColor(item.status.name)}`}>
+                  {item.status.name === 'PAID' ? 'Pagado' : 
+                   item.status.name === 'PENDING' ? 'Pendiente' : 
+                   item.status.name === 'OVERDUE' ? 'Vencido' : item.status.name}
                 </span>
               </TableCell>
               <TableCell className="text-center space-x-2">

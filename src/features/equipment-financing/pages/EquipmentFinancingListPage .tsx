@@ -10,7 +10,12 @@ import { CreateEquipmentFinancingDto, equipmentFinancingApi, EquipmentFinancingI
 import { SimpleClient } from "@/features/client/components/ClientSearchInput";
 import { clientApi } from "@/features/client/api/client_api";
 import AsyncClientCombobox from "@/features/client/components/AsyncClientCombobox";
-import { Label } from "@/components/ui/label";
+
+const FINANCING_STATUSES = {
+  PAID: 'Pagado',
+  PENDING: 'Pendiente',
+  OVERDUE: 'Vencido'
+} as const;
 
 const EquipmentFinancingListPage = () => {
   const [financings, setFinancings] = useState<EquipmentFinancingItem[]>([]);
@@ -19,12 +24,14 @@ const EquipmentFinancingListPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [selected, setSelected] = useState<EquipmentFinancingItem | null>(null);
   const [selectedForSchedule, setSelectedForSchedule] = useState<EquipmentFinancingItem | null>(null);
+  const [loading, setLoading] = useState(false);
   
   // Filtros visuales
   const [clienteFiltro, setClienteFiltro] = useState<string | null>(null);
-  const [estadoFiltro, setEstadoFiltro] = useState<boolean | null>(null);
+  const [estadoFiltro, setEstadoFiltro] = useState<string | null>(null);
 
   const loadData = async () => {
+    setLoading(true);
     const [financingList, clientList, equipmentList] = await Promise.all([
       equipmentFinancingApi.getAll(),
       clientApi.searchClientsByNameDocument(''),
@@ -33,6 +40,7 @@ const EquipmentFinancingListPage = () => {
     setFinancings(financingList);
     setClients(clientList);
     setEquipments(equipmentList);
+    setLoading(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -64,12 +72,14 @@ const EquipmentFinancingListPage = () => {
   };
 
   const buscarFinanciamientos = async () => {
+    setLoading(true);
     const filteredFinancings = financings.filter(f => {
       if (clienteFiltro && f.clientId !== clienteFiltro) return false;
-      if (estadoFiltro !== null && f.isActive !== estadoFiltro) return false;
+      if (estadoFiltro && f.status.name !== estadoFiltro) return false;
       return true;
     });
     setFinancings(filteredFinancings);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -78,14 +88,14 @@ const EquipmentFinancingListPage = () => {
 
   return (
     <div className="p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold">Financiamiento de Equipos</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+        <h1 className="text-xl sm:text-2xl font-bold px-2 py-1">Financiamiento de Equipos</h1>
       </div>
 
-      {/* Filtros */}
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-          <div>
+      <div className="flex flex-wrap sm:flex-nowrap justify-between items-end gap-4 mb-6">
+        {/* Filtros a la izquierda */}
+        <div className="flex flex-col sm:flex-row gap-4 flex-grow">
+          <div className="w-full sm:w-64">
             <AsyncClientCombobox
               selectedClientId={clienteFiltro}
               onSelect={setClienteFiltro}
@@ -93,36 +103,45 @@ const EquipmentFinancingListPage = () => {
             />
           </div>
 
-          <div>
-            <Label>Estado</Label>
+          <div className="w-full sm:w-48">
             <select
-              value={estadoFiltro === null ? '' : estadoFiltro.toString()}
-              onChange={(e) => setEstadoFiltro(e.target.value === '' ? null : e.target.value === 'true')}
-              className="w-full p-2 border rounded-md"
+              value={estadoFiltro || ''}
+              onChange={(e) => setEstadoFiltro(e.target.value || null)}
+              className="w-full p-2 border rounded"
             >
               <option value="">Todos los estados</option>
-              <option value="true">Activo</option>
-              <option value="false">Inactivo</option>
+              {Object.entries(FINANCING_STATUSES).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </div>
+        </div>
 
-          <div className="flex items-end">
-            <Button
-              onClick={buscarFinanciamientos}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Buscar
-            </Button>
-          </div>
+        {/* Botones a la derecha */}
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button
+            onClick={buscarFinanciamientos}
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Buscar
+          </Button>
         </div>
       </div>
 
-      <EquipmentFinancingTable
-        items={financings}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onViewSchedule={handleViewSchedule}
-      />
+      {loading ? (
+        <p>Cargando...</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <EquipmentFinancingTable
+            items={financings}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onViewSchedule={handleViewSchedule}
+          />
+        </div>
+      )}
 
       <EquipmentFinancingFormModal
         open={showModal}

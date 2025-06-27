@@ -1,22 +1,33 @@
 import { api } from '@/shared/utils/api';
 import { apiRequest } from '@/shared/utils/apiHelper';
 
+interface FinancingStatus {
+  id: string;
+  name: string;
+}
+
 export interface EquipmentFinancingItem {
   id: string;
   clientId: string;
   clientName: string;
   equipmentId: string;
   equipmentName: string;
-  totalPrice: number;
-  isActive: boolean;
+  totalAmount: number;
   downPayment: number;
+  financedAmount: number;
+  annualRate: number;
+  term: number;
+  startDate: string;
+  status: FinancingStatus;
+  requestId: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateEquipmentFinancingDto {
   clientId: string;
   equipmentId: string;
-  totalPrice: number;
+  totalAmount: number;
   downPayment: number;
 }
 
