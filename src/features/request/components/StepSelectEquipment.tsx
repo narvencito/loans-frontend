@@ -10,11 +10,24 @@ interface Props {
 
 export const StepSelectEquipment = ({ onNext, onPrevious, preselectedId }: Props) => {
   const [equipmentList, setEquipmentList] = useState<EquipmentItem[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(preselectedId || null);
 
   useEffect(() => {
-    equipmentApi.getAll().then(setEquipmentList);
-  }, []);
+    const fetchEquipment = async () => {
+      const equipment = await equipmentApi.getAll();
+      setEquipmentList(equipment);
+      
+      // Si hay un ID preseleccionado, automáticamente seleccionamos ese equipo
+      if (preselectedId) {
+        const preselected = equipment.find(eq => eq.id === preselectedId);
+        if (preselected) {
+          onNext(preselected);
+        }
+      }
+    };
+    
+    fetchEquipment();
+  }, [preselectedId, onNext]);
 
   const handleSelect = () => {
     const selected = equipmentList.find((e) => e.id === selectedId);

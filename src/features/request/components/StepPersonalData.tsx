@@ -7,6 +7,7 @@ interface Props {
   onNext: (data: FormData) => void;
   onPrevious?: () => void;
   showPreviousButton?: boolean;
+  initialData?: FormData;
 }
 
 const formSchema = z.object({
@@ -38,14 +39,14 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = false }: Props) => {
+export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = false, initialData }: Props) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       firstName: '',
       paternalSurname: '',
       maternalSurname: '',
@@ -62,18 +63,18 @@ export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = fals
   };
 
   return (
-    <div className="max-w-lg mx-auto bg-white shadow-xl rounded-lg p-8">
-      <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">Datos personales</h2>
+    <div className="max-w-sm mx-auto bg-white shadow-xl rounded-lg p-4">
+      <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Datos personales</h2>
 
-      <form onSubmit={handleSubmit(handleContinue)} className="space-y-6">
+      <form onSubmit={handleSubmit(handleContinue)} className="space-y-3">
         <div>
           <input
             {...register('firstName')}
             type="text"
             placeholder="Nombres"
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
           />
-          {errors.firstName && <p className="mt-1 text-sm text-red-600 font-medium">{errors.firstName.message}</p>}
+          {errors.firstName && <p className="mt-0.5 text-sm text-red-600 font-medium">{errors.firstName.message}</p>}
         </div>
 
         <div>
@@ -81,9 +82,9 @@ export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = fals
             {...register('paternalSurname')}
             type="text"
             placeholder="Apellido paterno"
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
           />
-          {errors.paternalSurname && <p className="mt-1 text-sm text-red-600 font-medium">{errors.paternalSurname.message}</p>}
+          {errors.paternalSurname && <p className="mt-0.5 text-sm text-red-600 font-medium">{errors.paternalSurname.message}</p>}
         </div>
 
         <div>
@@ -91,9 +92,9 @@ export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = fals
             {...register('maternalSurname')}
             type="text"
             placeholder="Apellido materno"
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
           />
-          {errors.maternalSurname && <p className="mt-1 text-sm text-red-600 font-medium">{errors.maternalSurname.message}</p>}
+          {errors.maternalSurname && <p className="mt-0.5 text-sm text-red-600 font-medium">{errors.maternalSurname.message}</p>}
         </div>
 
         <div>
@@ -101,10 +102,10 @@ export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = fals
             {...register('codeStudent')}
             type="text"
             placeholder="Código de estudiante"
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
             minLength={6}
           />
-          {errors.codeStudent && <p className="mt-1 text-sm text-red-600 font-medium">{errors.codeStudent.message}</p>}
+          {errors.codeStudent && <p className="mt-0.5 text-sm text-red-600 font-medium">{errors.codeStudent.message}</p>}
         </div>
 
         <div>
@@ -113,7 +114,7 @@ export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = fals
             type="text"
             placeholder="DNI (8 dígitos)"
             maxLength={8}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
             onKeyPress={(e) => {
               // Solo permitir números
               if (!/[0-9]/.test(e.key)) {
@@ -121,7 +122,7 @@ export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = fals
               }
             }}
           />
-          {errors.document && <p className="mt-1 text-sm text-red-600 font-medium">{errors.document.message}</p>}
+          {errors.document && <p className="mt-0.5 text-sm text-red-600 font-medium">{errors.document.message}</p>}
         </div>
 
         <div>
@@ -129,9 +130,9 @@ export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = fals
             {...register('email')}
             type="email"
             placeholder="Correo electrónico"
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
           />
-          {errors.email && <p className="mt-1 text-sm text-red-600 font-medium">{errors.email.message}</p>}
+          {errors.email && <p className="mt-0.5 text-sm text-red-600 font-medium">{errors.email.message}</p>}
         </div>
 
         <div>
@@ -139,9 +140,9 @@ export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = fals
             {...register('phone')}
             type="tel"
             placeholder="Teléfono"
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
           />
-          {errors.phone && <p className="mt-1 text-sm text-red-600 font-medium">{errors.phone.message}</p>}
+          {errors.phone && <p className="mt-0.5 text-sm text-red-600 font-medium">{errors.phone.message}</p>}
         </div>
 
         <div>
@@ -149,12 +150,12 @@ export const StepPersonalData = ({ onNext, onPrevious, showPreviousButton = fals
             {...register('address')}
             type="text"
             placeholder="Dirección (opcional)"
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
           />
-          {errors.address && <p className="mt-1 text-sm text-red-600 font-medium">{errors.address.message}</p>}
+          {errors.address && <p className="mt-0.5 text-sm text-red-600 font-medium">{errors.address.message}</p>}
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 mt-4">
           {showPreviousButton && (
             <button
               type="button"

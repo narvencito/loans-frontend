@@ -145,6 +145,22 @@ interface ConvertRequestDto {
   downPayment?: number;
 }
 
+export interface CreatePublicRequestDto {
+  name: string;
+  paternalSurname: string;
+  maternalSurname: string;
+  documentNumber: string;
+  email: string;
+  phone: string;
+  codeStudent: string;
+  fullName: string;
+  requestTypeId: string;
+  equipmentId?: string;
+  message?: string;
+  termInMonths?: number;
+  interestRate?: number;
+}
+
 export const requestApi = {
   async getAll(): Promise<RequestItem[]> {
     return apiRequest(
@@ -199,19 +215,7 @@ export const requestApi = {
     );
   },
 
-  async createPublic(data: {
-    firstName: string;
-    paternalSurname: string;
-    maternalSurname: string;
-    document: string;
-    email: string;
-    phone: string;
-    address: string;
-    codeStudent: string;
-    type: RequestTypeEnum;
-    equipmentId?: string;
-    message?: string;
-  }): Promise<RequestItem> {
+  async createPublic(data: CreatePublicRequestDto): Promise<RequestItem> {
     return apiRequest(
       api.post('/requests/public', data),
       {

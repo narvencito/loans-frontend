@@ -1,13 +1,15 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   email: string;
   onClose: () => void;
-  onOpenLogin: () => void;
 }
 
-export const EmailConflictModal = ({ email, onClose, onOpenLogin }: Props) => {
+export const EmailConflictModal = ({ email, onClose }: Props) => {
+  const navigate = useNavigate();
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -30,7 +32,7 @@ export const EmailConflictModal = ({ email, onClose, onOpenLogin }: Props) => {
           <Button variant="outline" onClick={onClose}>
             Usar otro correo
           </Button>
-          <Button onClick={onOpenLogin}>
+          <Button onClick={() => navigate('/login')}>
             Iniciar sesión
           </Button>
         </div>

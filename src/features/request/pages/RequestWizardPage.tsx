@@ -1,25 +1,21 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { StepNavigation } from '../components/StepNavigation';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useBlocker } from 'react-router-dom';
 import { StepPersonalData } from '../components/StepPersonalData';
 import { StepSelectEquipment } from '../components/StepSelectEquipment';
-import { StepConfirmRequest } from '../components/StepConfirmRequest';
 import { StepLoanDetails } from '../components/StepLoanDetails';
-import { EquipmentItem, equipmentApi } from '@/features/equipment/api/equipment_api';
+import { StepConfirmRequest } from '../components/StepConfirmRequest';
 import { requestApi } from '../api/request_api';
-import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
-import { showError, showConfirm, showSuccess } from '@/shared/utils/global-dialog-utils';
+import { EquipmentItem } from '@/features/equipment/api/equipment_api';
+import { showConfirm } from '@/shared/utils/global-dialog-utils';
+import { StepNavigation } from '../components/StepNavigation';
 import { EmailConflictModal } from '../components/EmailConflictModal';
+import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
 
-type SubmissionStatus = 'idle' | 'submitting' | 'success';
-type RequestUrlType = 'cash' | 'equipment' | 'financing';
-
-interface PersonalDataState {
+interface PersonalData {
   firstName: string;
   paternalSurname: string;
   maternalSurname: string;
-  name: string;
-  fullName: string;
   document: string;
   email: string;
   phone: string;
@@ -27,199 +23,201 @@ interface PersonalDataState {
   codeStudent: string;
 }
 
-export default function RequestWizardPage() {
+interface LoanDetails {
+  amount?: number;
+  term: number;
+  downPayment?: number;
+}
+
+type SubmissionStatus = 'idle' | 'submitting' | 'success' | 'error';
+
+export const RequestWizardPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const urlType = searchParams.get('type') as RequestUrlType | null;
+  const type = searchParams.get('type') as RequestTypeEnum;
   const equipmentId = searchParams.get('equipmentId');
-
-  // Validar y convertir el tipo de solicitud
-  const type = urlType === 'cash' || urlType === 'equipment' || urlType === 'financing' 
-    ? urlType 
-    : null;
-
-  const [step, setStep] = useState(0);
-  const [personalData, setPersonalData] = useState<PersonalDataState | null>(null);
-
-  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentItem | undefined>(undefined);
-  const [loanDetailsData, setLoanDetailsData] = useState<{ amount: number; term: number } | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [personalData, setPersonalData] = useState<PersonalData | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentItem | null>(null);
+  const [loanDetails, setLoanDetails] = useState<LoanDetails | null>(null);
+  const [hasChanges, setHasChanges] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>('idle');
-  const [isLoadingEquipment, setIsLoadingEquipment] = useState(false);
   const [showEmailConflict, setShowEmailConflict] = useState(false);
 
-  useEffect(() => {
-    if (equipmentId && (type === 'equipment' || type === 'financing')) {
-      setIsLoadingEquipment(true);
-      equipmentApi.getById(equipmentId)
-        .then(data => setSelectedEquipment(data))
-        .catch(error => {
-          console.error("Error fetching equipment by ID:", error);
-          setSelectedEquipment(undefined);
-          showError(
-            'Error al Cargar Equipo',
-            'No se pudo cargar el equipo seleccionado'
-          );
-        })
-        .finally(() => setIsLoadingEquipment(false));
-    } else {
-      setSelectedEquipment(undefined);
-    }
-  }, [equipmentId, type]);
+  const steps = ['Datos personales', 'Seleccionar equipo', 'Detalles del préstamo', 'Confirmar solicitud'];
 
-  const steps = useMemo(() => {
-    const hasPreselectedEquipment = !!selectedEquipment && (type === 'equipment' || type === 'financing');
-    if (type === 'cash') {
-      return ['Datos personales', 'Detalles del préstamo', 'Confirmar solicitud'];
-    } else if (type === 'equipment') {
-      return hasPreselectedEquipment
-        ? ['Datos personales', 'Confirmar solicitud']
-        : ['Datos personales', 'Selección de equipo', 'Confirmar solicitud'];
-    } else if (type === 'financing') {
-      return hasPreselectedEquipment
-        ? ['Datos personales', 'Detalles del préstamo', 'Confirmar solicitud']
-        : ['Datos personales', 'Selección de equipo', 'Detalles del préstamo', 'Confirmar solicitud'];
+  const getRequestTitle = () => {
+    switch (type) {
+      case RequestTypeEnum.EQUIPMENT_FINANCING:
+        return 'Financiamiento de Equipo';
+      case RequestTypeEnum.EQUIPMENT_LOAN:
+        return 'Préstamo de Equipo';
+      case RequestTypeEnum.CASH:
+        return 'Préstamo de Efectivo';
+      default:
+        return 'Solicitud';
     }
-    return ['Datos personales', 'Confirmar solicitud'];
-  }, [type, selectedEquipment]);
-
-  const resetWizard = () => {
-    setStep(0);
-    setPersonalData(null);
-    setSelectedEquipment(undefined);
-    setLoanDetailsData(null);
-    setSubmissionStatus('idle');
-    navigate('/general/equipment');
   };
 
-  const getRequestTypeFromUrlType = (urlType: RequestUrlType): RequestTypeEnum => {
-    switch (urlType) {
-      case 'cash':
-        return RequestTypeEnum.CASH;
-      case 'equipment':
-        return RequestTypeEnum.EQUIPMENT_LOAN;
-      case 'financing':
-        return RequestTypeEnum.EQUIPMENT_FINANCING;
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) => 
+      hasChanges && currentLocation.pathname !== nextLocation.pathname && submissionStatus !== 'success'
+  );
+
+  if (blocker.state === "blocked") {
+    showConfirm(
+      'Salir del formulario',
+      '¿Estás seguro que deseas salir? Los datos ingresados se perderán.'
+    ).then((confirmed) => {
+      if (confirmed) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    });
+  }
+
+  const handlePersonalDataSubmit = (data: Omit<PersonalData, 'address'> & { address?: string }) => {
+    setPersonalData({
+      ...data,
+      address: data.address || ''
+    });
+    setHasChanges(true);
+    setCurrentStep(1);
+  };
+
+  const handleEquipmentSelect = (equipment: EquipmentItem) => {
+    setSelectedEquipment(equipment);
+    setHasChanges(true);
+    setCurrentStep(2);
+  };
+
+  const handleLoanDetailsSubmit = (data: LoanDetails) => {
+    setLoanDetails(data);
+    setHasChanges(true);
+    setCurrentStep(3);
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
   const handleSubmit = async () => {
-    if (!personalData || !type) return;
+    if (!personalData || !selectedEquipment || !loanDetails || !type) return;
 
-    // Confirmar el correo electrónico antes de enviar
-    const confirmed = await showConfirm(
-      'Confirmar datos de registro',
-      `El correo **${personalData.email}** será asociado a su DNI **${personalData.document}**. Esta información será utilizada para gestionar su solicitud y futuras comunicaciones.`
-    );
-
-    if (!confirmed) return;
-
-    setSubmissionStatus('submitting');
     try {
-      const requestType = getRequestTypeFromUrlType(type);
+      setSubmissionStatus('submitting');
 
-      const requestData = {
-        firstName: personalData.firstName,
+      const fullName = `${personalData.firstName} ${personalData.paternalSurname} ${personalData.maternalSurname}`;
+      const isFinancing = type === RequestTypeEnum.EQUIPMENT_FINANCING;
+      const message = isFinancing 
+        ? `Solicitud de financiamiento de equipo por S/ ${selectedEquipment.salePrice.toFixed(2)} a ${loanDetails.term} meses`
+        : `Solicitud de préstamo de equipo por ${loanDetails.term} días`;
+
+      await requestApi.createPublic({
+        name: personalData.firstName,
         paternalSurname: personalData.paternalSurname,
         maternalSurname: personalData.maternalSurname,
-        document: personalData.document,
+        documentNumber: personalData.document,
         email: personalData.email,
         phone: personalData.phone,
-        address: personalData.address,
         codeStudent: personalData.codeStudent,
-        type: requestType,
-        equipmentId: selectedEquipment?.id,
-        message: `Solicitud de ${type === 'cash' ? 'préstamo monetario' : type === 'equipment' ? 'préstamo de equipo' : 'financiamiento de equipo'}${loanDetailsData ? ` por S/ ${loanDetailsData.amount} a ${loanDetailsData.term} meses` : ''}`
-      };
+        fullName: fullName,
+        requestTypeId: type,
+        equipmentId: selectedEquipment.id,
+        message: message,
+        ...(isFinancing 
+          ? { 
+              termInMonths: loanDetails.term,
+              interestRate: 0.15,
+              downPayment: loanDetails.downPayment || 0
+            }
+          : { 
+              termInDays: loanDetails.term 
+            }
+        )
+      });
 
-      // apiRequest manejará los mensajes de loading, success y error
-      await requestApi.createPublic(requestData);
       setSubmissionStatus('success');
-      navigate('/'); // Redirigir después de que el usuario vea el mensaje de éxito
-      
+      setHasChanges(false);
+      navigate('/');
     } catch (error: any) {
-      console.error('Error al enviar la solicitud:', error);
-      
-      // Solo manejamos el caso especial de correo existente
-      if (error.response?.status === 409) {
+      setSubmissionStatus('error');
+      if (error?.response?.status === 409) {
         setShowEmailConflict(true);
       }
-      // Los demás errores ya son manejados por apiRequest
-      setSubmissionStatus('idle');
     }
   };
 
-  if (submissionStatus === 'submitting') {
-    return (
-      <div className="flex min-h-screen w-full">
-        <StepNavigation currentStep={step} steps={steps} />
-        <div className="flex-1 p-6 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Enviando solicitud...</p>
-          </div>
-        </div>
-      </div>
-    );
+  if (!type || !Object.values(RequestTypeEnum).includes(type)) {
+    navigate('/');
+    return null;
   }
 
-  return (
-    <div className="flex min-h-screen w-full">
-      <StepNavigation currentStep={step} steps={steps} />
-      <div className="flex-1 p-6 flex items-center justify-center">
-        <div className="w-full">
-          {steps[step] === 'Datos personales' && (
-            <StepPersonalData 
-              onNext={(data) => { 
-                // Asegurarnos de que todos los campos requeridos estén presentes
-                const fullData: PersonalDataState = {
-                  ...data,
-                  name: `${data.firstName} ${data.paternalSurname} ${data.maternalSurname}`.trim(),
-                  fullName: `${data.firstName} ${data.paternalSurname} ${data.maternalSurname}`.trim(),
-                  address: data.address || '', // Asegurarnos de que address sea string
-                };
-                setPersonalData(fullData);
-                setStep(step + 1);
-              }}
-              onPrevious={() => setStep(step - 1)}
-              showPreviousButton={step > 0}
-            />
-          )}
-          {steps[step] === 'Selección de equipo' && !selectedEquipment && (
-            <StepSelectEquipment
-              onNext={(equipment) => { setSelectedEquipment(equipment); setStep(step + 1); }}
-              onPrevious={() => setStep(step - 1)}
-              preselectedId={equipmentId}
-            />
-          )}
-          {steps[step] === 'Detalles del préstamo' && (
-            <StepLoanDetails 
-              onNext={(data) => { setLoanDetailsData(data); setStep(step + 1); }}
-              onPrevious={() => setStep(step - 1)}
-            />
-          )}
-          {steps[step] === 'Confirmar solicitud' && personalData && (
-            <StepConfirmRequest
-              personalData={personalData}
-              equipment={selectedEquipment}
-              loanDetails={loanDetailsData}
-              onSubmit={handleSubmit}
-              onPrevious={() => setStep(step - 1)}
-              type={type}
-            />
-          )}
-        </div>
-      </div>
+  useEffect(() => {
+    if (equipmentId) {
+      setCurrentStep(0);
+    }
+  }, [equipmentId]);
 
-      {showEmailConflict && personalData && (
-        <EmailConflictModal
-          email={personalData.email}
-          onClose={() => {
-            setShowEmailConflict(false);
-            setStep(0); // Volver al paso de datos personales
-          }}
-          onOpenLogin={() => navigate('/login')}
-        />
-      )}
+  return (
+    <div className="min-h-screen bg-gray-100 flex">
+      <StepNavigation 
+        currentStep={currentStep} 
+        steps={steps}
+        title={getRequestTitle()}
+      />
+      
+      <div className="flex-1 p-4 md:p-8">
+        {currentStep === 0 && (
+          <StepPersonalData
+            onNext={handlePersonalDataSubmit}
+            initialData={personalData || undefined}
+          />
+        )}
+
+        {currentStep === 1 && (
+          <StepSelectEquipment
+            onNext={handleEquipmentSelect}
+            onPrevious={handlePrevious}
+            preselectedId={equipmentId}
+          />
+        )}
+
+        {currentStep === 2 && (
+          <StepLoanDetails
+            onNext={handleLoanDetailsSubmit}
+            onPrevious={handlePrevious}
+            isFinancing={type === RequestTypeEnum.EQUIPMENT_FINANCING}
+            selectedEquipment={selectedEquipment || undefined}
+            initialData={loanDetails || undefined}
+          />
+        )}
+
+        {currentStep === 3 && personalData && (
+          <StepConfirmRequest
+            personalData={{
+              ...personalData,
+              name: personalData.firstName,
+              fullName: `${personalData.firstName} ${personalData.paternalSurname} ${personalData.maternalSurname}`
+            }}
+            equipment={selectedEquipment!}
+            loanDetails={loanDetails}
+            requestType={type}
+            onConfirm={handleSubmit}
+            onPrevious={handlePrevious}
+          />
+        )}
+
+        {showEmailConflict && personalData && (
+          <EmailConflictModal
+            onClose={() => setShowEmailConflict(false)}
+            email={personalData.email}
+          />
+        )}
+      </div>
     </div>
   );
-}
+};

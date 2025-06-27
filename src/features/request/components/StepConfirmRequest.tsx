@@ -1,4 +1,5 @@
 import { EquipmentItem } from "@/features/equipment/api/equipment_api";
+import { RequestTypeEnum } from "@/shared/enums/request-type.enum";
 
 interface Props {
   personalData: {
@@ -14,13 +15,13 @@ interface Props {
     codeStudent: string;
   };
   equipment?: EquipmentItem;
-  onSubmit: () => void;
+  onConfirm: () => void;
   onPrevious: () => void;
-  type: string | null;
-  loanDetails?: { amount: number; term: number } | null;
+  requestType: RequestTypeEnum;
+  loanDetails?: { amount?: number; term: number; downPayment?: number } | null;
 }
 
-export const StepConfirmRequest = ({ personalData, equipment, loanDetails, type, onSubmit, onPrevious }: Props) => {
+export const StepConfirmRequest = ({ personalData, equipment, loanDetails, requestType, onConfirm, onPrevious }: Props) => {
   const DetailItem = ({ label, value }: { label: string; value?: string | null }) => {
     if (!value) return null;
     return (
@@ -58,7 +59,9 @@ export const StepConfirmRequest = ({ personalData, equipment, loanDetails, type,
             <dl className="space-y-2">
               <DetailItem label="Nombre" value={equipment.name} />
               <DetailItem label="Código" value={equipment.code} />
-              <DetailItem label="Precio" value={`S/ ${equipment.salePrice.toFixed(2)}`} />
+              {requestType === RequestTypeEnum.EQUIPMENT_FINANCING && (
+                <DetailItem label="Precio" value={`S/ ${equipment.salePrice.toFixed(2)}`} />
+              )}
             </dl>
           </div>
         )}
@@ -66,10 +69,24 @@ export const StepConfirmRequest = ({ personalData, equipment, loanDetails, type,
         {/* Loan Details Section */}
         {loanDetails && (
           <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-            <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Detalles del Préstamo</h3>
+            <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">
+              Detalles del {requestType === RequestTypeEnum.EQUIPMENT_FINANCING ? 'Financiamiento' : 'Préstamo'}
+            </h3>
             <dl className="space-y-2">
-              <DetailItem label="Monto" value={`S/ ${loanDetails.amount.toFixed(2)}`} />
-              <DetailItem label="Plazo" value={`${loanDetails.term} meses`} />
+              {requestType === RequestTypeEnum.EQUIPMENT_FINANCING && (
+                <>
+                  {loanDetails.amount && (
+                    <DetailItem label="Monto" value={`S/ ${loanDetails.amount.toFixed(2)}`} />
+                  )}
+                  {loanDetails.downPayment !== undefined && loanDetails.downPayment > 0 && (
+                    <DetailItem label="Pago inicial" value={`S/ ${loanDetails.downPayment.toFixed(2)}`} />
+                  )}
+                </>
+              )}
+              <DetailItem 
+                label="Plazo" 
+                value={`${loanDetails.term} ${requestType === RequestTypeEnum.EQUIPMENT_FINANCING ? 'meses' : 'días'}`} 
+              />
             </dl>
           </div>
         )}
@@ -84,7 +101,7 @@ export const StepConfirmRequest = ({ personalData, equipment, loanDetails, type,
           </button>
           <button
             type="button"
-            onClick={onSubmit}
+            onClick={onConfirm}
             className="w-1/2 bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
           >
             Enviar Solicitud

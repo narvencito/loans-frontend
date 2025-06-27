@@ -26,14 +26,13 @@ import ClientLoanListPage from '@/features/client/pages/ClientLoanListPage';
 import ClientHelpPage from '@/features/client/pages/ClientHelpPage';
 import ChangePasswordPage from '@/features/auth/pages/ChangePasswordPage';
 import AuthLayout from '@/shared/layouts/AuthLayout';
-import RequestFormPage from '@/features/request/pages/RequestFormPage';
-import RequestWizardPage from '@/features/request/pages/RequestWizardPage';
 import AdminRequestListPage from '@/features/admin/pages/AdminRequestListPage';
 import ClientRequestListPage from '@/features/client/pages/ClientRequestListPage';
 import ClientRequestDetailPage from '@/features/client/pages/ClientRequestDetailPage';
 import EquipmentLoanDetailPage from '@/features/equipment-loan/pages/EquipmentLoanDetailPage';
 import AdminGeneralCategoryPage from '@/features/general-category/pages/AdminGeneralCategoryPage';
 import AdminBrandPage from '@/features/brand/pages/AdminBrandPage';
+import { RequestWizardPage } from '@/features/request/pages/RequestWizardPage';
 
 export const router = createBrowserRouter([
   {
