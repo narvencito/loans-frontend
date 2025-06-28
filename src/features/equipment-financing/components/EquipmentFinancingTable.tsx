@@ -28,15 +28,31 @@ const EquipmentFinancingTable = ({ items, onEdit, onDelete, onViewSchedule }: Pr
   const paginatedItems = items.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toUpperCase()) {
+      case 'PAGADO':
       case 'PAID':
         return 'bg-green-100 text-green-700';
+      case 'PENDIENTE':
       case 'PENDING':
         return 'bg-yellow-100 text-yellow-700';
+      case 'VENCIDO':
       case 'OVERDUE':
         return 'bg-red-100 text-red-700';
       default:
         return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status.toUpperCase()) {
+      case 'PAID':
+        return 'Pagado';
+      case 'PENDING':
+        return 'Pendiente';
+      case 'OVERDUE':
+        return 'Vencido';
+      default:
+        return status;
     }
   };
 
@@ -46,6 +62,7 @@ const EquipmentFinancingTable = ({ items, onEdit, onDelete, onViewSchedule }: Pr
         <TableHeader>
           <TableRow className="text-muted-foreground">
             <TableHead>Cliente</TableHead>
+            <TableHead>Equipo</TableHead>
             <TableHead>Monto Total</TableHead>
             <TableHead>Inicial</TableHead>
             <TableHead>Monto Financiado</TableHead>
@@ -59,7 +76,8 @@ const EquipmentFinancingTable = ({ items, onEdit, onDelete, onViewSchedule }: Pr
         <TableBody>
           {paginatedItems.map((item) => (
             <TableRow key={item.id}>
-              <TableCell className="text-foreground">{item.clientName}</TableCell>
+              <TableCell className="text-foreground">{item.client.fullName}</TableCell>
+              <TableCell className="text-foreground">{item.equipment.name}</TableCell>
               <TableCell className="text-foreground">S/ {item.totalAmount.toFixed(2)}</TableCell>
               <TableCell className="text-foreground">S/ {item.downPayment.toFixed(2)}</TableCell>
               <TableCell className="text-foreground">S/ {item.financedAmount.toFixed(2)}</TableCell>
@@ -70,9 +88,7 @@ const EquipmentFinancingTable = ({ items, onEdit, onDelete, onViewSchedule }: Pr
               </TableCell>
               <TableCell className="text-center">
                 <span className={`px-2 py-0.5 rounded text-xs font-semibold ${getStatusColor(item.status.name)}`}>
-                  {item.status.name === 'PAID' ? 'Pagado' : 
-                   item.status.name === 'PENDING' ? 'Pendiente' : 
-                   item.status.name === 'OVERDUE' ? 'Vencido' : item.status.name}
+                  {getStatusText(item.status.name)}
                 </span>
               </TableCell>
               <TableCell className="text-center space-x-2">

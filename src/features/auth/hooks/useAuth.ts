@@ -9,7 +9,6 @@ export function useAuth() {
     setLoading(true);
     try {
       const data = await login(credentials);
-      localStorage.setItem('accessToken', data.token);
       return data;
     } finally {
       setLoading(false);

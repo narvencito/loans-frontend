@@ -157,6 +157,7 @@ const EquipmentFinancingListPage = () => {
         open={!!selectedForSchedule}
         onClose={() => setSelectedForSchedule(null)}
         financing={selectedForSchedule}
+        onFinancingUpdated={loadData}
       />
     </div>
   );

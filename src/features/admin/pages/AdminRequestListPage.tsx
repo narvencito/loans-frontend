@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/shared/components/DatePicker';
 import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
 import { setGlobalDialog, showGlobalDialog } from '@/shared/utils/global-dialog';
+import Pagination from '@/shared/components/Pagination';
 
 const AdminRequestListPage = () => {
     const [requests, setRequests] = useState<RequestItem[]>([]);
@@ -20,6 +21,11 @@ const AdminRequestListPage = () => {
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
     const [fromDate, setFromDate] = useState<Date | undefined>();
     const [toDate, setToDate] = useState<Date | undefined>();
+    
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const totalPages = Math.ceil(filteredRequests.length / pageSize);
 
     const loadRequests = async () => {
         setLoading(true);
@@ -38,6 +44,21 @@ const AdminRequestListPage = () => {
     useEffect(() => {
         loadRequests();
     }, []);
+
+    // Calcular elementos paginados
+    const paginatedRequests = filteredRequests.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize
+    );
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const handlePageSizeChange = (newPageSize: number) => {
+        setPageSize(newPageSize);
+        setCurrentPage(1); // Reset a la primera página cuando cambia el tamaño
+    };
 
     const handleSearch = async () => {
         setLoading(true);
@@ -62,6 +83,7 @@ const AdminRequestListPage = () => {
 
             const data = await requestApi.getByFilter(filters);
             setFilteredRequests(data || []);
+            setCurrentPage(1); // Reset a la primera página al filtrar
         } catch (error) {
             console.error('Error al buscar solicitudes:', error);
             setFilteredRequests([]);
@@ -174,19 +196,31 @@ const AdminRequestListPage = () => {
             ) : filteredRequests.length === 0 ? (
                 <p className="text-center text-muted-foreground">No hay solicitudes que coincidan con los filtros.</p>
             ) : (
-                <div className="overflow-x-auto">
-                    <RequestTable 
-                        requests={filteredRequests} 
-                        showActions={true}
-                        onAlert={(message, type) => {
-                            showGlobalDialog({
-                                type: type === 'success' ? 'success' : 'error',
-                                title: type === 'success' ? 'Éxito' : 'Error',
-                                message
-                            });
-                        }}
-                        onRefresh={loadRequests}
-                    />
+                <div className="space-y-4">
+                    <div className="overflow-x-auto">
+                        <RequestTable 
+                            requests={paginatedRequests}
+                            showActions={true}
+                            onAlert={(message, type) => {
+                                showGlobalDialog({
+                                    type: type === 'success' ? 'success' : 'error',
+                                    title: type === 'success' ? 'Éxito' : 'Error',
+                                    message
+                                });
+                            }}
+                            onRefresh={loadRequests}
+                        />
+                    </div>
+                    
+                    <div className="flex justify-end mt-4">
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            pageSize={pageSize}
+                            onPageChange={handlePageChange}
+                            onPageSizeChange={handlePageSizeChange}
+                        />
+                    </div>
                 </div>
             )}
 

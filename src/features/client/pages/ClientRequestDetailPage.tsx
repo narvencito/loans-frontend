@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { RequestItem, requestApi } from '@/features/request/api/request_api';
 import { RequestStatusHistory } from '@/features/request/components/RequestStatusHistory';
 import { RequestDetail } from '@/features/request/components/RequestDetail';
+import { RequestStatusCode } from '@/features/request/enums/request-status.enum';
 
 export default function ClientRequestDetailPage() {
   const { requestId } = useParams<{ requestId: string }>();
@@ -45,11 +46,11 @@ export default function ClientRequestDetailPage() {
           <h2 className="text-lg font-semibold mb-4">Estado Actual</h2>
           <div className="flex items-center space-x-3">
             <span className={`px-3 py-1 rounded-full text-sm font-medium
-              ${request.requestStatus.code === 'PENDING' && 'bg-yellow-100 text-yellow-800'}
-              ${request.requestStatus.code === 'IN_REVIEW' && 'bg-blue-100 text-blue-800'}
-              ${request.requestStatus.code === 'APPROVED' && 'bg-green-100 text-green-800'}
-              ${request.requestStatus.code === 'CONVERTED' && 'bg-purple-100 text-purple-800'}
-              ${request.requestStatus.code === 'REJECTED' && 'bg-red-100 text-red-800'}
+              ${request.requestStatus.code === RequestStatusCode.PENDING && 'bg-yellow-100 text-yellow-800'}
+              ${request.requestStatus.code === RequestStatusCode.IN_REVIEW && 'bg-blue-100 text-blue-800'}
+              ${request.requestStatus.code === RequestStatusCode.APPROVED && 'bg-green-100 text-green-800'}
+              ${request.requestStatus.code === RequestStatusCode.CONVERTED && 'bg-purple-100 text-purple-800'}
+              ${request.requestStatus.code === RequestStatusCode.REJECTED && 'bg-red-100 text-red-800'}
             `}>
               {request.requestStatus.name}
             </span>

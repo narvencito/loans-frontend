@@ -60,8 +60,10 @@ export const RequestWizardPage = () => {
   };
 
   const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) => 
-      hasChanges && currentLocation.pathname !== nextLocation.pathname && submissionStatus !== 'success'
+    ({ currentLocation, nextLocation }) => {
+      if (submissionStatus === 'success') return false;
+      return hasChanges && currentLocation.pathname !== nextLocation.pathname;
+    }
   );
 
   if (blocker.state === "blocked") {
@@ -142,7 +144,13 @@ export const RequestWizardPage = () => {
 
       setSubmissionStatus('success');
       setHasChanges(false);
-      navigate('/');
+      setPersonalData(null);
+      setSelectedEquipment(null);
+      setLoanDetails(null);
+      
+      setTimeout(() => {
+        navigate('/');
+      }, 100);
     } catch (error: any) {
       setSubmissionStatus('error');
       if (error?.response?.status === 409) {

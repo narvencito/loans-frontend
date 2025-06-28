@@ -8,12 +8,13 @@ export const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     useLoaderStore.getState().show();
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('token') || localStorage.getItem('tempToken');
+    console.log("token ====================================== en el interceptor ", token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-     const isFormData = config.data instanceof FormData;
+    const isFormData = config.data instanceof FormData;
     if (!isFormData && !config.headers['Content-Type']) {
       config.headers['Content-Type'] = 'application/json';
     }

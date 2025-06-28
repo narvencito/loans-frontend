@@ -14,34 +14,43 @@ export default function ChangePasswordPage() {
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const userId = user?.id;
 
   const handleSubmit = async () => {
     if (!password || !confirm) {
-      showError('Por favor, completa ambos campos');
+      showError('Campos requeridos', 'Por favor, completa ambos campos');
       return;
     }
 
-    if (password.length < 6) {
-      showError('La contraseña debe tener al menos 6 caracteres');
+    if (password.length < 8) {
+      showError('Contraseña inválida', 'La contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      showError('Contraseña inválida', 'La contraseña debe contener al menos una letra mayúscula');
+      return;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      showError('Contraseña inválida', 'La contraseña debe contener al menos un número');
       return;
     }
 
     if (password !== confirm) {
-      showError('Las contraseñas no coinciden');
+      showError('Contraseña inválida', 'Las contraseñas no coinciden');
       return;
     }
 
     try {
       setIsSubmitting(true);
-      await changePassword({ newPassword: password, userId });
+      await changePassword({ newPassword: password });
       localStorage.removeItem('tempToken');
-      showSuccess('Contraseña actualizada correctamente');
+      showSuccess('Éxito', 'Contraseña actualizada correctamente');
       console.log("estas redirigiendo");
       logout();
       navigate('/');
     } catch (error: any) {
-      showError(error.message || 'Error al cambiar la contraseña');
+      showError('Error', error.message || 'Error al cambiar la contraseña');
     } finally {
       setIsSubmitting(false);
     }

@@ -11,6 +11,7 @@ export interface LoginDto {
   
   export interface AuthResponse {
     token: string;
+    access_token: string;
     refreshToken?: string;
     user: User;
   }
@@ -27,8 +28,12 @@ export interface LoginDto {
     createdAt?: string;
     updatedAt?: string;
   }
+
+export interface Role {
+  name: string;
+}
   
-  export enum Role {
+  export enum RoleEnum {
     ADMIN = 'ADMIN',
     CLIENT = 'CLIENT',
     WORKER = 'WORKER'

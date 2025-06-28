@@ -1,7 +1,16 @@
-import { InstallmentItem } from '@/features/cash-loans/api/cash_loans_api';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatDate } from './dateUtils';
+
+export interface ScheduleInstallmentItem {
+  nro: number;
+  fecha: string;
+  cuota: number;
+  status: string;
+  interes?: number;
+  capital?: number;
+  saldo?: number;
+}
 
 export const generateSchedulePDF = (
   cliente: string,
@@ -10,7 +19,7 @@ export const generateSchedulePDF = (
   rate: number,
   term: number,
   startDate: string,
-  cuotas: InstallmentItem[]
+  cuotas: ScheduleInstallmentItem[]
 ) => {
   const doc = new jsPDF();
 
@@ -22,18 +31,41 @@ export const generateSchedulePDF = (
   doc.text(`Fecha de Préstamo: ${formatDate(startDate)}`, 14, 34);
   doc.text(`Monto: S/ ${amount} | Tasa: ${rate}% | Cuotas: ${term}`, 14, 40);
 
-  autoTable(doc, {
-    startY: 50,
-    head: [['#', 'Fecha', 'Interés', 'Capital', 'Saldo', 'Cuota','Estado']],
-    body: cuotas.map((c) => [
+  // Determinar las columnas basadas en si hay información de interés y capital
+  const hasInterestAndCapital = cuotas.some(c => c.interes !== undefined && c.capital !== undefined);
+  
+  const headers = hasInterestAndCapital 
+    ? ['#', 'Fecha', 'Interés', 'Capital', 'Saldo', 'Cuota', 'Estado']
+    : ['#', 'Fecha', 'Cuota', 'Estado'];
+
+  const body = cuotas.map((c) => {
+    if (hasInterestAndCapital) {
+      return [
+        c.nro,
+        c.fecha,
+        c.interes ? `S/ ${c.interes}` : '-',
+        c.capital ? `S/ ${c.capital}` : '-',
+        c.saldo ? `S/ ${c.saldo.toFixed(2)}` : '-',
+        `S/ ${c.cuota}`,
+        c.status === 'PAID' ? 'Pagado' :
+        c.status === 'PENDING' ? 'Pendiente' :
+        c.status === 'OVERDUE' ? 'Vencido' : c.status,
+      ];
+    }
+    return [
       c.nro,
       c.fecha,
-      `S/ ${c.interes}`,
-      `S/ ${c.capital}`,
-      `S/ ${c.saldo.toFixed(2)}`,
       `S/ ${c.cuota}`,
-      `${c.status}`,
-    ]),
+      c.status === 'PAID' ? 'Pagado' :
+      c.status === 'PENDING' ? 'Pendiente' :
+      c.status === 'OVERDUE' ? 'Vencido' : c.status,
+    ];
+  });
+
+  autoTable(doc, {
+    startY: 50,
+    head: [headers],
+    body: body,
   });
 
   doc.save(`cronograma_${cliente}.pdf`);

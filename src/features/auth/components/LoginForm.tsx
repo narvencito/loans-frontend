@@ -33,13 +33,13 @@ export default function LoginForm({ onClose }: { onClose: () => void }) {
     try {
       const response = await login(data);
       setAuth({
-        token: response.token,
+        token: response.access_token,
         user: response.user,
       });
       
       console.log("data del backend en el login ", response)
       if(!response.user.isActive){
-        showInfo("Usuario no habilitado, comuniquese con el area de sistemas 'email'");
+        showInfo("", "Usuario no habilitado, comuniquese con el area de sistemas 'email'");
         return;
       }
       
@@ -71,7 +71,7 @@ export default function LoginForm({ onClose }: { onClose: () => void }) {
       }
     } catch (error: any) {
       console.error('Login failed:', error);
-      showError(error.message);
+      showError("", error.message);
     }
   };
 
