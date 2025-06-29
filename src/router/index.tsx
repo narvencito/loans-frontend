@@ -1,57 +1,75 @@
-import ClientLayout from '@/features/client/layouts/ClientLayout';
-import PrivateRoute from './PrivateRoute';
-import LoginPage from '@/features/auth/pages/LoginPage';
-import HomePage from '@/features/home/pages/HomePage';
-import AdminDashboard from '@/features/admin/pages/AdminDashboard';
-import { createBrowserRouter } from 'react-router-dom';
-import SimulatorPage from '@/features/simulator/pages/SimulatorPage';
-import UserListPage from '@/features/user/pages/UserListPage';
-import AdminLayout from '@/features/admin/pages/AdminLayout';
-import ClientListPage from '@/features/client/pages/ClientListPage';
-import CashLoanListPage from '@/features/cash-loans/pages/CashLoanListPage';
-import EquipmentListPage from '@/features/equipment/pages/EquipmentListPage';
-import EquipmentStatusListPage from '@/features/equipment-status/pages/EquipmentStatusListPage';
-import EquipmentCategoryListPage from '@/features/equipment-category/pages/EquipmentCategoryListPage';
-import EquipmentFeatureListPage from '@/features/equipment-feature/pages/EquipmentFeatureListPage';
-import EquipmentFinancingListPage from '@/features/equipment-financing/pages/EquipmentFinancingListPage ';
-import EquipmentLoanListPage from '@/features/equipment-loan/pages/EquipmentLoanListPage';
+import { RouteObject } from 'react-router-dom';
 import MainLayout from '@/shared/layouts/MainLayout';
-import WorkerDashboard from '@/features/worker/pages/WorkerDashboard';
-import WorkerLayout from '@/features/worker/layouts/WorkerLayout';
-import ClientDashboardPage from '@/features/client/pages/ClientDashBoard';
-import EquipmentGeneral from '@/features/equipment/pages/EquipmentGeneral';
-import PersonalDataPage from '@/features/equipment/components/general/PersonalDataPage';
-import ClientFinancingStatusPage from '@/features/client/pages/ClientFinancingStatusPage';
-import ClientLoanListPage from '@/features/client/pages/ClientLoanListPage';
-import ClientHelpPage from '@/features/client/pages/ClientHelpPage';
-import ChangePasswordPage from '@/features/auth/pages/ChangePasswordPage';
 import AuthLayout from '@/shared/layouts/AuthLayout';
+import HomePage from '@/features/home/pages/HomePage';
+import LoginPage from '@/features/auth/pages/LoginPage';
+import ChangePasswordPage from '@/features/auth/pages/ChangePasswordPage';
+import RecoverPasswordPage from '@/features/auth/pages/RecoverPasswordPage';
+import AdminLayout from '@/features/admin/pages/AdminLayout';
+import AdminDashboard from '@/features/admin/pages/AdminDashboard';
 import AdminRequestListPage from '@/features/admin/pages/AdminRequestListPage';
+import AdminBrandPage from '@/features/brand/pages/AdminBrandPage';
+import AdminGeneralCategoryPage from '@/features/general-category/pages/AdminGeneralCategoryPage';
+import EquipmentCategoryListPage from '@/features/equipment-category/pages/EquipmentCategoryListPage';
+import EquipmentStatusListPage from '@/features/equipment-status/pages/EquipmentStatusListPage';
+import EquipmentFeatureListPage from '@/features/equipment-feature/pages/EquipmentFeatureListPage';
+import EquipmentListPage from '@/features/equipment/pages/EquipmentListPage';
+import ClientLayout from '@/features/client/layouts/ClientLayout';
+import ClientHomePage from '@/features/client/pages/ClientHomePage';
+import ClientDashBoardPage from '@/features/client/pages/ClientDashBoardPage';
 import ClientRequestListPage from '@/features/client/pages/ClientRequestListPage';
 import ClientRequestDetailPage from '@/features/client/pages/ClientRequestDetailPage';
-import EquipmentLoanDetailPage from '@/features/equipment-loan/pages/EquipmentLoanDetailPage';
-import AdminGeneralCategoryPage from '@/features/general-category/pages/AdminGeneralCategoryPage';
-import AdminBrandPage from '@/features/brand/pages/AdminBrandPage';
-import { RequestWizardPage } from '@/features/request/pages/RequestWizardPage';
+import ClientListPage from '@/features/client/pages/ClientListPage';
+import UserListPage from '@/features/user/pages/UserListPage';
+import PrivateRoute from './PrivateRoute';
+import RedirectIfAuthenticated from './RedirectIfAuthenticated';
+import WorkerLayout from '@/features/worker/layouts/WorkerLayout';
+import WorkerDashboard from '@/features/worker/pages/WorkerDashboard';
+import UpdateProfilePage from '@/features/profile/pages/UpdateProfilePage';
+import SimulatorPage from '@/features/simulator/pages/SimulatorPage';
+import EquipmentGeneral from '@/features/equipment/pages/EquipmentGeneral';
+import RequestFormPage from '@/features/request/pages/RequestFormPage';
+import AdminRequestFormPage from '@/features/request/pages/AdminRequestFormPage';
+import RequestWizardPage from '@/features/request/pages/RequestWizardPage';
+import AdminCashLoanListPage from '@/features/cash-loans/pages/AdminCashLoanListPage';
+import AdminEquipmentLoanListPage from '@/features/equipment-loan/pages/EquipmentLoanListPage';
+import AdminEquipmentFinancingListPage from '@/features/equipment-financing/pages/EquipmentFinancingListPage';
+import CashLoanListPage from '@/features/client/pages/CashLoanListPage';
+import EquipmentLoanListPage from '@/features/client/pages/EquipmentLoanListPage';
+import EquipmentFinancingListPage from '@/features/client/pages/EquipmentFinancingListPage';
+import ClientHelpPage from '@/features/client/pages/ClientHelpPage';
+import ClientFinancingStatusPage from '@/features/client/pages/ClientFinancingStatusPage';
 
-export const router = createBrowserRouter([
+export const routes: RouteObject[] = [
   {
-    path: '/',
     element: <MainLayout />,
     children: [
       { path: '/', element: <HomePage /> },
-      { path: '/login', element: <LoginPage /> },
+      { path: '/simulador', element: <SimulatorPage /> },
       { path: '/equipment', element: <EquipmentGeneral /> },
-      { path: '/financing/personal-data', element: <PersonalDataPage /> },
-      { path: '/simulator', element: <SimulatorPage /> },
+      //{ path: '/solicitud', element: <RequestWizardPage /> },
+      //{ path: '/request-wizard', element: <RequestWizardPage /> },
+    ],
+  },
+  {
+    element: <AuthLayout />,
+    children: [
+      {
+        path: '/login',
+        element: (
+          <RedirectIfAuthenticated>
+            <LoginPage />
+          </RedirectIfAuthenticated>
+        ),
+      },
+      { path: '/recover-password', element: <RecoverPasswordPage /> },
     ],
   },
   {
     path: '/general',
-    element: <AuthLayout />,
     children: [
       { path: 'change-password', element: <ChangePasswordPage /> },
-      { path: 'request-wizard',element: <RequestWizardPage /> },
+      { path: 'request-wizard', element: <RequestWizardPage /> },
     ],
   },
   {
@@ -63,18 +81,18 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: 'dashboard', element: <AdminDashboard /> },
-      { path: 'users', element: <UserListPage /> },
-      { path: 'clients', element: <ClientListPage /> },
       { path: 'requests', element: <AdminRequestListPage /> },
-      { path: 'cash-loans', element: <CashLoanListPage /> },
-      { path: 'equipment', element: <EquipmentListPage /> },
-      { path: 'equipment-status', element: <EquipmentStatusListPage /> },
+      { path: 'brands', element: <AdminBrandPage /> },
+      { path: 'general-categories', element: <AdminGeneralCategoryPage /> },
       { path: 'equipment-categories', element: <EquipmentCategoryListPage /> },
-      { path: 'equipment-feature', element: <EquipmentFeatureListPage /> },
-      { path: 'equipment-financing', element: <EquipmentFinancingListPage /> },
-      { path: 'equipment-loans', element: <EquipmentLoanListPage /> },
-      { path: 'general-categories', element: <PrivateRoute><AdminGeneralCategoryPage /></PrivateRoute> },
-      { path: 'brands', element: <PrivateRoute><AdminBrandPage /></PrivateRoute> },
+      { path: 'equipment-status', element: <EquipmentStatusListPage /> },
+      { path: 'equipment-features', element: <EquipmentFeatureListPage /> },
+      { path: 'equipment', element: <EquipmentListPage /> },
+      { path: 'equipment-loans', element: <AdminEquipmentLoanListPage /> },
+      { path: 'equipment-financing', element: <AdminEquipmentFinancingListPage /> },
+      { path: 'cash-loans', element: <AdminCashLoanListPage /> },
+      { path: 'clients', element: <ClientListPage /> },
+      { path: 'users', element: <UserListPage /> },
     ],
   },
   {
@@ -85,14 +103,16 @@ export const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
-      { path: '', element: <ClientDashboardPage /> },
+      { path: 'home', element: <ClientHomePage /> },
+      { path: 'dashboard', element: <ClientDashBoardPage /> },
       { path: 'requests', element: <ClientRequestListPage /> },
-      { path: 'requests/:requestId', element: <ClientRequestDetailPage /> },
+      { path: 'requests/:id', element: <ClientRequestDetailPage /> },
+      { path: 'requests/new', element: <RequestFormPage /> },
+      { path: 'cash-loans', element: <CashLoanListPage /> },
+      { path: 'equipment-loans', element: <EquipmentLoanListPage /> },
+      { path: 'equipment-financing', element: <EquipmentFinancingListPage /> },
       { path: 'help', element: <ClientHelpPage /> },
       { path: 'financing-status', element: <ClientFinancingStatusPage /> },
-      { path: 'loans', element: <ClientLoanListPage /> },
-      { path: 'cash-loans', element: <CashLoanListPage /> },
-      { path: 'equipment-financing', element: <EquipmentFinancingListPage /> },
     ],
   },
   {
@@ -104,16 +124,14 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: 'dashboard', element: <WorkerDashboard /> },
-      { path: 'clients', element: <ClientListPage /> },
-      { path: 'cash-loans', element: <CashLoanListPage /> },
-      { path: 'equipment', element: <EquipmentListPage /> },
-      { path: 'equipment-feature', element: <EquipmentFeatureListPage /> },
-      { path: 'equipment-financing', element: <EquipmentFinancingListPage /> },
-      { path: 'equipment-loans', element: <EquipmentLoanListPage /> },
     ],
   },
   {
-    path: '/equipment-loans/:id',
-    element: <PrivateRoute><EquipmentLoanDetailPage /></PrivateRoute>
+    path: '/profile',
+    element: (
+      <PrivateRoute>
+        <UpdateProfilePage />
+      </PrivateRoute>
+    ),
   },
-]);
+];

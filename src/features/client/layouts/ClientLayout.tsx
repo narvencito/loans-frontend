@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
 import { AppSidebar } from '@/shared/layouts/AppSidebar';
-import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
+import { Drawer } from '@/components/ui/drawer';
 import { useState } from 'react';
 import { Menu } from 'lucide-react';
 import DrawerApp from '@/shared/components/DrawerApp';
@@ -9,14 +9,15 @@ import DrawerApp from '@/shared/components/DrawerApp';
 const navItems = [
   { to: '/client/dashboard', label: 'Inicio' },
   { to: '/equipment', label: 'Explorar equipos' },
-  { to: '/client/financing/status', label: 'Mi solicitud' },
-  { to: '/client/loans', label: 'Mis préstamos' },
+  { to: '/client/cash-loans', label: 'Préstamos Monetarios' },
+  { to: '/client/equipment-loans', label: 'Préstamos de Equipo' },
+  { to: '/client/equipment-financing', label: 'Financiamiento de Equipo' },
+  { to: '/client/requests', label: 'Mis Solicitudes' },
   { to: '/client/help', label: 'Ayuda' },
 ];
 
 export default function ClientLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const location = useLocation();
 
   return (
     <div className="min-h-screen flex">
@@ -31,7 +32,7 @@ export default function ClientLayout() {
           <button onClick={() => setDrawerOpen(true)}>
             <Menu className="w-6 h-6" />
           </button>
-          <span className="text-lg font-bold">Panel de Administración</span>
+          <span className="text-lg font-bold">Panel Cliente</span>
         </header>
         <Separator className="md:hidden" />
 

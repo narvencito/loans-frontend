@@ -1,125 +1,127 @@
-import React, { useEffect, useState } from 'react';
-import { cashLoanApi, CashLoanItem, CreateCashLoanDto } from '../api/cash_loans_api';
-import CashLoanTable from '../components/CashLoanTable';
-import CashLoanFormModal from '../components/CashLoanFormModal';
-import CashLoanScheduleModal from '../components/CashLoanScheduleModal';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { showConfirm } from '@/shared/utils/global-dialog-utils';
-import CashLoanStatusSelect from '@/features/cash-loan-status/components/CashLoanStatusSelect';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CashLoanTable } from '../components/CashLoanTable';
+import { CashLoanFormModal } from '../components/CashLoanFormModal';
+import { CashLoanScheduleModal } from '../components/CashLoanScheduleModal';
 import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
+import CashLoanStatusSelect from '@/features/cash-loan-status/components/CashLoanStatusSelect';
+import { cashLoansApi } from '../api/cash_loans_api';
+import { useDialogStore } from '@/shared/utils/global-dialog';
 
-const CashLoanListPage = () => {
-  const [loans, setLoans] = useState<CashLoanItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [prestamoSeleccionado, setPrestamoSeleccionado] = useState<CashLoanItem | null>(null);
+export default function CashLoanListPage() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [loans, setLoans] = useState([]);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const { showConfirm } = useDialogStore();
 
-  // Filtros visuales
-  const [clienteFiltro, setClienteFiltro] = useState<string | null>(null);
-  const [estadoFiltro, setEstadoFiltro] = useState<string | null>(null);
-
-  const buscarPrestamos = async () => {
-    setLoading(true);
-    const data = await cashLoanApi.getCashLoansFiltered({
-      clientId: clienteFiltro ?? undefined,
-      statusId: estadoFiltro ?? undefined,
-    });
-    setLoans(data);
-    setLoading(false);
+  const loadLoans = async (filters = {}) => {
+    setIsLoading(true);
+    try {
+      const data = await cashLoansApi.getAll(filters);
+      setLoans(data);
+    } catch (error) {
+      console.error('Error al cargar préstamos:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleCreate = async (data: CreateCashLoanDto) => {
-    await cashLoanApi.createCashLoan(data);
-    setShowModal(false);
-    buscarPrestamos();
+  const handleSearch = () => {
+    const filters: any = {};
+    if (selectedClientId) filters.clientId = selectedClientId;
+    if (selectedStatus) filters.status = selectedStatus;
+    loadLoans(filters);
   };
 
-  const askToggle = async (cashLoanId: string) => {
-    const isConfirmed = await showConfirm('¿Estás seguro de eliminar el préstamo de este cliente?');
-    if (!isConfirmed) return;
-    await cashLoanApi.deleteCashLoan(cashLoanId);
-    buscarPrestamos();
+  const handleClearFilters = () => {
+    setSelectedClientId(null);
+    setSelectedStatus('');
+    loadLoans();
   };
 
-  const handleViewSchedule = (id: string) => {
-    const prestamo = loans.find((l) => l.id === id);
-    if (prestamo) setPrestamoSeleccionado(prestamo);
+  const handleViewSchedule = (loanId: string) => {
+    setSelectedLoanId(loanId);
+    setShowScheduleModal(true);
   };
 
-  useEffect(() => {
-    buscarPrestamos();
-  }, []);
+  const handleToggleStatus = async (loanId: string) => {
+    const confirmed = await showConfirm('¿Estás seguro de cambiar el estado del préstamo?');
+    if (!confirmed) return;
+
+    try {
+      await cashLoansApi.toggleStatus(loanId);
+      loadLoans();
+    } catch (error) {
+      console.error('Error al cambiar estado:', error);
+    }
+  };
 
   return (
-    <div className="p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <h1 className="text-xl sm:text-2xl font-bold px-2 py-1">Gestión de Préstamos</h1>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Préstamos Monetarios</h1>
+        <Button onClick={() => setShowFormModal(true)}>Nuevo Préstamo</Button>
       </div>
 
-      <div className="flex flex-wrap sm:flex-nowrap justify-between items-end gap-4 mb-6">
-        {/* Filtros a la izquierda */}
-        <div className="flex flex-col sm:flex-row gap-4 flex-grow">
-          <div className="w-full sm:w-64">
+      <Card>
+        <CardHeader>
+          <CardTitle>Filtros</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <AsyncClientCombobox
-              selectedClientId={clienteFiltro}
-              onSelect={setClienteFiltro}
-              label="Filtrar por cliente"
+              selectedClientId={selectedClientId}
+              onSelect={setSelectedClientId}
+              label="Cliente"
             />
-          </div>
-
-          <div className="w-full sm:w-48">
             <CashLoanStatusSelect
-              value={estadoFiltro}
-              onChange={setEstadoFiltro}
-              label="Filtrar por estado"
+              value={selectedStatus}
+              onChange={setSelectedStatus}
+              label="Estado"
             />
+            <div className="flex items-end gap-2">
+              <Button onClick={handleSearch}>Buscar</Button>
+              <Button variant="outline" onClick={handleClearFilters}>
+                Limpiar
+              </Button>
+            </div>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Botones a la derecha */}
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Button
-            onClick={buscarPrestamos}
-            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            Buscar
-          </Button>
-
-          <Button
-            onClick={() => setShowModal(true)}
-            className="w-full sm:w-auto"
-          >
-            Crear Préstamo
-          </Button>
-        </div>
-      </div>
-
-      {loading ? (
-        <p>Cargando...</p>
-      ) : (
-        <div className="overflow-x-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>Lista de Préstamos</CardTitle>
+        </CardHeader>
+        <CardContent>
           <CashLoanTable
             loans={loans}
-            askToogle={askToggle}
+            isLoading={isLoading}
             onViewSchedule={handleViewSchedule}
+            askToogle={handleToggleStatus}
           />
-        </div>
-      )}
+        </CardContent>
+      </Card>
 
       <CashLoanFormModal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        onCreate={handleCreate}
+        open={showFormModal}
+        onClose={() => setShowFormModal(false)}
+        onSuccess={() => {
+          setShowFormModal(false);
+          loadLoans();
+        }}
       />
 
       <CashLoanScheduleModal
-        open={!!prestamoSeleccionado}
-        onClose={() => setPrestamoSeleccionado(null)}
-        loan={prestamoSeleccionado}
+        open={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        loanId={selectedLoanId}
       />
     </div>
   );
-};
-
-export default CashLoanListPage;
+}

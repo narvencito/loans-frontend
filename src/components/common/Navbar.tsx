@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { menuLinks } from '@/constants/menuLinks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import LoginDialog from '@/features/auth/components/LoginDialog';
+import { showConfirm } from '@/shared/utils/global-dialog-utils';
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const loginRef = useRef<HTMLDivElement>(null);
@@ -14,6 +16,20 @@ export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
+
+  const handleLogout = async () => {
+    try {
+      const isConfirmed = await showConfirm('¿Estás seguro de cerrar sesión?');
+      if (!isConfirmed) return;
+
+      await logout();
+      navigate('/', { replace: true });
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // El logout local ya se realizó en el store, así que redirigimos de todos modos
+      navigate('/', { replace: true });
+    }
+  };
 
   // Cerrar login popover al hacer clic fuera
   useEffect(() => {
@@ -70,7 +86,7 @@ export default function Navbar() {
                 Bienvenido, <strong>{user?.email}</strong>
               </span>
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="text-destructive hover:underline"
               >
                 Cerrar sesión
@@ -109,12 +125,14 @@ export default function Navbar() {
             {!isAuthenticated ? (
               <li>
                 <button
-                  onClick={() => setShowLogin(true)}
+                  onClick={() => {
+                    setShowLogin(true);
+                    setMenuOpen(false);
+                  }}
                   className="text-sm font-medium text-muted-foreground hover:text-primary"
                 >
                   Iniciar sesión
                 </button>
-                <LoginDialog open={showLogin} onClose={() => setShowLogin(false)} />
               </li>
             ) : (
               <li className="flex items-center gap-2 text-sm">
@@ -122,7 +140,7 @@ export default function Navbar() {
                   Bienvenido, <strong>{user?.email}</strong>
                 </span>
                 <button
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="text-destructive hover:underline"
                 >
                   Cerrar sesión

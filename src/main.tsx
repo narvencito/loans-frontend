@@ -1,17 +1,17 @@
 // src/main.tsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider } from 'react-router-dom';
-import { router } from './router';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { routes } from './router';
 import './index.css';
-import GlobalLoader from './shared/components/GlobalLoader';
-import { GlobalDialogProvider } from './shared/context/DialogContext';
+import { DialogProvider } from './shared/context/DialogContext';
+
+const router = createBrowserRouter(routes);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <GlobalDialogProvider>
-      <GlobalLoader />
+    <DialogProvider>
       <RouterProvider router={router} />
-    </GlobalDialogProvider>
+    </DialogProvider>
   </React.StrictMode>
 );

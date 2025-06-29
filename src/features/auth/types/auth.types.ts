@@ -12,8 +12,17 @@ export interface LoginDto {
   export interface AuthResponse {
     token: string;
     access_token: string;
-    refreshToken?: string;
+    refresh_token?: string;
     user: User;
+  }
+
+  export interface RefreshTokenResponse {
+    access_token: string;
+    refresh_token?: string;
+  }
+
+  export interface RefreshTokenRequest {
+    refresh_token: string;
   }
 
   export interface User {

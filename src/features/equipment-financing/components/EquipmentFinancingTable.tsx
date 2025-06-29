@@ -14,122 +14,75 @@ import { EquipmentFinancingItem } from '../api/equipment-financing-api';
 import { formatDate } from "@/shared/utils/dateUtils";
 
 interface Props {
-  items: EquipmentFinancingItem[];
-  onEdit: (item: EquipmentFinancingItem) => void;
-  onDelete: (id: string) => void;
-  onViewSchedule: (id: string) => void;
+  financings?: EquipmentFinancingItem[];
+  isLoading?: boolean;
+  onViewSchedule?: (id: string) => void;
+  onEditSchedule?: (financing: EquipmentFinancingItem) => void;
 }
 
-const EquipmentFinancingTable = ({ items, onEdit, onDelete, onViewSchedule }: Props) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+export function EquipmentFinancingTable({ financings = [], isLoading, onViewSchedule, onEditSchedule }: Props) {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-2">Cargando...</span>
+      </div>
+    );
+  }
 
-  const totalPages = Math.ceil(items.length / pageSize);
-  const paginatedItems = items.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-
-  const getStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
-      case 'PAGADO':
-      case 'PAID':
-        return 'bg-green-100 text-green-700';
-      case 'PENDIENTE':
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'VENCIDO':
-      case 'OVERDUE':
-        return 'bg-red-100 text-red-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status.toUpperCase()) {
-      case 'PAID':
-        return 'Pagado';
-      case 'PENDING':
-        return 'Pendiente';
-      case 'OVERDUE':
-        return 'Vencido';
-      default:
-        return status;
-    }
-  };
+  if (!financings.length) {
+    return (
+      <div className="text-center text-gray-500 py-8">
+        <p>No hay financiamientos para mostrar.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow className="text-muted-foreground">
-            <TableHead>Cliente</TableHead>
-            <TableHead>Equipo</TableHead>
-            <TableHead>Monto Total</TableHead>
-            <TableHead>Inicial</TableHead>
-            <TableHead>Monto Financiado</TableHead>
-            <TableHead>Plazo</TableHead>
-            <TableHead>Tasa Anual</TableHead>
-            <TableHead>Fecha Inicio</TableHead>
-            <TableHead className="text-center">Estado</TableHead>
-            <TableHead className="text-center">Acciones</TableHead>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Cliente</TableHead>
+          <TableHead>Equipo</TableHead>
+          <TableHead>Monto</TableHead>
+          <TableHead>Estado</TableHead>
+          <TableHead>Fecha de solicitud</TableHead>
+          <TableHead>Acciones</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {financings.map((financing) => (
+          <TableRow key={financing.id}>
+            <TableCell>{financing.client.fullName}</TableCell>
+            <TableCell>{financing.equipment.name}</TableCell>
+            <TableCell>S/ {financing.amount}</TableCell>
+            <TableCell>{financing.status}</TableCell>
+            <TableCell>{new Date(financing.createdAt).toLocaleDateString()}</TableCell>
+            <TableCell>
+              <div className="flex gap-2">
+                {onViewSchedule && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onViewSchedule(financing.id)}
+                  >
+                    Ver cronograma
+                  </Button>
+                )}
+                {onEditSchedule && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEditSchedule(financing)}
+                  >
+                    Editar cronograma
+                  </Button>
+                )}
+              </div>
+            </TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedItems.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell className="text-foreground">{item.client.fullName}</TableCell>
-              <TableCell className="text-foreground">{item.equipment.name}</TableCell>
-              <TableCell className="text-foreground">S/ {item.totalAmount.toFixed(2)}</TableCell>
-              <TableCell className="text-foreground">S/ {item.downPayment.toFixed(2)}</TableCell>
-              <TableCell className="text-foreground">S/ {item.financedAmount.toFixed(2)}</TableCell>
-              <TableCell className="text-foreground">{item.term} meses</TableCell>
-              <TableCell className="text-foreground">{item.annualRate}%</TableCell>
-              <TableCell className="text-foreground">
-                {formatDate(item.startDate)}
-              </TableCell>
-              <TableCell className="text-center">
-                <span className={`px-2 py-0.5 rounded text-xs font-semibold ${getStatusColor(item.status.name)}`}>
-                  {getStatusText(item.status.name)}
-                </span>
-              </TableCell>
-              <TableCell className="text-center space-x-2">
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => onViewSchedule(item.id)}
-                >
-                  Cronograma
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-yellow-600 hover:bg-yellow-700 text-white"
-                  onClick={() => onEdit(item)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                  onClick={() => onDelete(item.id)}
-                >
-                  Eliminar
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        pageSize={pageSize}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={(size) => {
-          setPageSize(size);
-          setCurrentPage(1);
-        }}
-      />
-    </div>
+        ))}
+      </TableBody>
+    </Table>
   );
-};
-
-export default EquipmentFinancingTable;
+}

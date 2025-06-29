@@ -5,13 +5,14 @@ import { useNavigate } from 'react-router-dom';
 interface Props {
   email: string;
   onClose: () => void;
+  open: boolean;
 }
 
-export const EmailConflictModal = ({ email, onClose }: Props) => {
+export const EmailConflictModal = ({ email, onClose, open }: Props) => {
   const navigate = useNavigate();
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Correo electrónico existente</DialogTitle>

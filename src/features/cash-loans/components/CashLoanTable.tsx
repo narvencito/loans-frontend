@@ -12,17 +12,35 @@ import { Button } from "@/components/ui/button";
 import Pagination from "@/shared/components/Pagination";
 
 interface Props {
-  loans: CashLoanItem[];
-  askToogle: (id: string) => void;
-  onViewSchedule: (id: string) => void;
+  loans?: CashLoanItem[];
+  isLoading?: boolean;
+  onViewSchedule?: (id: string) => void;
+  askToogle?: (cashLoanId: string) => Promise<void>;
 }
 
-const CashLoanTable = ({ loans, askToogle, onViewSchedule }: Props) => {
+const CashLoanTable = ({ loans = [], isLoading, onViewSchedule, askToogle }: Props) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10); // Ahora también se maneja pageSize
 
   const totalPages = Math.ceil(loans.length / pageSize);
   const paginatedLoans = loans.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-2">Cargando...</span>
+      </div>
+    );
+  }
+
+  if (!loans.length) {
+    return (
+      <div className="text-center text-gray-500 py-8">
+        <p>No hay préstamos para mostrar.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-md border">
@@ -50,20 +68,24 @@ const CashLoanTable = ({ loans, askToogle, onViewSchedule }: Props) => {
                 <span className="text-green-600">{l.state}</span>
               </TableCell>
               <TableCell className="text-center space-x-2">
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => onViewSchedule(l.id)}
-                >
-                  Cronograma
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                  onClick={() => askToogle(l.id)}
-                >
-                  Eliminar
-                </Button>
+                {onViewSchedule && (
+                  <Button
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => onViewSchedule(l.id)}
+                  >
+                    Cronograma
+                  </Button>
+                )}
+                {askToogle && (
+                  <Button
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    onClick={() => askToogle(l.id)}
+                  >
+                    Eliminar
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}

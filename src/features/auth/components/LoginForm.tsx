@@ -1,23 +1,26 @@
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { login } from '../services/authService';
-import { useAuthStore } from '../store/auth.store';
 import { useNavigate } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useAuthStore } from '../store/auth.store';
+import { authService } from '../services/authService';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { showError, showInfo } from '@/shared/utils/global-dialog-utils';
+import { showError } from '@/shared/utils/global-dialog-utils';
+import { useState } from 'react';
 
 const loginSchema = z.object({
-  email: z.string().min(3, { message: 'Usuario requerido' }).email('email incorrecto'),
-  password: z.string().min(6, { message: 'Mínimo 6 caracteres' }),
+  email: z.string().email('Correo electrónico inválido'),
+  password: z.string().min(1, 'La contraseña es requerida'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginForm({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -27,34 +30,18 @@ export default function LoginForm({ onClose }: { onClose: () => void }) {
     resolver: zodResolver(loginSchema),
   });
 
-  const setAuth = useAuthStore((state) => state.setAuth);
-
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await login(data);
-      setAuth({
-        token: response.access_token,
-        user: response.user,
-      });
-      
-      console.log("data del backend en el login ", response)
-      if(!response.user.isActive){
-        showInfo("", "Usuario no habilitado, comuniquese con el area de sistemas 'email'");
-        return;
-      }
-      
-      if (response.user.mustChangePassword) {
-        console.log("cambiando la contraseña");
-        navigate('/general/change-password');
-        return;
-      }
-      
-      if (response.user.role.name.toUpperCase() === 'CLIENT' && response.user.profileIncomplete) {
-        console.log("actualizando datos necesarios");
-        navigate('/client/complete-profile');
-        return;
-      }
+      const response = await authService.login(data);
 
+      // Guardar la información de autenticación
+      setAuth(
+        response.access_token,
+        response.refresh_token,
+        response.user
+      );
+
+      // Cerrar el diálogo de login
       onClose();
 
       console.log("esta por aqui");
@@ -67,42 +54,55 @@ export default function LoginForm({ onClose }: { onClose: () => void }) {
       } else if (role === 'WORKER') {
         navigate('/worker/dashboard');
       } else {
-        navigate('/');
+        navigate('/client/home');
       }
+
     } catch (error: any) {
       console.error('Login failed:', error);
-      showError("", error.message);
+      setError(error.message || 'Error al iniciar sesión');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <Label className="text-sm">Usuario</Label>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full max-w-sm">
+      <div className="space-y-2">
+        <Label htmlFor="email">Correo Electrónico</Label>
         <Input
+          id="email"
+          type="email"
           {...register('email')}
-          type="text"
-          placeholder="Tu usuario"
+          className={errors.email ? 'border-red-500' : ''}
         />
         {errors.email && (
-          <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+          <p className="text-red-500 text-sm">{errors.email.message}</p>
         )}
       </div>
 
-      <div>
-        <Label className="text-sm">Contraseña</Label>
+      <div className="space-y-2">
+        <Label htmlFor="password">Contraseña</Label>
         <Input
-          {...register('password')}
+          id="password"
           type="password"
-          placeholder="Tu contraseña"
+          {...register('password')}
+          className={errors.password ? 'border-red-500' : ''}
         />
         {errors.password && (
-          <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+          <p className="text-red-500 text-sm">{errors.password.message}</p>
         )}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? 'Ingresando...' : 'Entrar'}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión'}
       </Button>
     </form>
   );

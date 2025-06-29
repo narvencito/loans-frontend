@@ -1,15 +1,28 @@
 import axios from 'axios';
-import { useLoaderStore } from '../store/loader.store';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { handleTokenRefresh, isTokenExpired } from '@/utils/tokenUtils';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
 });
 
+// Interceptor para las solicitudes
 api.interceptors.request.use(
   (config) => {
-    useLoaderStore.getState().show();
-    const token = localStorage.getItem('token') || localStorage.getItem('tempToken');
-    console.log("token ====================================== en el interceptor ", token);
+    const token = useAuthStore.getState().token;
+    
+    // Si hay un token y está expirado, intentar refrescarlo antes de la solicitud
+    if (token && isTokenExpired(token)) {
+      return handleTokenRefresh()
+        .then((newToken) => {
+          config.headers.Authorization = `Bearer ${newToken}`;
+          return config;
+        })
+        .catch((error) => {
+          return Promise.reject(error);
+        });
+    }
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -21,13 +34,14 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
+// Interceptor para las respuestas
 api.interceptors.response.use(
   (response) => {
-    useLoaderStore.getState().hide();
-
     const contentType = response.headers['content-type'];
 
     // Si es un PDF (blob), lo devolvemos tal cual
@@ -46,17 +60,23 @@ api.interceptors.response.use(
       status: response.status,
     });
   },
-  (error) => {
-    useLoaderStore.getState().hide();
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      'Error de red o servidor.';
+  async (error) => {
+    const originalRequest = error.config;
 
-    if (error.response?.status === 401) {
-      console.warn('Sesión expirada, redirigiendo...');
+    // Si el error es 401 y no es un retry
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const newToken = await handleTokenRefresh();
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        // Si falla el refresh, el handleTokenRefresh ya se encarga de limpiar la autenticación
+        return Promise.reject(refreshError);
+      }
     }
 
-    return Promise.reject({ message });
+    return Promise.reject(error);
   }
 );

@@ -1,102 +1,189 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { RequestItem, requestApi } from '@/features/request/api/request_api';
-import { RequestStatusHistory } from '@/features/request/components/RequestStatusHistory';
-import { RequestDetail } from '@/features/request/components/RequestDetail';
-import { RequestStatusCode } from '@/features/request/enums/request-status.enum';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { ClientRequest } from '../types/request.types';
+import { clientRequestsApi } from '../api/client_requests_api';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
-export default function ClientRequestDetailPage() {
+const RequestTypeLabels = {
+  'cash': 'Préstamo en efectivo',
+  'equipment-loan': 'Préstamo de equipo',
+  'equipment-financing': 'Financiamiento de equipo'
+};
+
+const RequestStatusColors: Record<string, string> = {
+  'PENDING': 'bg-yellow-500',
+  'APPROVED': 'bg-green-500',
+  'REJECTED': 'bg-red-500',
+  'IN_PROGRESS': 'bg-blue-500',
+  'COMPLETED': 'bg-gray-500'
+};
+
+const ClientRequestDetailPage = () => {
   const { requestId } = useParams<{ requestId: string }>();
-  const [request, setRequest] = useState<RequestItem | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  const [request, setRequest] = useState<ClientRequest | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRequest = async () => {
-      if (!requestId) return;
-      try {
-        const data = await requestApi.getById(requestId);
-        setRequest(data);
-      } catch (error) {
-        console.error('Error fetching request:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchRequest();
+    if (requestId) {
+      loadRequestDetail(requestId);
+    }
   }, [requestId]);
 
-  if (isLoading) {
-    return <div className="p-8 text-center">Cargando solicitud...</div>;
+  const loadRequestDetail = async (id: string) => {
+    try {
+      const data = await clientRequestsApi.getRequestById(id);
+      setRequest(data);
+    } catch (error) {
+      console.error('Error loading request detail:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-PE', {
+      style: 'currency',
+      currency: 'PEN'
+    }).format(amount);
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+          <div className="space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!request) {
-    return <div className="p-8 text-center">Solicitud no encontrada</div>;
+    return (
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-4">Solicitud no encontrada</h1>
+        <p>La solicitud que buscas no existe o no tienes acceso a ella.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6">Detalle de Solicitud</h1>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Detalle de Solicitud</h1>
+        <Badge className={RequestStatusColors[request.requestStatusId]}>
+          {request.requestStatusId}
+        </Badge>
+      </div>
 
-      <div className="grid gap-6">
-        {/* Estado actual */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Estado Actual</h2>
-          <div className="flex items-center space-x-3">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium
-              ${request.requestStatus.code === RequestStatusCode.PENDING && 'bg-yellow-100 text-yellow-800'}
-              ${request.requestStatus.code === RequestStatusCode.IN_REVIEW && 'bg-blue-100 text-blue-800'}
-              ${request.requestStatus.code === RequestStatusCode.APPROVED && 'bg-green-100 text-green-800'}
-              ${request.requestStatus.code === RequestStatusCode.CONVERTED && 'bg-purple-100 text-purple-800'}
-              ${request.requestStatus.code === RequestStatusCode.REJECTED && 'bg-red-100 text-red-800'}
-            `}>
-              {request.requestStatus.name}
-            </span>
-            <span className="text-gray-500">
-              Última actualización: {new Date(request.createdAt).toLocaleString()}
-            </span>
-          </div>
-        </Card>
-
-        {/* Detalles de la solicitud */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Detalles de la Solicitud</h2>
-          <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Información General */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Información General</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-500">Código</p>
+              <p className="font-medium">{request.code}</p>
+            </div>
             <div>
               <p className="text-sm text-gray-500">Tipo de Solicitud</p>
-              <p className="font-medium">{request.requestType.name}</p>
+              <p className="font-medium">{RequestTypeLabels[request.requestTypeId]}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Fecha de Creación</p>
-              <p className="font-medium">{new Date(request.createdAt).toLocaleString()}</p>
+              <p className="font-medium">
+                {format(new Date(request.createdAt), 'dd/MM/yyyy HH:mm', { locale: es })}
+              </p>
             </div>
-            {request.equipmentId && (
-              <div className="col-span-2">
-                <p className="text-sm text-gray-500">Equipo</p>
-                <p className="font-medium">{request.equipmentId}</p>
-              </div>
-            )}
             {request.message && (
-              <div className="col-span-2">
-                <p className="text-sm text-gray-500">Mensaje/Detalles</p>
+              <div>
+                <p className="text-sm text-gray-500">Mensaje</p>
                 <p className="font-medium">{request.message}</p>
               </div>
             )}
-          </div>
+          </CardContent>
         </Card>
 
-        {/* Historial de estados */}
-        <Card className="p-6">
-          <RequestDetail
-            request={request}
-            showActions={true}
-            isUserView={true}
-            onStatusChange={() => navigate(0)}
-          />
+        {/* Información Financiera */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Información Financiera</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {request.amount && (
+              <div>
+                <p className="text-sm text-gray-500">Monto</p>
+                <p className="font-medium">{formatCurrency(request.amount)}</p>
+              </div>
+            )}
+            {request.downPayment && (
+              <div>
+                <p className="text-sm text-gray-500">Cuota Inicial</p>
+                <p className="font-medium">{formatCurrency(request.downPayment)}</p>
+              </div>
+            )}
+            {request.interestRate && (
+              <div>
+                <p className="text-sm text-gray-500">Tasa de Interés</p>
+                <p className="font-medium">{request.interestRate}%</p>
+              </div>
+            )}
+            {request.termInMonths && (
+              <div>
+                <p className="text-sm text-gray-500">Plazo en Meses</p>
+                <p className="font-medium">{request.termInMonths} meses</p>
+              </div>
+            )}
+            {request.termInDays && (
+              <div>
+                <p className="text-sm text-gray-500">Plazo en Días</p>
+                <p className="font-medium">{request.termInDays} días</p>
+              </div>
+            )}
+          </CardContent>
         </Card>
+
+        {/* Información del Equipo (si aplica) */}
+        {request.equipment && (
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>Información del Equipo</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500">Nombre del Equipo</p>
+                <p className="font-medium">{request.equipment.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Descripción</p>
+                <p className="font-medium">{request.equipment.description}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Precio de Venta</p>
+                  <p className="font-medium">{formatCurrency(request.equipment.salePrice)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Tarifa Diaria de Alquiler</p>
+                  <p className="font-medium">{formatCurrency(request.equipment.rentalDailyRate)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
-} 
+};
+
+export default ClientRequestDetailPage; 

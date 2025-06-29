@@ -297,4 +297,14 @@ export const requestApi = {
       }
     );
   },
+
+  async checkEmailExists(email: string): Promise<boolean> {
+    try {
+      const response = await api.get(`/requests/check-email/${email}`);
+      return response.data.exists;
+    } catch (error) {
+      console.error('Error checking email:', error);
+      return false;
+    }
+  },
 };

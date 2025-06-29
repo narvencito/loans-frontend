@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { LoginDto } from '@/features/auth/types/auth.types';
-import { login } from '../services/authService';
+import { authService } from '../services/authService';
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -8,7 +8,7 @@ export function useAuth() {
   const loginUser = async (credentials: LoginDto) => {
     setLoading(true);
     try {
-      const data = await login(credentials);
+      const data = await authService.login(credentials);
       return data;
     } finally {
       setLoading(false);

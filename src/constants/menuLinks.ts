@@ -10,8 +10,8 @@ interface MenuLink {
 export const menuLinks: MenuLink[] = [
   { label: 'Inicio', path: '/' },
   { label: 'Equipos', path: '/equipment' },
-  { label: 'Préstamos', path: '/loans' },
-  { label: 'Financiamiento', path: '/financing' },
+  //{ label: 'Préstamos', path: '/loans' },
+  //{ label: 'Financiamiento', path: '/financing' },
 ];
 
 export const adminMenuLinks: MenuLink[] = [
@@ -82,7 +82,7 @@ export const adminMenuLinks: MenuLink[] = [
   },
   { 
     label: 'Características', 
-    path: '/admin/equipment-feature',
+    path: '/admin/equipment-features',
     roles: [RoleEnum.ADMIN],
     group: 'Gestión de Equipos'
   },

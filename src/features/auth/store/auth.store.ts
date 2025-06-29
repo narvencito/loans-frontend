@@ -1,32 +1,47 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { User } from '../types/auth.types';
+import { authService } from '../services/authService';
 
 interface AuthState {
   token: string | null;
+  refreshToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
-  setAuth: (payload: { token: string; user: User }) => void;
-  logout: () => void;
+  setAuth: (token: string, refreshToken: string, user: User) => void;
+  clearAuth: () => void;
+  logout: () => Promise<void>;
+  getRefreshToken: () => string | null;
 }
 
-const token = localStorage.getItem('token');
-const storedUser = localStorage.getItem('user');
-const parsedUser = storedUser ? JSON.parse(storedUser) : null;
-
-export const useAuthStore = create<AuthState>((set) => ({
-  token,
-  user: parsedUser,
-  isAuthenticated: !!token && !!parsedUser,
-
-  setAuth: ({ token, user }) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    set({ token, user, isAuthenticated: true });
-  },
-
-  logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    set({ token: null, user: null, isAuthenticated: false });
-  },
-}));
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      token: null,
+      refreshToken: null,
+      user: null,
+      isAuthenticated: false,
+      setAuth: (token: string, refreshToken: string, user: User) =>
+        set({
+          token,
+          refreshToken,
+          user,
+          isAuthenticated: true,
+        }),
+      clearAuth: () =>
+        set({
+          token: null,
+          refreshToken: null,
+          user: null,
+          isAuthenticated: false,
+        }),
+      logout: async () => {
+          get().clearAuth();
+      },
+      getRefreshToken: () => get().refreshToken,
+    }),
+    {
+      name: 'auth-storage',
+    }
+  )
+);

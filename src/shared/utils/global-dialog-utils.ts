@@ -1,23 +1,37 @@
-import {
-  showGlobalDialog,
-  confirmDialog,
-} from './global-dialog';
+import { showGlobalDialog } from './global-dialog';
 
-export const showError = async (title: string, message: string): Promise<void> => {
-  return showGlobalDialog({ type: 'error', title: `❌ ${title}`, message });
+export const showError = (title: string, message: string) => {
+  showGlobalDialog({
+    title: `❌ ${title}`,
+    message,
+    type: 'error',
+  });
 };
 
-export const showSuccess = async (title: string, message: string): Promise<void> => {
-  return showGlobalDialog({ type: 'success', title: `✅ ${title}`, message });
+export const showSuccess = (title: string, message: string) => {
+  showGlobalDialog({
+    title: `✅ ${title}`,
+    message,
+    type: 'success',
+  });
 };
 
-export const showInfo = async (title: string, message: string): Promise<void> => {
-  return showGlobalDialog({ type: 'info', title: `ℹ️ ${title}`, message });
+export const showInfo = (title: string, message: string) => {
+  showGlobalDialog({
+    title: `ℹ️ ${title}`,
+    message,
+    type: 'info',
+  });
 };
 
-export const showConfirm = (
-  title: string,
-  message: string
-): Promise<boolean> => {
-  return confirmDialog({ title: `⚠️ ${title}`, message });
+export const showConfirm = (message: string, title: string = 'Confirmar'): Promise<boolean> => {
+  return new Promise((resolve) => {
+    showGlobalDialog({
+      title: `⚠️ ${title}`,
+      message,
+      type: 'confirm',
+      onConfirm: () => resolve(true),
+      onCancel: () => resolve(false),
+    });
+  });
 };

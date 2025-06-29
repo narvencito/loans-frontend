@@ -1,32 +1,36 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button'; // Asegúrate de tener este componente
+import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { showConfirm } from '../utils/global-dialog-utils';
-
-interface NavItem {
-  to: string;
-  label: string;
-}
+import { showConfirm } from '@/shared/utils/global-dialog-utils';
 
 interface AppSidebarProps {
   title: string;
-  navItems: NavItem[];
+  navItems: Array<{
+    to: string;
+    label: string;
+  }>;
   onNavigate?: () => void;
 }
 
 export function AppSidebar({ title, navItems, onNavigate }: AppSidebarProps) {
   const location = useLocation();
-
-  const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = async () => {
-    const isConfirmed = await showConfirm('¿Estás seguro de cerrar sesión');
-    if (!isConfirmed) return;
-    logout();
-    navigate('/');
+    try {
+      const isConfirmed = await showConfirm('¿Estás seguro de cerrar sesión?');
+      if (!isConfirmed) return;
+
+      await logout();
+      navigate('/', { replace: true });
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // El logout local ya se realizó en el store, así que redirigimos de todos modos
+      navigate('/', { replace: true });
+    }
   };
 
   return (

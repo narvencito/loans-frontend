@@ -5,7 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { dashboardApi, LatestLoan } from '@/features/admin/api/admin_dashboard_api';
 
-const ClientDashboardPage = () => {
+const ClientDashBoardPage = () => {
   const [loading, setLoading] = useState(true);
 
   return (
@@ -48,4 +48,4 @@ const ClientDashboardPage = () => {
   );
 };
 
-export default ClientDashboardPage;
+export default ClientDashBoardPage;

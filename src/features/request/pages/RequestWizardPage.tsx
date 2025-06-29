@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useBlocker } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams, useBeforeUnload } from 'react-router-dom';
 import { StepPersonalData } from '../components/StepPersonalData';
 import { StepSelectEquipment } from '../components/StepSelectEquipment';
 import { StepLoanDetails } from '../components/StepLoanDetails';
@@ -31,7 +30,7 @@ interface LoanDetails {
 
 type SubmissionStatus = 'idle' | 'submitting' | 'success' | 'error';
 
-export const RequestWizardPage = () => {
+export default function RequestWizardPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const type = searchParams.get('type') as RequestTypeEnum;
@@ -59,25 +58,31 @@ export const RequestWizardPage = () => {
     }
   };
 
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) => {
-      if (submissionStatus === 'success') return false;
-      return hasChanges && currentLocation.pathname !== nextLocation.pathname;
-    }
+  useBeforeUnload(
+    useCallback(
+      (event) => {
+        if (hasChanges && submissionStatus !== 'success') {
+          event.preventDefault();
+          return event.returnValue = '¿Estás seguro que deseas salir? Los datos ingresados se perderán.';
+        }
+      },
+      [hasChanges, submissionStatus]
+    )
   );
 
-  if (blocker.state === "blocked") {
-    showConfirm(
-      'Salir del formulario',
-      '¿Estás seguro que deseas salir? Los datos ingresados se perderán.'
-    ).then((confirmed) => {
+  const handleNavigation = async (path: string) => {
+    if (hasChanges && submissionStatus !== 'success') {
+      const confirmed = await showConfirm(
+        'Salir del formulario',
+        '¿Estás seguro que deseas salir? Los datos ingresados se perderán.'
+      );
       if (confirmed) {
-        blocker.proceed();
-      } else {
-        blocker.reset();
+        navigate(path);
       }
-    });
-  }
+    } else {
+      navigate(path);
+    }
+  };
 
   const handlePersonalDataSubmit = (data: Omit<PersonalData, 'address'> & { address?: string }) => {
     setPersonalData({
@@ -148,9 +153,7 @@ export const RequestWizardPage = () => {
       setSelectedEquipment(null);
       setLoanDetails(null);
       
-      setTimeout(() => {
-        navigate('/');
-      }, 100);
+      handleNavigation('/');
     } catch (error: any) {
       setSubmissionStatus('error');
       if (error?.response?.status === 409) {
@@ -160,7 +163,7 @@ export const RequestWizardPage = () => {
   };
 
   if (!type || !Object.values(RequestTypeEnum).includes(type)) {
-    navigate('/');
+    handleNavigation('/');
     return null;
   }
 
@@ -223,9 +226,10 @@ export const RequestWizardPage = () => {
           <EmailConflictModal
             onClose={() => setShowEmailConflict(false)}
             email={personalData.email}
+            open={showEmailConflict}
           />
         )}
       </div>
     </div>
   );
-};
+}

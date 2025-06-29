@@ -22,8 +22,10 @@ import {
 import { EquipmentLoanStatusCode, getEquipmentLoanStatusName } from '../enums/equipment-loan-status.enum';
 
 interface Props {
-  loans: EquipmentLoanItem[];
-  onEditSchedule: (loan: EquipmentLoanItem) => void;
+  loans?: EquipmentLoanItem[];
+  isLoading?: boolean;
+  onViewSchedule?: (id: string) => void;
+  onEditSchedule?: (loan: EquipmentLoanItem) => void;
 }
 
 const formatPrice = (amount: number | undefined) => {
@@ -64,13 +66,30 @@ const getStatusClass = (status: string) => {
   }
 };
 
-const EquipmentLoanTable = ({ loans, onEditSchedule }: Props) => {
+const EquipmentLoanTable = ({ loans = [], isLoading, onViewSchedule, onEditSchedule }: Props) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const totalPages = Math.ceil(loans.length / pageSize);
   const paginatedLoans = loans.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-2">Cargando...</span>
+      </div>
+    );
+  }
+
+  if (!loans.length) {
+    return (
+      <div className="text-center text-gray-500 py-8">
+        <p>No hay préstamos para mostrar.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-md border">
@@ -105,20 +124,24 @@ const EquipmentLoanTable = ({ loans, onEditSchedule }: Props) => {
               <TableCell className="text-right">{formatPrice(loan.pendingAmount)}</TableCell>
               <TableCell className="text-center">
                 <div className="flex gap-2 justify-center">
-                  <Button
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={() => navigate(`/admin/equipment-loans/${loan.id}`)}
-                  >
-                    Ver detalle
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onEditSchedule(loan)}
-                  >
-                    Cronograma
-                  </Button>
+                  {onViewSchedule && (
+                    <Button
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={() => navigate(`/admin/equipment-loans/${loan.id}`)}
+                    >
+                      Ver detalle
+                    </Button>
+                  )}
+                  {onEditSchedule && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onEditSchedule(loan)}
+                    >
+                      Cronograma
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>
