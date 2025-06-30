@@ -21,13 +21,15 @@ export default function AdminLayout() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        <header className="p-4 text-lg font-bold border-b border-border bg-background text-white text-primary-foreground">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <header className="p-4 text-lg font-bold border-b border-border bg-background text-white text-primary-foreground flex-shrink-0">
           Panel de Administración
         </header>
-        <Separator />
-        <main className="p-6 flex-1 overflow-y-auto">
-          <Outlet />
+        <Separator className="flex-shrink-0" />
+        <main className="flex-1 overflow-auto ">
+          <div className="container mx-auto p-3">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

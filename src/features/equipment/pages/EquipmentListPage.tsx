@@ -76,10 +76,8 @@ const EquipmentListPage = () => {
   }, []);
 
   return (
-    <div className="p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <h1 className="text-xl sm:text-2xl font-bold">Gestión de Equipos 3</h1>
-      </div>
+    <div className="">
+        <h1 className="text-xl sm:text-2xl font-bold">Gestión de Equipos</h1>
 
       <div className="bg-white p-4 rounded-lg shadow mb-4">
         <RowApp className="grid grid-cols-1 sm:grid-cols-6 gap-4 mb-4">

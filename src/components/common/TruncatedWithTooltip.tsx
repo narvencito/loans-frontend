@@ -28,7 +28,7 @@ const TruncatedWithTooltip = ({ text }: Props) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <InfoIcon className="w-14 h-14 text-muted-foreground cursor-pointer text-yellow-400" />
+                <InfoIcon className="w-4 h-4 text-muted-foreground cursor-pointer text-yellow-400 flex-shrink-0" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs break-words">
                 {text}

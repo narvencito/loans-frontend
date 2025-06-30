@@ -93,7 +93,7 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
                   {getStatusTranslation(item.statusName)}
                 </span>
               </TableCell>
-              <TableCell className="text-center space-x-2">
+              <TableCell className="flex items-center justify-center gap-2">
                 <Button
                   size="sm"
                   className="bg-blue-600 hover:bg-blue-700 text-white"
