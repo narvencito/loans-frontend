@@ -12,6 +12,19 @@ import { ReactNode } from 'react';
 
 type MaxWidth = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl';
 
+const maxWidthClasses: Record<MaxWidth, string> = {
+  'sm': 'sm:max-w-[640px]',
+  'md': 'sm:max-w-[768px]',
+  'lg': 'sm:max-w-[1024px]',
+  'xl': 'sm:max-w-[1280px]',
+  '2xl': 'sm:max-w-[1400px]',
+  '3xl': 'sm:max-w-[1600px]',
+  '4xl': 'sm:max-w-[1800px]',
+  '5xl': 'sm:max-w-[1920px]',
+  '6xl': 'sm:max-w-[2048px]',
+  '7xl': 'sm:max-w-[2200px]'
+};
+
 interface DialogAppCustomProps {
   open: boolean;
   onClose: () => void;
@@ -32,7 +45,7 @@ const DialogAppCustom = ({
   maxWidth = 'sm',
   bgColor = 'bg-white',
 }: DialogAppCustomProps) => {
-  const widthClass = `sm:max-w-${maxWidth}`;
+  const widthClass = maxWidthClasses[maxWidth];
 
   return (
     <Dialog open={open}>

@@ -78,7 +78,7 @@ const EquipmentListPage = () => {
   return (
     <div className="p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <h1 className="text-xl sm:text-2xl font-bold">Gestión de Equipos</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">Gestión de Equipos 3</h1>
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow mb-4">

@@ -9,7 +9,8 @@ import BrandSelect from '@/features/brand/components/BrandSelect';
 import EquipmentFeatureSelectCheckboxList from '@/features/equipment-feature/components/EquipmentFeatureSelectedCheckboxList';
 import { CreateEquipmentDto, EquipmentItem } from '../api/equipment_api';
 import { ImageApp } from '@/features/equipment-feature/api/equipment-feature-api';
-import DialogApp from '@/shared/components/DialogApp';
+import DialogAppCustom from '@/shared/components/DialogAppCustom';
+import { Button } from '@/components/ui/button';
 import ColumnApp from '@/shared/components/ColumnApp';
 import RowApp from '@/shared/components/RowApp';
 import LabelApp from '@/shared/components/LabelApp';
@@ -170,12 +171,21 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
   };
 
   return (
-    <DialogApp
+    <DialogAppCustom
       open={open}
       onClose={onClose}
-      onConfirm={handleSubmit}
-      maxWidth='4xl'
+      maxWidth='lg'
       title={defaultValues ? "Editar equipo" : "Registrar nuevo equipo"}
+      childrenFooter={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSubmit}>
+            {defaultValues ? "Guardar cambios" : "Registrar"}
+          </Button>
+        </>
+      }
     >
       <ColumnApp className="overflow-y-auto px-6 py-4 space-y-4 flex-1 max-h-[calc(100vh-200px)]">
         <RowApp className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -361,7 +371,7 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
           </ColumnApp>
         </RowApp>
       </ColumnApp>
-    </DialogApp>
+    </DialogAppCustom>
   );
 };
 
