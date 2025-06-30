@@ -103,7 +103,13 @@ export interface StatusHistoryItem {
   previousStatusId: string | null;
   comments: string;
   createdAt: string;
-  createdBy: string;
+  user: {
+    id: string;
+    name: string;
+    role: {
+      name: string;
+    }
+  };
   status: {
     id: string;
     code: string;

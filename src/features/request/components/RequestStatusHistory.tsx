@@ -10,8 +10,14 @@ interface StatusHistoryItem {
     name: string;
   };
   createdAt: string;
-  createdBy: string;
   comments?: string;
+  user: {
+    id: string;
+    name: string;
+    role: {
+      name: string;
+    }
+  };
 }
 
 interface StatusHistoryResponse {
@@ -124,13 +130,18 @@ export const RequestStatusHistory = ({ requestId }: RequestStatusHistoryProps) =
                   </span>
                 </div>
                 
-                {/* Usuario y comentario */}
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-700">
-                    {item.createdBy}
-                  </p>
+                {/* Usuario, rol y comentario */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-gray-700">
+                      {item.user.name}
+                    </p>
+                    <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                      {item.user.role.name}
+                    </span>
+                  </div>
                   {item.comments && (
-                    <p className="text-sm text-gray-600">{item.comments}</p>
+                    <p className="text-sm text-gray-600 mt-1">{item.comments}</p>
                   )}
                 </div>
               </div>
