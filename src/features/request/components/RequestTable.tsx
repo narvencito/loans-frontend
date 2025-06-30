@@ -15,6 +15,7 @@ import { requestApi } from '../api/request_api';
 import { RequestDetail } from './RequestDetail';
 import { RequestStatusChangeDialog } from './RequestStatusChangeDialog';
 import { RequestStatusCode } from '../enums/request-status.enum';
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   requests: RequestItem[];
@@ -118,77 +119,79 @@ export const RequestTable = ({ requests, showActions = false, onRefresh, onAlert
   };
 
   return (
-    <div className="w-full overflow-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Cliente</TableHead>
-            <TableHead>Documento</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Equipo</TableHead>
-            <TableHead>Monto</TableHead>
-            <TableHead>Fecha</TableHead>
-            <TableHead className="text-right w-[200px]">Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {requests.map((request) => {
-            const statusStyle = getStatusStyle(request.requestStatus.code);
-            return (
-              <TableRow key={request.id}>
-                <TableCell className="font-medium">{request.client.fullName}</TableCell>
-                <TableCell>{request.client.document}</TableCell>
-                <TableCell>{getRequestTypeName(request.requestType.name)}</TableCell>
-                <TableCell>
-                  <div className="flex flex-col gap-1">
-                    <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${statusStyle.bg} ${statusStyle.text}`}>
-                      {request.requestStatus.name}
-                    </span>
-                    <span className={`text-xs ${statusStyle.text}`}>
-                      {request.requestStatus.description}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>{request.equipment?.name || '-'}</TableCell>
-                <TableCell>
-                  {request.amount ? `S/ ${request.amount.toLocaleString()}` : '-'}
-                </TableCell>
-                <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
-                <TableCell className="p-2">
-                  <div className="flex justify-end items-center gap-2">
-                    {showActions && (
-                      request.requestStatus.code !== RequestStatusCode.CONVERTED && 
-                      request.requestStatus.code !== RequestStatusCode.PENDING && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-orange-100 hover:bg-orange-200 text-orange-800 border-orange-300"
-                          onClick={() => {
-                            // TODO: Implementar edición
-                            console.log('Editar solicitud:', request.id);
-                          }}
-                        >
-                          Editar
-                        </Button>
-                      )
-                    )}
+    <div className="rounded-md border">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="text-muted-foreground">
+              <TableHead>Cliente</TableHead>
+              <TableHead>Documento</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Equipo</TableHead>
+              <TableHead>Monto</TableHead>
+              <TableHead>Fecha</TableHead>
+              <TableHead className="text-right w-[200px]">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {requests.map((request) => {
+              const statusStyle = getStatusStyle(request.requestStatus.code);
+              return (
+                <TableRow key={request.id}>
+                  <TableCell className="font-medium">{request.client.fullName}</TableCell>
+                  <TableCell>{request.client.document}</TableCell>
+                  <TableCell>{getRequestTypeName(request.requestType.name)}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${statusStyle.bg} ${statusStyle.text}`}>
+                        {request.requestStatus.name}
+                      </span>
+                      <span className={`text-xs ${statusStyle.text}`}>
+                        {request.requestStatus.description}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{request.equipment?.name || '-'}</TableCell>
+                  <TableCell>
+                    {request.amount ? `S/ ${request.amount.toLocaleString()}` : '-'}
+                  </TableCell>
+                  <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell className="p-2">
+                    <div className="flex justify-end items-center gap-2">
+                      {showActions && (
+                        request.requestStatus.code !== RequestStatusCode.CONVERTED && 
+                        request.requestStatus.code !== RequestStatusCode.PENDING && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-orange-100 hover:bg-orange-200 text-orange-800 border-orange-300"
+                            onClick={() => {
+                              // TODO: Implementar edición
+                              console.log('Editar solicitud:', request.id);
+                            }}
+                          >
+                            Editar
+                          </Button>
+                        )
+                      )}
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300"
-                      onClick={() => handleOpenDetail(request)}
-                    >
-                      Ver Solicitud
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300"
+                        onClick={() => handleOpenDetail(request)}
+                      >
+                        Ver Solicitud
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
 
       {/* Modal de Detalles con Historial y Acciones */}
       <Dialog open={showDetailModal} onOpenChange={handleCloseDetail}>

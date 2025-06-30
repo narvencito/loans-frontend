@@ -79,39 +79,28 @@ const AdminBrandPage = () => {
     }
   };
 
+  const handleOpenCreate = () => {
+    setSelectedBrand(undefined);
+    setShowModal(true);
+  };
+
+  const handleSubmit = selectedBrand ? handleEdit : handleCreate;
+
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Marcas</h1>
-        <Button
-          onClick={() => {
-            setSelectedBrand(undefined);
-            setShowModal(true);
-          }}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          Nueva marca
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Gestión de Marcas</h1>
+        <Button onClick={handleOpenCreate}>
+          Registrar marca
         </Button>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-2">Cargando...</span>
-        </div>
-      ) : brands.length === 0 ? (
-        <p className="text-center text-gray-500">No hay marcas registradas</p>
-      ) : (
-        <BrandTable
-          brands={brands}
-          onEdit={(brand) => {
-            setSelectedBrand(brand);
-            setShowModal(true);
-          }}
-          onDelete={handleDelete}
-          onRestore={handleRestore}
-        />
-      )}
+      <BrandTable
+        brands={brands}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onRestore={handleRestore}
+      />
 
       <BrandFormModal
         open={showModal}
@@ -119,7 +108,7 @@ const AdminBrandPage = () => {
           setShowModal(false);
           setSelectedBrand(undefined);
         }}
-        onSubmit={selectedBrand ? handleEdit : handleCreate}
+        onSubmit={handleSubmit}
         brand={selectedBrand}
       />
     </div>

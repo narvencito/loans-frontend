@@ -6,10 +6,9 @@ import { RequestTable } from '@/features/request/components/RequestTable';
 import AdminRequestFormModal from '@/features/request/pages/AdminRequestFormPage';
 import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
 import { Label } from '@/components/ui/label';
-import { DatePicker } from '@/shared/components/DatePicker';
 import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
-import { setGlobalDialog, showGlobalDialog } from '@/shared/utils/global-dialog';
-import Pagination from '@/shared/components/Pagination';
+import { showGlobalDialog } from '@/shared/utils/global-dialog';
+
 
 const AdminRequestListPage = () => {
     const [requests, setRequests] = useState<RequestItem[]>([]);
@@ -26,6 +25,9 @@ const AdminRequestListPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const totalPages = Math.ceil(filteredRequests.length / pageSize);
+
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(null);
 
     const loadRequests = async () => {
         setLoading(true);
@@ -121,13 +123,20 @@ const AdminRequestListPage = () => {
         loadRequests();
     };
 
-    return (
-        <div className="p-4 sm:p-6">
-            <div className="mb-6">
-                <h1 className="text-xl sm:text-2xl font-bold">Solicitudes Registradas</h1>
-            </div>
+    const handleOpenCreate = () => {
+        setShowModal(true);
+    };
 
-            <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
+    const handleRequestDetail = (request: RequestItem) => {
+        setSelectedRequest(request);
+        setShowDetailModal(true);
+    };
+
+    return (
+        <div className="">
+            <h1 className="text-xl sm:text-2xl font-bold">Solicitudes Registradas</h1>
+
+            <div className="bg-white p-4 rounded-lg shadow mb-4">
                 <div className="flex flex-col gap-4">
                     {/* Fila de filtros */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -172,12 +181,14 @@ const AdminRequestListPage = () => {
                         </div>
 
                         <div className="flex gap-2 items-end justify-end">
-                            <Button onClick={() => setShowModal(true)}>
-                                Crear
+                            <Button
+                                className="w-full sm:w-auto self-end bg-[#2563eb] hover:bg-[#1d4ed8] text-white"
+                                onClick={() => setShowModal(true)}
+                            >
+                                Registrar solicitud
                             </Button>
                             <Button
-                                variant="secondary"
-                                className="bg-blue-600 text-white hover:bg-blue-700"
+                                className="w-full sm:w-auto self-end bg-yellow-400 hover:bg-yellow-500 text-black"
                                 onClick={handleSearch}
                                 type="button"
                             >
@@ -188,41 +199,18 @@ const AdminRequestListPage = () => {
                 </div>
             </div>
 
-            {loading ? (
-                <div className="flex justify-center items-center p-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <span className="ml-2">Cargando...</span>
-                </div>
-            ) : filteredRequests.length === 0 ? (
-                <p className="text-center text-muted-foreground">No hay solicitudes que coincidan con los filtros.</p>
-            ) : (
-                <div className="space-y-4">
-                    <div className="overflow-x-auto">
-                        <RequestTable 
-                            requests={paginatedRequests}
-                            showActions={true}
-                            onAlert={(message, type) => {
-                                showGlobalDialog({
-                                    type: type === 'success' ? 'success' : 'error',
-                                    title: type === 'success' ? 'Éxito' : 'Error',
-                                    message
-                                });
-                            }}
-                            onRefresh={loadRequests}
-                        />
-                    </div>
-                    
-                    <div className="flex justify-end mt-4">
-                        <Pagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            pageSize={pageSize}
-                            onPageChange={handlePageChange}
-                            onPageSizeChange={handlePageSizeChange}
-                        />
-                    </div>
-                </div>
-            )}
+            <RequestTable
+                requests={requests}
+                showActions={true}
+                onAlert={(message, type) => {
+                    showGlobalDialog({
+                        type: type === 'success' ? 'success' : 'error',
+                        title: type === 'success' ? 'Éxito' : 'Error',
+                        message
+                    });
+                }}
+                onRefresh={loadRequests}
+            />
 
             <AdminRequestFormModal
                 open={showModal}

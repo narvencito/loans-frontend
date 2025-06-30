@@ -100,4 +100,10 @@ export const adminMenuLinks: MenuLink[] = [
     roles: [RoleEnum.ADMIN],
     group: 'Gestión de Usuarios'
   },
+  { 
+    label: 'Personal', 
+    path: '/admin/staff',
+    roles: [RoleEnum.ADMIN],
+    group: 'Gestión de Usuarios'
+  },
 ];

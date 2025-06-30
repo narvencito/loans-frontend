@@ -11,6 +11,7 @@ import { EquipmentItem } from "../api/equipment_api";
 import TruncatedWithTooltip from "@/components/common/TruncatedWithTooltip";
 import Pagination from "@/shared/components/Pagination";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   equipos: EquipmentItem[];
@@ -59,60 +60,64 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
   const paginated = equipos.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow className="text-muted-foreground">
-            <TableHead>Código</TableHead>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Marca</TableHead>
-            <TableHead>Descripción</TableHead>
-            <TableHead>Categoría</TableHead>
-            <TableHead>Perfil de uso</TableHead>
-            <TableHead className="text-right">Precio venta</TableHead>
-            <TableHead className="text-right">Tarifa diaria</TableHead>
-            <TableHead className="text-center">Estado</TableHead>
-            <TableHead className="text-center">Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginated.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell className="text-foreground">{item.code}</TableCell>
-              <TableCell className="text-foreground">{item.name}</TableCell>
-              <TableCell className="text-foreground">{item.brandRelation?.name || '-'}</TableCell>
-              <TableCell className="text-foreground">
-                <TruncatedWithTooltip text={item.description} />
-              </TableCell>
-              <TableCell className="text-foreground">{item.category?.name || '-'}</TableCell>
-              <TableCell className="text-foreground">{item.generalCategory?.name || '-'}</TableCell>
-              <TableCell className="text-foreground text-right">{formatPrice(item.salePrice)}</TableCell>
-              <TableCell className="text-foreground text-right">{formatPrice(item.rentalDailyRate)}</TableCell>
-              <TableCell className="text-center">
-                <span className={`text-green-600`}>
-                  {getStatusTranslation(item.statusName)}
-                </span>
-              </TableCell>
-              <TableCell className="flex items-center justify-center gap-2">
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => onEdit(item)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                  onClick={() => onDelete(item.id)}
-                >
-                  Eliminar
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="flex flex-col">
+      <div className="rounded-md border">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="text-muted-foreground">
+                <TableHead>Código</TableHead>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Marca</TableHead>
+                <TableHead>Descripción</TableHead>
+                <TableHead>Categoría</TableHead>
+                <TableHead>Perfil de uso</TableHead>
+                <TableHead className="text-right">Precio venta</TableHead>
+                <TableHead className="text-right">Tarifa diaria</TableHead>
+                <TableHead className="text-center">Estado</TableHead>
+                <TableHead className="text-center">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginated.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="text-foreground">{item.code}</TableCell>
+                  <TableCell className="text-foreground">{item.name}</TableCell>
+                  <TableCell className="text-foreground">{item.brandRelation?.name || '-'}</TableCell>
+                  <TableCell className="text-foreground">
+                    <TruncatedWithTooltip text={item.description} />
+                  </TableCell>
+                  <TableCell className="text-foreground">{item.category?.name || '-'}</TableCell>
+                  <TableCell className="text-foreground">{item.generalCategory?.name || '-'}</TableCell>
+                  <TableCell className="text-foreground text-right">{formatPrice(item.salePrice)}</TableCell>
+                  <TableCell className="text-foreground text-right">{formatPrice(item.rentalDailyRate)}</TableCell>
+                  <TableCell className="text-center">
+                    <span className={`text-green-600`}>
+                      {getStatusTranslation(item.statusName)}
+                    </span>
+                  </TableCell>
+                  <TableCell className="flex items-center justify-center gap-2">
+                    <Button
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={() => onEdit(item)}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                      onClick={() => onDelete(item.id)}
+                    >
+                      Eliminar
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

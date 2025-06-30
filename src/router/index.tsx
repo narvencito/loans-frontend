@@ -39,6 +39,7 @@ import EquipmentLoanListPage from '@/features/client/pages/EquipmentLoanListPage
 import EquipmentFinancingListPage from '@/features/client/pages/EquipmentFinancingListPage';
 import ClientHelpPage from '@/features/client/pages/ClientHelpPage';
 import ClientFinancingStatusPage from '@/features/client/pages/ClientFinancingStatusPage';
+import StaffListPage from '@/features/staff/pages/StaffListPage';
 
 export const routes: RouteObject[] = [
   {
@@ -93,6 +94,7 @@ export const routes: RouteObject[] = [
       { path: 'cash-loans', element: <AdminCashLoanListPage /> },
       { path: 'clients', element: <ClientListPage /> },
       { path: 'users', element: <UserListPage /> },
+      { path: 'staff', element: <StaffListPage /> },
     ],
   },
   {

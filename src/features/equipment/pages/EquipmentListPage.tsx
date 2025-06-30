@@ -11,6 +11,7 @@ import RowApp from '@/shared/components/RowApp';
 import ColumnApp from '@/shared/components/ColumnApp';
 import { Input } from '@/components/ui/input';
 import LabelApp from '@/shared/components/LabelApp';
+import EquipmentCategorySelect from '@/features/equipment-category/components/EquipmentCategorySelect';
 
 const EquipmentListPage = () => {
   const [equipos, setEquipos] = useState<EquipmentItem[]>([]);
@@ -71,55 +72,56 @@ const EquipmentListPage = () => {
     loadEquipos(filters);
   };
 
+  const handleOpenCreate = () => {
+    setShowModal(true);
+    setSelectedEquipment(null);
+  };
+
+  const handleFilterChange = (key: keyof EquipmentFilters, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
   useEffect(() => {
     loadEquipos();
   }, []);
 
   return (
-    <div className="">
-        <h1 className="text-xl sm:text-2xl font-bold">Gestión de Equipos</h1>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Gestión de Equipos</h1>
+        <Button onClick={handleOpenCreate}>
+          Registrar equipo
+        </Button>
+      </div>
 
       <div className="bg-white p-4 rounded-lg shadow mb-4">
-        <RowApp className="grid grid-cols-1 sm:grid-cols-6 gap-4 mb-4">
-          <ColumnApp className="w-full">
-            <LabelApp className="text-sm">Buscar por nombre</LabelApp>
-            <Input
-              type="text"
-              placeholder="Nombre del equipo..."
-              value={filters.name || ''}
-              onChange={(e) => setFilters(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full"
+        <RowApp>
+          <ColumnApp>
+            <LabelApp>Marca</LabelApp>
+            <BrandSelect
+              value={filters.brandId || ''}
+              onChange={(value) => handleFilterChange('brandId', value)}
             />
           </ColumnApp>
-          <BrandSelect
-            value={filters.brandId || ''}
-            onChange={(value) => setFilters(prev => ({ ...prev, brandId: value }))}
-            label="Filtrar por marca"
-            showAll
-          />
-          <GeneralCategorySelect
-            value={filters.generalCategoryId || ''}
-            onChange={(value) => setFilters(prev => ({ ...prev, generalCategoryId: value }))}
-            label="Filtrar por perfil de uso"
-            showAll
-          />
-          <EquipmentStatusSelect
-            value={filters.statusId || ''}
-            onChange={(value) => setFilters(prev => ({ ...prev, statusId: value }))}
-            label="Filtrar por estado"
-            showAll
-          />
-          <Button 
+          <ColumnApp>
+            <LabelApp>Categoría</LabelApp>
+            <EquipmentCategorySelect
+              value={filters.categoryId || ''}
+              onChange={(value) => handleFilterChange('categoryId', value)}
+            />
+          </ColumnApp>
+          <ColumnApp>
+            <LabelApp>Estado</LabelApp>
+            <EquipmentStatusSelect
+              value={filters.statusId || ''}
+              onChange={(value) => handleFilterChange('statusId', value)}
+            />
+          </ColumnApp>
+          <Button
+            className="self-end bg-yellow-400 hover:bg-yellow-500 text-black"
             onClick={handleSearch}
-            className="w-full sm:w-auto self-end bg-yellow-400 hover:bg-yellow-500 text-black"
           >
             Buscar
-          </Button>
-          <Button
-            className="w-full sm:w-auto self-end bg-[#2563eb] hover:bg-[#1d4ed8] text-white"
-            onClick={() => setShowModal(true)}
-          >
-            Registrar equipo
           </Button>
         </RowApp>
       </div>
@@ -128,7 +130,11 @@ const EquipmentListPage = () => {
         <p>Cargando equipos...</p>
       ) : (
         <div className="overflow-x-auto">
-          <EquipmentTable equipos={equipos} onDelete={handleDelete} onEdit={handleEdit} />
+          <EquipmentTable
+            equipos={equipos}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </div>
       )}
 

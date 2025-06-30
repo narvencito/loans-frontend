@@ -32,7 +32,6 @@ export default function ChangePasswordPage() {
     try {
       setLoading(true);
       await authService.changePassword({
-        userId: user?.id,
         newPassword
       });
 

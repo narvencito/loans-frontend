@@ -5,7 +5,6 @@ export interface LoginDto {
   }
 
   export interface ChangePasswordDto {
-    userId?: string; 
     newPassword: string;
   }
   
@@ -45,5 +44,6 @@ export interface Role {
   export enum RoleEnum {
     ADMIN = 'ADMIN',
     CLIENT = 'CLIENT',
-    WORKER = 'WORKER'
+    WORKER = 'WORKER',
+    BOSS = 'BOSS'
   }
