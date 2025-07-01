@@ -141,7 +141,6 @@ const PublicSidebarFilters = ({
         </Button>
         <Button 
           onClick={onClearFilters}
-          variant="outline"
           className="w-full"
         >
           Limpiar filtros

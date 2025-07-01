@@ -5,6 +5,7 @@ import ImageCarousel from "./ImageCarousel";
 import { useNavigate } from "react-router-dom";
 import { RequestTypeEnum } from "@/shared/enums/request-type.enum";
 import { EquipmentUsageType } from "../../model/equipment.types";
+import { Eye } from "lucide-react";
 
 interface Props {
   product: PublicEquipmentItem;
@@ -68,6 +69,14 @@ const ProductCard = ({ product, onClick }: Props) => {
           )}
         </div>
         <div className="flex flex-col gap-2">
+          <Button
+            onClick={onClick}
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2 border-yellow-400 text-yellow-600 hover:bg-yellow-50"
+          >
+            <Eye className="w-4 h-4" />
+            Ver detalles
+          </Button>
           {isFinancing && (
             <button
               onClick={() => navigate(`/general/request-wizard?type=${RequestTypeEnum.EQUIPMENT_FINANCING}&equipmentId=${product.id}`)}

@@ -3,9 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
 import { adminCashLoanApi } from '../api/admin_cash_loans_api';
 import { useDialogStore } from '@/shared/utils/global-dialog';
+import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
 
 interface Props {
   open: boolean;

@@ -108,10 +108,22 @@ export interface EquipmentFilters {
   statusId?: string;
   equipmentCategoryId?: string;
   usageType?: EquipmentUsageType;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedEquipmentResponse {
+  items: EquipmentItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 export const equipmentApi = {
-  async getAll(filters: EquipmentFilters = {}): Promise<EquipmentItem[]> {
+  async getAll(filters: EquipmentFilters = {}): Promise<PaginatedEquipmentResponse> {
     return apiRequest(
       api.post('/equipment/list', filters),
       {

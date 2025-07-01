@@ -22,7 +22,7 @@ interface Props {
   loan: CashLoanItem | null;
 }
 
-const CashLoanScheduleModal = ({ open, onClose, loan }: Props) => {
+export const CashLoanScheduleModal = ({ open, onClose, loan }: Props) => {
   const [cuotas, setCuotas] = useState<InstallmentItem[]>([]);
   const [deudaTotal, setDeudaTotal] = useState<number>(0);
 
@@ -42,7 +42,7 @@ const CashLoanScheduleModal = ({ open, onClose, loan }: Props) => {
   
     if(find?.id  !=  installmentId){
       if (hasOverdueInstallments) {
-        await showInfo( 'Existen cuotas vencidas. Debe pagar primero las cuotas vencidas.');
+        await showInfo( "informacion", 'Existen cuotas vencidas. Debe pagar primero las cuotas vencidas.');
         return;
       }
     }
@@ -60,7 +60,7 @@ const CashLoanScheduleModal = ({ open, onClose, loan }: Props) => {
     const fileURL = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
     window.open(fileURL);
 
-    showSuccess("Cuota Pagado exitosamente.");
+    showSuccess( "Exito", "Cuota Pagado exitosamente.");
   };
 
   const handlePayAll = async () => {
@@ -82,7 +82,7 @@ const CashLoanScheduleModal = ({ open, onClose, loan }: Props) => {
       await cashLoanApi.generateNoDebtCertificate(loan.id);
     }
 
-    showSuccess("Pago total realizado exitosamente.");
+    showSuccess("Exito", "Pago total realizado exitosamente.");
   };
 
   const hasPendingInstallments = cuotas.some((c) => c.status === 'Pendiente');

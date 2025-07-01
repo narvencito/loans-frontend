@@ -18,7 +18,7 @@ interface Props {
   askToogle?: (cashLoanId: string) => Promise<void>;
 }
 
-const CashLoanTable = ({ loans = [], isLoading, onViewSchedule, askToogle }: Props) => {
+export const CashLoanTable = ({ loans = [], isLoading, onViewSchedule, askToogle }: Props) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10); // Ahora también se maneja pageSize
 

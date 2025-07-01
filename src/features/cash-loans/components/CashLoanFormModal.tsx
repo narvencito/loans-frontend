@@ -15,7 +15,7 @@ interface Props {
   onCreate: (data: CreateCashLoanDto) => void;
 }
 
-const CashLoanFormModal = ({ open, onClose, onCreate }: Props) => {
+export const CashLoanFormModal = ({ open, onClose, onCreate }: Props) => {
   const [form, setForm] = useState<CreateCashLoanDto>({
     clientId: '',
     amount: 0,

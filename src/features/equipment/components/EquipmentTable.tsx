@@ -11,7 +11,6 @@ import { EquipmentItem } from "../api/equipment_api";
 import { Edit, Trash2 } from "lucide-react";
 import TruncatedWithTooltip from "@/components/common/TruncatedWithTooltip";
 import Pagination from "@/shared/components/Pagination";
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { EQUIPMENT_USAGE_TYPE_LABELS } from "../model/equipment.types";
 
@@ -19,6 +18,11 @@ interface Props {
   equipos: EquipmentItem[];
   onDelete: (id: string) => void;
   onEdit: (item: EquipmentItem) => void;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
 }
 
 const formatPrice = (price: number) => {
@@ -54,13 +58,16 @@ const getStatusTranslation = (statusName: string) => {
   return statusTranslations[normalizedStatus] || statusName;
 };
 
-const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  const totalPages = Math.ceil(equipos.length / pageSize);
-  const paginated = equipos.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  
+const EquipmentTable = ({ 
+  equipos = [], 
+  onDelete, 
+  onEdit,
+  currentPage,
+  totalPages,
+  pageSize,
+  onPageChange,
+  onPageSizeChange
+}: Props) => {
   return (
     <div className="flex flex-col">
       <div className="rounded-md border">
@@ -81,7 +88,7 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginated.map((item) => (
+              {equipos.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="text-foreground">{item.code}</TableCell>
                   <TableCell className="text-foreground">
@@ -116,20 +123,26 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
                   </TableCell>
                 </TableRow>
               ))}
+              {equipos.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                    No hay equipos disponibles
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
       </div>
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        pageSize={pageSize}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={(size) => {
-          setPageSize(size);
-          setCurrentPage(1);
-        }}
-      />
+      {equipos.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      )}
     </div>
   );
 };

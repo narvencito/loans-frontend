@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CreateEquipmentDto, equipmentApi, EquipmentItem, EquipmentFilters } from '../api/equipment_api';
+import { CreateEquipmentDto, equipmentApi, EquipmentItem, EquipmentFilters, PaginatedEquipmentResponse } from '../api/equipment_api';
 import EquipmentTable from '../components/EquipmentTable';
 import EquipmentFormModal from '../components/EquipmentFormModal';
 import { Button } from '@/components/ui/button';
@@ -18,10 +18,21 @@ type ExtendedFilters = Omit<EquipmentFilters, 'usageType'> & {
 };
 
 const EquipmentListPage = () => {
-  const [equipos, setEquipos] = useState<EquipmentItem[]>([]);
+  const [equipmentData, setEquipmentData] = useState<PaginatedEquipmentResponse>({
+    items: [],
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPreviousPage: false
+  });
   const [showModal, setShowModal] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentItem | null>(null);
-  const [filters, setFilters] = useState<ExtendedFilters>({});
+  const [filters, setFilters] = useState<ExtendedFilters>({
+    page: 1,
+    limit: 10
+  });
 
   const stableDefaultValues = React.useMemo(() => selectedEquipment, [selectedEquipment?.id]);
 
@@ -32,17 +43,22 @@ const EquipmentListPage = () => {
         brandId: params.brandId === 'all' ? undefined : params.brandId,
         generalCategoryId: params.generalCategoryId === 'all' ? undefined : params.generalCategoryId,
         statusId: params.statusId === 'all' ? undefined : params.statusId,
-        usageType: params.usageType === 'all' ? undefined : params.usageType
+        usageType: params.usageType === 'all' ? undefined : params.usageType,
+        page: params.page || 1,
+        limit: params.limit || 10
       };
       const data = await equipmentApi.getAll(searchFilters);
-      setEquipos(data);
+      setEquipmentData(data);
     } catch (error) {
       console.error("Error al cargar equipos:", error);
     }
   };
 
   const handleSearch = () => {
-    loadEquipos(filters);
+    // Reset to first page when searching
+    const searchFilters = { ...filters, page: 1 };
+    setFilters(searchFilters);
+    loadEquipos(searchFilters);
   };
 
   const handleSubmit = async (data: FormData) => {
@@ -82,8 +98,20 @@ const EquipmentListPage = () => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  const handlePageChange = (page: number) => {
+    const newFilters = { ...filters, page };
+    setFilters(newFilters);
+    loadEquipos(newFilters);
+  };
+
+  const handlePageSizeChange = (limit: number) => {
+    const newFilters = { ...filters, limit, page: 1 };
+    setFilters(newFilters);
+    loadEquipos(newFilters);
+  };
+
   useEffect(() => {
-    loadEquipos();
+    loadEquipos(filters);
   }, []);
 
   return (
@@ -142,9 +170,14 @@ const EquipmentListPage = () => {
 
       <div className="overflow-x-auto">
         <EquipmentTable
-          equipos={equipos}
+          equipos={equipmentData.items}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          currentPage={equipmentData.page}
+          totalPages={equipmentData.totalPages}
+          pageSize={equipmentData.limit}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
         />
       </div>
 

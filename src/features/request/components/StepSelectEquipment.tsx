@@ -46,8 +46,8 @@ export const StepSelectEquipment = ({ onNext, onPrevious, preselectedId, presele
       try {
         setIsLoading(true);
         setError(null);
-        const equipment = await equipmentPublicApi.getByFilter({});
-        setEquipmentList(equipment);
+        const response = await equipmentPublicApi.getByFilter({});
+        setEquipmentList(response.items);
       } catch (error) {
         setError('No se pudieron cargar los equipos. Por favor, intente nuevamente.');
       } finally {

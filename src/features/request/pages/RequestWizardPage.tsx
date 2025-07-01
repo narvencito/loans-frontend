@@ -10,6 +10,7 @@ import { showConfirm } from '@/shared/utils/global-dialog-utils';
 import { StepNavigation } from '../components/StepNavigation';
 import { EmailConflictModal } from '../components/EmailConflictModal';
 import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
+import { useLoaderStore } from '@/shared/store/loader.store';
 
 interface PersonalData {
   firstName: string;
@@ -43,6 +44,7 @@ export default function RequestWizardPage() {
   const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>('idle');
   const [showEmailConflict, setShowEmailConflict] = useState(false);
   const [requestId, setRequestId] = useState<string | null>(null);
+  const { show: showLoader, hide: hideLoader, isLoading } = useLoaderStore();
 
   const steps = ['Datos personales', 'Seleccionar equipo', 'Detalles del préstamo', 'Confirmar solicitud'];
 
@@ -115,6 +117,7 @@ export default function RequestWizardPage() {
 
     try {
       setSubmissionStatus('submitting');
+      showLoader();
       const fullName = `${personalData.firstName} ${personalData.paternalSurname} ${personalData.maternalSurname}`;
       const message = `Solicitud de ${type === RequestTypeEnum.EQUIPMENT_FINANCING ? 'financiamiento' : 'préstamo'} de equipo`;
 
@@ -145,11 +148,14 @@ export default function RequestWizardPage() {
       setRequestId(response.id);
       setSubmissionStatus('success');
       setHasChanges(false);
+      navigate('/');
     } catch (error: any) {
       setSubmissionStatus('error');
       if (error?.response?.status === 409) {
         setShowEmailConflict(true);
       }
+    } finally {
+      hideLoader();
     }
   };
 
@@ -158,7 +164,7 @@ export default function RequestWizardPage() {
     setSelectedEquipment(null);
     setLoanDetails(null);
     setRequestId(null);
-    handleNavigation('/');
+    navigate('/');
   };
 
   if (!type || !Object.values(RequestTypeEnum).includes(type)) {

@@ -31,7 +31,7 @@ import EquipmentGeneral from '@/features/equipment/pages/EquipmentGeneral';
 import RequestFormPage from '@/features/request/pages/RequestFormPage';
 import RequestWizardPage from '@/features/request/pages/RequestWizardPage';
 import AdminCashLoanListPage from '@/features/cash-loans/pages/AdminCashLoanListPage';
-import AdminEquipmentLoanListPage from '@/features/equipment-loan/pages/EquipmentLoanListPage';
+import AdminEquipmentLoanListPage from '@/features/equipment-loan/pages/AdminEquipmentLoanListPage';
 import CashLoanListPage from '@/features/client/pages/CashLoanListPage';
 import EquipmentLoanListPage from '@/features/client/pages/EquipmentLoanListPage';
 import EquipmentFinancingListPage from '@/features/client/pages/EquipmentFinancingListPage';

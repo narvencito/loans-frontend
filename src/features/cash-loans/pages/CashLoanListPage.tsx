@@ -6,23 +6,23 @@ import { CashLoanFormModal } from '../components/CashLoanFormModal';
 import { CashLoanScheduleModal } from '../components/CashLoanScheduleModal';
 import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
 import CashLoanStatusSelect from '@/features/cash-loan-status/components/CashLoanStatusSelect';
-import { cashLoansApi } from '../api/cash_loans_api';
+import { cashLoanApi, type CashLoanItem } from '../api/cash_loans_api';
 import { useDialogStore } from '@/shared/utils/global-dialog';
+import { showConfirm } from '@/shared/utils/global-dialog-utils';
 
 export default function CashLoanListPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [loans, setLoans] = useState([]);
+  const [loans, setLoans] = useState<CashLoanItem[]>([]);
   const [showFormModal, setShowFormModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const { showConfirm } = useDialogStore();
 
   const loadLoans = async (filters = {}) => {
     setIsLoading(true);
     try {
-      const data = await cashLoansApi.getAll(filters);
+      const data = await cashLoanApi.getCashLoansFiltered(filters);
       setLoans(data);
     } catch (error) {
       console.error('Error al cargar préstamos:', error);
@@ -32,9 +32,9 @@ export default function CashLoanListPage() {
   };
 
   const handleSearch = () => {
-    const filters: any = {};
+    const filters: { clientId?: string; statusId?: string } = {};
     if (selectedClientId) filters.clientId = selectedClientId;
-    if (selectedStatus) filters.status = selectedStatus;
+    if (selectedStatus) filters.statusId = selectedStatus;
     loadLoans(filters);
   };
 
@@ -50,11 +50,11 @@ export default function CashLoanListPage() {
   };
 
   const handleToggleStatus = async (loanId: string) => {
-    const confirmed = await showConfirm('¿Estás seguro de cambiar el estado del préstamo?');
+    const confirmed = await showConfirm("Confirmacion", '¿Estás seguro de cambiar el estado del préstamo?');
     if (!confirmed) return;
 
     try {
-      await cashLoansApi.toggleStatus(loanId);
+      await cashLoanApi.deleteCashLoan(loanId);
       loadLoans();
     } catch (error) {
       console.error('Error al cambiar estado:', error);
@@ -81,7 +81,7 @@ export default function CashLoanListPage() {
             />
             <CashLoanStatusSelect
               value={selectedStatus}
-              onChange={setSelectedStatus}
+              onChange={(value) => setSelectedStatus(value || '')}
               label="Estado"
             />
             <div className="flex items-end gap-2">
@@ -108,20 +108,24 @@ export default function CashLoanListPage() {
         </CardContent>
       </Card>
 
-      <CashLoanFormModal
-        open={showFormModal}
-        onClose={() => setShowFormModal(false)}
-        onSuccess={() => {
-          setShowFormModal(false);
-          loadLoans();
-        }}
-      />
+      {showFormModal && (
+        <CashLoanFormModal
+          open={showFormModal}
+          onClose={() => setShowFormModal(false)}
+          onCreate={() => {
+            setShowFormModal(false);
+            loadLoans();
+          }}
+        />
+      )}
 
-      <CashLoanScheduleModal
-        open={showScheduleModal}
-        onClose={() => setShowScheduleModal(false)}
-        loanId={selectedLoanId}
-      />
+      {showScheduleModal && selectedLoanId && (
+        <CashLoanScheduleModal
+          open={showScheduleModal}
+          onClose={() => setShowScheduleModal(false)}
+          loan={loans.find(loan => loan.id === selectedLoanId) || null}
+        />
+      )}
     </div>
   );
 }

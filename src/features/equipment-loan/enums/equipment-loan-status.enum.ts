@@ -1,19 +1,25 @@
 export enum EquipmentLoanStatusCode {
-  CREATED = 'created',        // Préstamo generado en el sistema, pendiente de entrega
-  DELIVERED = 'delivered',    // El equipo fue entregado físicamente al cliente
-  RETURNED = 'returned',      // El cliente devolvió el equipo
-  OVERDUE = 'overdue',       // El préstamo está vencido (no devuelto a tiempo)
-  CANCELLED = 'cancelled'     // El préstamo fue cancelado antes de la entrega
+  CREATED = 'created',
+  DELIVERED = 'delivered',
+  OVERDUE = 'overdue',
+  RETURNED = 'returned',
+  CANCELLED = 'cancelled'
 }
 
-// Función helper para obtener el nombre amigable del estado
-export const getEquipmentLoanStatusName = (status: EquipmentLoanStatusCode): string => {
-  const statusNames: Record<EquipmentLoanStatusCode, string> = {
-    [EquipmentLoanStatusCode.CREATED]: 'Pendiente de entrega',
-    [EquipmentLoanStatusCode.DELIVERED]: 'Entregado',
-    [EquipmentLoanStatusCode.RETURNED]: 'Devuelto',
-    [EquipmentLoanStatusCode.OVERDUE]: 'Vencido',
-    [EquipmentLoanStatusCode.CANCELLED]: 'Cancelado'
-  };
-  return statusNames[status];
+export const EquipmentLoanStatusLabel: Record<EquipmentLoanStatusCode, string> = {
+  [EquipmentLoanStatusCode.CREATED]: 'Pendiente de entrega',
+  [EquipmentLoanStatusCode.DELIVERED]: 'Entregado',
+  [EquipmentLoanStatusCode.OVERDUE]: 'Vencido',
+  [EquipmentLoanStatusCode.RETURNED]: 'Devuelto',
+  [EquipmentLoanStatusCode.CANCELLED]: 'Cancelado'
+};
+
+// Función helper para obtener la etiqueta del estado a partir del código
+export const getEquipmentLoanStatusLabel = (statusCode: EquipmentLoanStatusCode): string => {
+  return EquipmentLoanStatusLabel[statusCode];
+};
+
+// Función helper para validar si un código corresponde a un estado válido
+export const isValidEquipmentLoanStatus = (statusCode: string): statusCode is EquipmentLoanStatusCode => {
+  return Object.values(EquipmentLoanStatusCode).includes(statusCode as EquipmentLoanStatusCode);
 }; 

@@ -8,11 +8,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
 import AsyncEquipmentCombobox from '@/features/equipment/components/AsyncEquipmentCombobox';
 import { CreateRequestAdminDto, CreateRequestDto, requestApi } from '../api/request_api';
 import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
 import { showError, showSuccess } from '@/shared/utils/global-dialog-utils';
+import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
 
 interface Props {
   open: boolean;

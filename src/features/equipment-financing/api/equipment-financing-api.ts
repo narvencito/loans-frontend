@@ -32,24 +32,25 @@ interface Installment {
   status: string;
 }
 
+export interface EquipmentFinancingFilters {
+  clientId?: string;
+  statusId?: string;
+  equipmentId?: string;
+}
+
 export interface EquipmentFinancingItem {
   id: string;
   code: string;
   clientId: string;
-  client: Client;
+  clientName: string;
   equipmentId: string;
-  equipment: Equipment;
-  totalAmount: number;
-  downPayment: number;
-  financedAmount: number;
-  annualRate: number;
-  term: number;
+  equipmentName: string;
+  amount: number;
+  termInMonths: number;
+  interestRate: number;
+  status: string;
   startDate: string;
-  status: FinancingStatus;
-  statusId: string;
-  requestId: string;
-  installments: Installment[];
-  isActive: boolean;
+  endDate: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -66,11 +67,35 @@ export interface UpdateEquipmentFinancingDto extends CreateEquipmentFinancingDto
 }
 
 export const equipmentFinancingApi = {
-  getAll(): Promise<EquipmentFinancingItem[]> {
-    return apiRequest(api.get('/equipment-financing'), {
-      loading: 'Cargando financiamientos...',
-      error: 'No se pudieron cargar los financiamientos',
-    });
+  async getAll(filters: EquipmentFinancingFilters = {}): Promise<EquipmentFinancingItem[]> {
+    return apiRequest(
+      api.get('/equipment-financing', { params: filters }),
+      {
+        loading: 'Cargando financiamientos...',
+        error: 'Error al cargar los financiamientos',
+      }
+    );
+  },
+
+  async getById(id: string): Promise<EquipmentFinancingItem> {
+    return apiRequest(
+      api.get(`/equipment-financing/${id}`),
+      {
+        loading: 'Cargando financiamiento...',
+        error: 'Error al cargar el financiamiento',
+      }
+    );
+  },
+
+  async delete(id: string): Promise<void> {
+    return apiRequest(
+      api.delete(`/equipment-financing/${id}`),
+      {
+        loading: 'Eliminando financiamiento...',
+        success: 'Financiamiento eliminado correctamente',
+        error: 'Error al eliminar el financiamiento',
+      }
+    );
   },
 
   create(data: CreateEquipmentFinancingDto): Promise<EquipmentFinancingItem> {
@@ -86,14 +111,6 @@ export const equipmentFinancingApi = {
       loading: 'Actualizando...',
       success: 'Financiamiento actualizado',
       error: 'No se pudo actualizar el financiamiento',
-    });
-  },
-
-  delete(id: string): Promise<void> {
-    return apiRequest(api.delete(`/equipment-financing/${id}`), {
-      loading: 'Eliminando...',
-      success: 'Financiamiento eliminado',
-      error: 'No se pudo eliminar el financiamiento',
     });
   },
 

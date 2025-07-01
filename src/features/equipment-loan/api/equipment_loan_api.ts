@@ -1,36 +1,58 @@
 import { api } from '@/shared/utils/api';
 import { apiRequest } from '@/shared/utils/apiHelper';
-
-export interface EquipmentLoanItem {
-  id: string;
-  equipmentId: string;
-  equipmentName: string;
-  clientId: string;
-  clientName: string;
-  startDate: string;
-  endDate: string;
-  status: string;
-  totalAmount: number;
-  paidAmount: number;
-  pendingAmount: number;
-  accumulatedAmount: number;
-  initialPayment: number;
-  dailyRate: number;
-  deliveryDate?: string;
-  returnDate?: string;
-}
+import { PaginatedResponse } from '@/shared/types/pagination.types';
+import { EquipmentLoanStatusCode } from '../enums/equipment-loan-status.enum';
 
 export interface EquipmentLoanFilters {
   clientId?: string;
-  equipmentId?: string;
-  status?: string;
-  startDate?: string;
-  endDate?: string;
-  search?: string;
-  page?: number;
-  pageSize?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  statusCode?: string;
+}
+
+export interface Client {
+  id: string;
+  name: string;
+  fullName: string;
+  paternalSurname: string;
+  maternalSurname: string;
+  email: string;
+  phone: string;
+  address: string | null;
+  document: string;
+}
+
+export interface Equipment {
+  id: string;
+  name: string;
+  description: string;
+  salePrice: number;
+  rentalDailyRate: number;
+}
+
+export interface LoanStatus {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+}
+
+export interface EquipmentLoanItem {
+  id: string;
+  clientId: string;
+  equipmentId: string;
+  requestId: string;
+  deliveryDate: string | null;
+  returnDate: string | null;
+  dailyRate: number;
+  totalAmount: number;
+  downPayment: number;
+  paidDays: number;
+  remainingAmount: number;
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
+  equipment: Equipment;
+  client: Client;
+  status: LoanStatus;
 }
 
 export interface EquipmentLoanSchedule {
@@ -83,6 +105,14 @@ export interface EquipmentLoanSchedule {
   }[];
 }
 
+export interface CreateEquipmentLoanDto {
+  clientId: string;
+  equipmentId: string;
+  dailyRate: number;
+  startDate: string;
+  endDate: string;
+}
+
 export interface DeliverEquipmentDto {
   deliveryDate: string;
   initialPayment: number;
@@ -113,8 +143,24 @@ export interface PaymentResponse {
   status: string;
 }
 
+export interface DeliverLoanRequest {
+  deliveryDate: string;
+  document: File;
+}
+
+export interface ReturnLoanRequest {
+  returnDate: string;
+}
+
+export interface ChangeStatusDto {
+  status: EquipmentLoanStatusCode;
+  advancePayment?: number;
+  notes: string;
+  date?: string;
+}
+
 export const equipmentLoanApi = {
-  getByFilter(filters: EquipmentLoanFilters): Promise<EquipmentLoanItem[]> {
+  getAll: async (filters: EquipmentLoanFilters = {}): Promise<EquipmentLoanItem[]> => {
     return apiRequest(
       api.post('/equipment-loans/search', filters),
       {
@@ -124,17 +170,28 @@ export const equipmentLoanApi = {
     );
   },
 
-  getById(id: string): Promise<EquipmentLoanItem> {
+  getById: async (id: string): Promise<EquipmentLoanItem> => {
     return apiRequest(
       api.get(`/equipment-loans/${id}`),
       {
         loading: 'Cargando préstamo...',
-        error: 'No se pudo cargar el préstamo',
+        error: 'Error al cargar préstamo',
       }
     );
   },
 
-  getSchedule(id: string): Promise<EquipmentLoanSchedule> {
+  delete: async (id: string): Promise<void> => {
+    return apiRequest(
+      api.delete(`/equipment-loans/${id}`),
+      {
+        loading: 'Eliminando préstamo...',
+        success: 'Préstamo eliminado correctamente',
+        error: 'Error al eliminar el préstamo',
+      }
+    );
+  },
+
+  getSchedule: async (id: string): Promise<EquipmentLoanSchedule> => {
     return apiRequest(
       api.get(`/equipment-loans/${id}/schedule`),
       {
@@ -144,7 +201,7 @@ export const equipmentLoanApi = {
     );
   },
 
-  create(data: any): Promise<EquipmentLoanItem> {
+  create: async (data: CreateEquipmentLoanDto): Promise<EquipmentLoanItem> => {
     return apiRequest(
       api.post('/equipment-loans', data),
       {
@@ -155,9 +212,17 @@ export const equipmentLoanApi = {
     );
   },
 
-  deliver(id: string, data: DeliverEquipmentDto): Promise<EquipmentLoanItem> {
+  deliver: async (id: string, data: DeliverLoanRequest): Promise<EquipmentLoanItem> => {
+    const formData = new FormData();
+    formData.append('deliveryDate', data.deliveryDate);
+    formData.append('document', data.document);
+
     return apiRequest(
-      api.post(`/equipment-loans/${id}/deliver`, data),
+      api.post(`/equipment-loans/${id}/deliver`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }),
       {
         loading: 'Entregando equipo...',
         success: 'Equipo entregado exitosamente',
@@ -166,7 +231,7 @@ export const equipmentLoanApi = {
     );
   },
 
-  makePayment(id: string, data: PaymentDto): Promise<PaymentResponse> {
+  makePayment: async (id: string, data: PaymentDto): Promise<PaymentResponse> => {
     return apiRequest(
       api.post(`/equipment-loans/${id}/payments`, data),
       {
@@ -177,13 +242,24 @@ export const equipmentLoanApi = {
     );
   },
 
-  returnEquipment(id: string, data: ReturnEquipmentDto): Promise<EquipmentLoanItem> {
+  return: async (id: string, data: ReturnLoanRequest): Promise<EquipmentLoanItem> => {
     return apiRequest(
       api.post(`/equipment-loans/${id}/return`, data),
       {
-        loading: 'Retornando equipo...',
-        success: 'Equipo retornado exitosamente',
-        error: 'Error al retornar equipo',
+        loading: 'Registrando devolución...',
+        success: 'Devolución registrada exitosamente',
+        error: 'Error al registrar devolución',
+      }
+    );
+  },
+
+  changeStatus: async (id: string, data: ChangeStatusDto): Promise<EquipmentLoanItem> => {
+    return apiRequest(
+      api.patch(`/equipment-loans/${id}/status`, data),
+      {
+        loading: 'Actualizando estado...',
+        success: 'Estado actualizado exitosamente',
+        error: 'Error al actualizar el estado',
       }
     );
   },

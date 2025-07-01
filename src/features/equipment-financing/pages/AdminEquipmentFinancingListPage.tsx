@@ -1,174 +1,119 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import React, { useEffect, useState } from 'react';
+import { equipmentFinancingApi, EquipmentFinancingItem } from '../api/equipment-financing-api';
+import EquipmentFinancingTable from '../components/EquipmentFinancingTable';
+import EquipmentFinancingScheduleModal from '../components/EquipmentFinancingScheduleModal';
 import { Button } from '@/components/ui/button';
-import { Eye, Plus } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { clientLoansApi } from '@/features/client/api/client_loans_api';
-import { ClientRequest } from '@/features/client/types/request.types';
-import RequestDetailModal from '@/features/client/components/RequestDetailModal';
+import { showConfirm } from '@/shared/utils/global-dialog-utils';
+import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
 
+const AdminEquipmentFinancingListPage = () => {
+  const [financings, setFinancings] = useState<EquipmentFinancingItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [financingSelected, setFinancingSelected] = useState<EquipmentFinancingItem | null>(null);
 
-const RequestStatusColors: Record<string, string> = {
-  'pending': 'bg-yellow-500',
-  'approved': 'bg-green-500',
-  'rejected': 'bg-red-500',
-  'in_progress': 'bg-blue-500',
-  'completed': 'bg-gray-500'
-};
+  // Filtros visuales
+  const [clientFilter, setClientFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-export default function AdminEquipmentFinancingListPage() {
-  const [loans, setLoans] = useState<ClientRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedLoan, setSelectedLoan] = useState<ClientRequest | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    loadLoans();
-  }, []);
-
-  const loadLoans = async () => {
+  const searchFinancings = async () => {
+    setLoading(true);
     try {
-      const response = await clientLoansApi.getMyEquipmentFinancing();
-      setLoans(response);
+      const data = await equipmentFinancingApi.getAll({
+        clientId: clientFilter ?? undefined,
+        statusId: statusFilter ?? undefined,
+      });
+      setFinancings(data);
     } catch (error) {
-      console.error('Error loading loans:', error);
-      setLoans([]);
+      console.error("Error al cargar financiamientos:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const formatAmount = (amount: number | undefined): string => {
-    if (!amount) return 'N/A';
-    
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'PEN'
-    }).format(amount);
+  const handleDelete = async (id: string) => {
+    const isConfirmed = await showConfirm('¿Estás seguro de eliminar este financiamiento?');
+    if (!isConfirmed) return;
+    try {
+      await equipmentFinancingApi.delete(id);
+      searchFinancings();
+    } catch (error) {
+      console.error("Error al eliminar financiamiento:", error);
+    }
   };
 
-  const handleViewDetail = (loan: ClientRequest) => {
-    setSelectedLoan(loan);
-    setIsDetailModalOpen(true);
+  const handleViewSchedule = (id: string) => {
+    const financing = financings.find((f) => f.id === id);
+    if (financing) setFinancingSelected(financing);
   };
 
-  const handleNewRequest = () => {
-    navigate('/client/requests', { 
-      state: { 
-        requestType: 'equipment-financing',
-        defaultValues: {
-          type: 'equipment-financing'
-        }
-      } 
-    });
-  };
-
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    searchFinancings();
+  }, []);
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Financiamiento de Equipo</h1>
-        <Button onClick={handleNewRequest} className="bg-primary text-white hover:bg-primary/90">
-          <Plus className="h-4 w-4 mr-2" />
-          Solicitar Financiamiento
-        </Button>
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+        <h1 className="text-xl sm:text-2xl font-bold px-2 py-1">Gestión de Financiamientos de Equipos</h1>
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Código</TableHead>
-                <TableHead>Equipo</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Monto</TableHead>
-                <TableHead>Plazo (meses)</TableHead>
-                <TableHead>Tasa de interés</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loans.map((loan) => (
-                <TableRow 
-                  key={loan.id}
-                  className="hover:bg-gray-100"
-                >
-                  <TableCell>{loan.code}</TableCell>
-                  <TableCell>{loan.equipment?.name || 'N/A'}</TableCell>
-                  <TableCell>
-                    <Badge className={RequestStatusColors[loan.status]}>
-                      {loan.requestStatus.name}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{formatAmount(loan.amount)}</TableCell>
-                  <TableCell>{loan.termInMonths || 'N/A'}</TableCell>
-                  <TableCell>{loan.interestRate ? `${loan.interestRate}%` : 'N/A'}</TableCell>
-                  <TableCell>
-                    {typeof loan.createdAt === 'string' 
-                      ? format(new Date(loan.createdAt), 'dd/MM/yyyy HH:mm', { locale: es })
-                      : 'N/A'
-                    }
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleViewDetail(loan)}
-                      className="hover:bg-gray-200"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {loans.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
-                    <p className="text-gray-500">No tienes financiamientos de equipo</p>
-                    <Button
-                      onClick={handleNewRequest}
-                      variant="link"
-                      className="mt-2 text-primary hover:text-primary/90"
-                    >
-                      Solicitar financiamiento
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <div className="flex flex-wrap sm:flex-nowrap justify-between items-end gap-4 mb-6">
+        {/* Filtros a la izquierda */}
+        <div className="flex flex-col sm:flex-row gap-4 flex-grow">
+          <div className="w-full sm:w-64">
+            <AsyncClientCombobox
+              selectedClientId={clientFilter}
+              onSelect={(id: string | null) => setClientFilter(id)}
+              label="Filtrar por cliente"
+            />
+          </div>
 
-      <RequestDetailModal
-        request={selectedLoan}
-        isOpen={isDetailModalOpen}
-        onClose={() => {
-          setIsDetailModalOpen(false);
-          setSelectedLoan(null);
-        }}
+          <div className="w-full sm:w-48">
+            <select
+              value={statusFilter || ''}
+              onChange={(e) => setStatusFilter(e.target.value || null)}
+              className="w-full p-2 border rounded"
+            >
+              <option value="">Todos los estados</option>
+              <option value="PENDING">Pendiente</option>
+              <option value="APPROVED">Aprobado</option>
+              <option value="REJECTED">Rechazado</option>
+              <option value="IN_PROGRESS">En Progreso</option>
+              <option value="COMPLETED">Completado</option>
+              <option value="CANCELLED">Cancelado</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Botones a la derecha */}
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button
+            onClick={searchFinancings}
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Buscar
+          </Button>
+        </div>
+      </div>
+
+      {loading ? (
+        <p>Cargando...</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <EquipmentFinancingTable
+            financings={financings}
+            onDelete={handleDelete}
+            onViewSchedule={handleViewSchedule}
+          />
+        </div>
+      )}
+
+      <EquipmentFinancingScheduleModal
+        open={!!financingSelected}
+        onClose={() => setFinancingSelected(null)}
+        financing={financingSelected}
       />
     </div>
   );
-} 
+};
+
+export default AdminEquipmentFinancingListPage; 

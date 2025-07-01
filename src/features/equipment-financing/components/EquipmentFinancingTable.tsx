@@ -1,5 +1,5 @@
 // components/EquipmentFinancingTable.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Table,
   TableBody,
@@ -7,82 +7,119 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import Pagination from '@/shared/components/Pagination';
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Eye, Trash2 } from "lucide-react";
 import { EquipmentFinancingItem } from '../api/equipment-financing-api';
-import { formatDate } from "@/shared/utils/dateUtils";
+import { format, isValid } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Badge } from '@/components/ui/badge';
 
 interface Props {
-  financings?: EquipmentFinancingItem[];
-  isLoading?: boolean;
-  onViewSchedule?: (id: string) => void;
-  onEditSchedule?: (financing: EquipmentFinancingItem) => void;
+  financings: EquipmentFinancingItem[];
+  onDelete: (id: string) => void;
+  onViewSchedule: (id: string) => void;
 }
 
-export function EquipmentFinancingTable({ financings = [], isLoading, onViewSchedule, onEditSchedule }: Props) {
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-2">Cargando...</span>
-      </div>
-    );
-  }
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('es-PE', {
+    style: 'currency',
+    currency: 'PEN'
+  }).format(amount);
+};
 
-  if (!financings.length) {
-    return (
-      <div className="text-center text-gray-500 py-8">
-        <p>No hay financiamientos para mostrar.</p>
-      </div>
-    );
-  }
+const formatDate = (dateString: string | null | undefined): string => {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  if (!isValid(date)) return '-';
+  return format(date, 'dd/MM/yyyy', { locale: es });
+};
 
+const getStatusColor = (status: string): string => {
+  const colors: Record<string, string> = {
+    'PENDING': 'bg-yellow-100 text-yellow-700',
+    'APPROVED': 'bg-green-100 text-green-700',
+    'REJECTED': 'bg-red-100 text-red-700',
+    'IN_PROGRESS': 'bg-blue-100 text-blue-700',
+    'COMPLETED': 'bg-green-100 text-green-700',
+    'CANCELLED': 'bg-gray-100 text-gray-700'
+  };
+  return colors[status] || 'bg-gray-100 text-gray-700';
+};
+
+const getStatusLabel = (status: string): string => {
+  const labels: Record<string, string> = {
+    'PENDING': 'Pendiente',
+    'APPROVED': 'Aprobado',
+    'REJECTED': 'Rechazado',
+    'IN_PROGRESS': 'En Progreso',
+    'COMPLETED': 'Completado',
+    'CANCELLED': 'Cancelado'
+  };
+  return labels[status] || status;
+};
+
+const EquipmentFinancingTable = ({ financings, onDelete, onViewSchedule }: Props) => {
   return (
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead>Código</TableHead>
           <TableHead>Cliente</TableHead>
           <TableHead>Equipo</TableHead>
-          <TableHead>Monto</TableHead>
           <TableHead>Estado</TableHead>
-          <TableHead>Fecha de solicitud</TableHead>
-          <TableHead>Acciones</TableHead>
+          <TableHead>Monto</TableHead>
+          <TableHead>Plazo (meses)</TableHead>
+          <TableHead>Tasa de interés</TableHead>
+          <TableHead>Fecha inicio</TableHead>
+          <TableHead>Fecha fin</TableHead>
+          <TableHead className="text-right">Acciones</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {financings.map((financing) => (
           <TableRow key={financing.id}>
-            <TableCell>{financing.client.fullName}</TableCell>
-            <TableCell>{financing.equipment.name}</TableCell>
-            <TableCell>S/ {financing.amount}</TableCell>
-            <TableCell>{financing.status}</TableCell>
-            <TableCell>{new Date(financing.createdAt).toLocaleDateString()}</TableCell>
+            <TableCell>{financing.code}</TableCell>
+            <TableCell>{financing.clientName}</TableCell>
+            <TableCell>{financing.equipmentName}</TableCell>
             <TableCell>
-              <div className="flex gap-2">
-                {onViewSchedule && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onViewSchedule(financing.id)}
-                  >
-                    Ver cronograma
-                  </Button>
-                )}
-                {onEditSchedule && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEditSchedule(financing)}
-                  >
-                    Editar cronograma
-                  </Button>
-                )}
-              </div>
+              <Badge className={getStatusColor(financing.status)}>
+                {getStatusLabel(financing.status)}
+              </Badge>
+            </TableCell>
+            <TableCell>{formatCurrency(financing.amount)}</TableCell>
+            <TableCell>{financing.termInMonths}</TableCell>
+            <TableCell>{financing.interestRate}%</TableCell>
+            <TableCell>{formatDate(financing.startDate)}</TableCell>
+            <TableCell>{formatDate(financing.endDate)}</TableCell>
+            <TableCell className="text-right">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onViewSchedule(financing.id)}
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onDelete(financing.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </TableCell>
           </TableRow>
         ))}
+        {financings.length === 0 && (
+          <TableRow>
+            <TableCell colSpan={10} className="text-center py-8">
+              No hay financiamientos registrados
+            </TableCell>
+          </TableRow>
+        )}
       </TableBody>
     </Table>
   );
-}
+};
+
+export default EquipmentFinancingTable;

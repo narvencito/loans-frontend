@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PublicEquipmentItem } from '@/features/equipment/api/equipmentPublicApi';
 import { useEffect } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Schema for form validation
 const loanDetailsSchema = z.object({
@@ -21,6 +22,8 @@ interface Props {
   selectedEquipment?: PublicEquipmentItem;
   initialData?: LoanFormData;
 }
+
+const FINANCING_TERMS = [6, 12, 18, 24];
 
 export const StepLoanDetails = ({ onNext, onPrevious, isFinancing, selectedEquipment, initialData }: Props) => {
   const {
@@ -48,6 +51,10 @@ export const StepLoanDetails = ({ onNext, onPrevious, isFinancing, selectedEquip
 
   const handleContinue = (data: LoanFormData) => {
     onNext(data);
+  };
+
+  const handleTermChange = (value: string) => {
+    setValue('term', parseInt(value));
   };
 
   return (
@@ -103,15 +110,30 @@ export const StepLoanDetails = ({ onNext, onPrevious, isFinancing, selectedEquip
           <label htmlFor="term" className="block text-sm font-medium text-gray-700 mb-1">
             {isFinancing ? 'Plazo del financiamiento (meses)' : 'Plazo del préstamo (días)'}
           </label>
-          <input
-            id="term"
-            type="number"
-            step="1"
-            min="1"
-            {...register('term', { valueAsNumber: true })}
-            placeholder={isFinancing ? "Ej: 12" : "Ej: 30"}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
-          />
+          {isFinancing ? (
+            <Select onValueChange={handleTermChange} defaultValue={initialData?.term?.toString()}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Seleccione el plazo" />
+              </SelectTrigger>
+              <SelectContent className="bg-white">
+                {FINANCING_TERMS.map((term) => (
+                  <SelectItem key={term} value={term.toString()} className="bg-white hover:bg-gray-100">
+                    {term} meses
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <input
+              id="term"
+              type="number"
+              step="1"
+              min="1"
+              {...register('term', { valueAsNumber: true })}
+              placeholder="Ej: 30"
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+            />
+          )}
           {errors.term && <p className="mt-1 text-sm text-red-600 font-medium">{errors.term.message}</p>}
           {!isFinancing && (
             <p className="mt-1 text-sm text-gray-600">

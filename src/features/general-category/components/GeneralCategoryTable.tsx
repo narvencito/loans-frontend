@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { GeneralCategory } from '../api/general_category_api';
+import { GeneralCategory } from '../types/general-category.types';
 import { formatDate } from '@/shared/utils/dateUtils';
 import Pagination from '@/shared/components/Pagination';
 
@@ -41,7 +41,7 @@ const GeneralCategoryTable = ({ categories, onEdit, onDelete, onRestore }: Props
           {paginatedCategories.map((category) => (
             <TableRow key={category.id}>
               <TableCell>{category.name}</TableCell>
-              <TableCell>{formatDate(category.createdAt)}</TableCell>
+              <TableCell>{category.createdAt ? formatDate(category.createdAt) : '-'}</TableCell>
               <TableCell className="text-center">
                 <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
                   category.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
@@ -81,14 +81,10 @@ const GeneralCategoryTable = ({ categories, onEdit, onDelete, onRestore }: Props
       </Table>
 
       <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        pageSize={pageSize}
+        total={categories.length}
+        page={currentPage}
+        limit={pageSize}
         onPageChange={setCurrentPage}
-        onPageSizeChange={(size: number) => {
-          setPageSize(size);
-          setCurrentPage(1);
-        }}
       />
     </div>
   );

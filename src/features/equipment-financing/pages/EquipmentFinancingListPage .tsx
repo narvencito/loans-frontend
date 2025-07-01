@@ -9,7 +9,7 @@ import { equipmentApi } from "@/features/equipment/api/equipment_api";
 import { CreateEquipmentFinancingDto, equipmentFinancingApi, EquipmentFinancingItem } from "../api/equipment-financing-api";
 import { SimpleClient } from "@/features/client/components/ClientSearchInput";
 import { clientApi } from "@/features/client/api/client_api";
-import AsyncClientCombobox from "@/features/client/components/AsyncClientCombobox";
+import { AsyncClientCombobox } from "@/features/client/components/AsyncClientCombobox";
 
 const FINANCING_STATUSES = {
   PAID: 'Pagado',
