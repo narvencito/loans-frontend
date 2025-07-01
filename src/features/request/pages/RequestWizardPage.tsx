@@ -5,7 +5,7 @@ import { StepSelectEquipment } from '../components/StepSelectEquipment';
 import { StepLoanDetails } from '../components/StepLoanDetails';
 import { StepConfirmRequest } from '../components/StepConfirmRequest';
 import { requestApi } from '../api/request_api';
-import { EquipmentItem } from '@/features/equipment/api/equipment_api';
+import { PublicEquipmentItem } from '@/features/equipment/api/equipmentPublicApi';
 import { showConfirm } from '@/shared/utils/global-dialog-utils';
 import { StepNavigation } from '../components/StepNavigation';
 import { EmailConflictModal } from '../components/EmailConflictModal';
@@ -18,13 +18,13 @@ interface PersonalData {
   document: string;
   email: string;
   phone: string;
-  address: string;
+  address?: string;
   codeStudent: string;
 }
 
 interface LoanDetails {
-  amount?: number;
   term: number;
+  amount?: number;
   downPayment?: number;
 }
 
@@ -37,11 +37,12 @@ export default function RequestWizardPage() {
   const equipmentId = searchParams.get('equipmentId');
   const [currentStep, setCurrentStep] = useState(0);
   const [personalData, setPersonalData] = useState<PersonalData | null>(null);
-  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentItem | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<PublicEquipmentItem | null>(null);
   const [loanDetails, setLoanDetails] = useState<LoanDetails | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>('idle');
   const [showEmailConflict, setShowEmailConflict] = useState(false);
+  const [requestId, setRequestId] = useState<string | null>(null);
 
   const steps = ['Datos personales', 'Seleccionar equipo', 'Detalles del préstamo', 'Confirmar solicitud'];
 
@@ -93,7 +94,7 @@ export default function RequestWizardPage() {
     setCurrentStep(1);
   };
 
-  const handleEquipmentSelect = (equipment: EquipmentItem) => {
+  const handleEquipmentSelect = (equipment: PublicEquipmentItem) => {
     setSelectedEquipment(equipment);
     setHasChanges(true);
     setCurrentStep(2);
@@ -106,24 +107,18 @@ export default function RequestWizardPage() {
   };
 
   const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
+    setCurrentStep(prev => prev - 1);
   };
 
   const handleSubmit = async () => {
-    if (!personalData || !selectedEquipment || !loanDetails || !type) return;
+    if (!personalData || !selectedEquipment || !loanDetails) return;
 
     try {
       setSubmissionStatus('submitting');
-
       const fullName = `${personalData.firstName} ${personalData.paternalSurname} ${personalData.maternalSurname}`;
-      const isFinancing = type === RequestTypeEnum.EQUIPMENT_FINANCING;
-      const message = isFinancing 
-        ? `Solicitud de financiamiento de equipo por S/ ${selectedEquipment.salePrice.toFixed(2)} a ${loanDetails.term} meses`
-        : `Solicitud de préstamo de equipo por ${loanDetails.term} días`;
+      const message = `Solicitud de ${type === RequestTypeEnum.EQUIPMENT_FINANCING ? 'financiamiento' : 'préstamo'} de equipo`;
 
-      await requestApi.createPublic({
+      const response = await requestApi.createPublic({
         name: personalData.firstName,
         paternalSurname: personalData.paternalSurname,
         maternalSurname: personalData.maternalSurname,
@@ -135,7 +130,7 @@ export default function RequestWizardPage() {
         requestTypeId: type,
         equipmentId: selectedEquipment.id,
         message: message,
-        ...(isFinancing 
+        ...(type === RequestTypeEnum.EQUIPMENT_FINANCING 
           ? { 
               termInMonths: loanDetails.term,
               interestRate: 0.15,
@@ -147,19 +142,23 @@ export default function RequestWizardPage() {
         )
       });
 
+      setRequestId(response.id);
       setSubmissionStatus('success');
       setHasChanges(false);
-      setPersonalData(null);
-      setSelectedEquipment(null);
-      setLoanDetails(null);
-      
-      handleNavigation('/');
     } catch (error: any) {
       setSubmissionStatus('error');
       if (error?.response?.status === 409) {
         setShowEmailConflict(true);
       }
     }
+  };
+
+  const handleFinish = () => {
+    setPersonalData(null);
+    setSelectedEquipment(null);
+    setLoanDetails(null);
+    setRequestId(null);
+    handleNavigation('/');
   };
 
   if (!type || !Object.values(RequestTypeEnum).includes(type)) {
@@ -217,8 +216,9 @@ export default function RequestWizardPage() {
             equipment={selectedEquipment!}
             loanDetails={loanDetails}
             requestType={type}
-            onConfirm={handleSubmit}
+            onConfirm={requestId ? handleFinish : handleSubmit}
             onPrevious={handlePrevious}
+            requestId={requestId || undefined}
           />
         )}
 

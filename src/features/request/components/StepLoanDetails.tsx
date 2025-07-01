@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { EquipmentItem } from '@/features/equipment/api/equipment_api';
+import { PublicEquipmentItem } from '@/features/equipment/api/equipmentPublicApi';
 import { useEffect } from 'react';
 
 // Schema for form validation
@@ -18,7 +18,7 @@ interface Props {
   onNext: (data: LoanFormData) => void;
   onPrevious: () => void;
   isFinancing: boolean;
-  selectedEquipment?: EquipmentItem;
+  selectedEquipment?: PublicEquipmentItem;
   initialData?: LoanFormData;
 }
 

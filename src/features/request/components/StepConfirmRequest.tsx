@@ -1,5 +1,9 @@
-import { EquipmentItem } from "@/features/equipment/api/equipment_api";
+import { PublicEquipmentItem } from "@/features/equipment/api/equipmentPublicApi";
 import { RequestTypeEnum } from "@/shared/enums/request-type.enum";
+import { DocumentUploader } from "@/features/document/components/DocumentUploader";
+import { DocumentList } from "@/features/document/components/DocumentList";
+import { DocumentEntityType } from "@/features/document/types/document.types";
+import { useState } from "react";
 
 interface Props {
   personalData: {
@@ -11,17 +15,28 @@ interface Props {
     document: string;
     email: string;
     phone: string;
-    address: string;
+    address?: string;
     codeStudent: string;
   };
-  equipment?: EquipmentItem;
+  equipment?: PublicEquipmentItem;
   onConfirm: () => void;
   onPrevious: () => void;
   requestType: RequestTypeEnum;
   loanDetails?: { amount?: number; term: number; downPayment?: number } | null;
+  requestId?: string;
 }
 
-export const StepConfirmRequest = ({ personalData, equipment, loanDetails, requestType, onConfirm, onPrevious }: Props) => {
+export const StepConfirmRequest = ({ 
+  personalData, 
+  equipment, 
+  loanDetails, 
+  requestType, 
+  onConfirm, 
+  onPrevious,
+  requestId 
+}: Props) => {
+  const [documentsUpdated, setDocumentsUpdated] = useState(false);
+
   const DetailItem = ({ label, value }: { label: string; value?: string | null }) => {
     if (!value) return null;
     return (
@@ -91,6 +106,27 @@ export const StepConfirmRequest = ({ personalData, equipment, loanDetails, reque
           </div>
         )}
 
+        {/* Documents Section */}
+        {requestId && (
+          <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
+            <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Documentos Requeridos</h3>
+            <div className="space-y-4">
+              <DocumentUploader
+                entityType={DocumentEntityType.REQUESTS}
+                entityId={requestId}
+                onUploadComplete={() => setDocumentsUpdated(prev => !prev)}
+                maxFileSize={5 * 1024 * 1024} // 5MB
+                allowedFileTypes={['application/pdf', 'image/jpeg', 'image/png']}
+              />
+              <DocumentList
+                entityType={DocumentEntityType.REQUESTS}
+                entityId={requestId}
+                onDelete={() => setDocumentsUpdated(prev => !prev)}
+              />
+            </div>
+          </div>
+        )}
+
         <div className="flex gap-4 mt-8">
           <button
             type="button"
@@ -104,7 +140,7 @@ export const StepConfirmRequest = ({ personalData, equipment, loanDetails, reque
             onClick={onConfirm}
             className="w-1/2 bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
           >
-            Enviar Solicitud
+            {requestId ? 'Finalizar' : 'Enviar Solicitud'}
           </button>
         </div>
       </div>

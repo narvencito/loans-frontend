@@ -29,17 +29,16 @@ import UpdateProfilePage from '@/features/profile/pages/UpdateProfilePage';
 import SimulatorPage from '@/features/simulator/pages/SimulatorPage';
 import EquipmentGeneral from '@/features/equipment/pages/EquipmentGeneral';
 import RequestFormPage from '@/features/request/pages/RequestFormPage';
-import AdminRequestFormPage from '@/features/request/pages/AdminRequestFormPage';
 import RequestWizardPage from '@/features/request/pages/RequestWizardPage';
 import AdminCashLoanListPage from '@/features/cash-loans/pages/AdminCashLoanListPage';
 import AdminEquipmentLoanListPage from '@/features/equipment-loan/pages/EquipmentLoanListPage';
-import AdminEquipmentFinancingListPage from '@/features/equipment-financing/pages/EquipmentFinancingListPage';
 import CashLoanListPage from '@/features/client/pages/CashLoanListPage';
 import EquipmentLoanListPage from '@/features/client/pages/EquipmentLoanListPage';
 import EquipmentFinancingListPage from '@/features/client/pages/EquipmentFinancingListPage';
 import ClientHelpPage from '@/features/client/pages/ClientHelpPage';
 import ClientFinancingStatusPage from '@/features/client/pages/ClientFinancingStatusPage';
 import StaffListPage from '@/features/staff/pages/StaffListPage';
+import AdminEquipmentFinancingListPage from '@/features/equipment-financing/pages/AdminEquipmentFinancingListPage';
 
 export const routes: RouteObject[] = [
   {

@@ -10,7 +10,7 @@ import { EquipmentUsageType } from '../model/equipment.types';
 
 const EquipmentGeneral = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [equipment, setEquipment] = useState<PublicEquipmentItem[]>([]);
+  const [equipment, setEquipment] = useState<PublicEquipmentItem[]>([]);  
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);

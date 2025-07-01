@@ -1,5 +1,6 @@
 import { api } from "@/shared/utils/api";
 import { apiRequest } from "@/shared/utils/apiHelper";
+import { ClientRequest } from "../types/request.types";
 
 export const clientLoansApi = {
   // Préstamos monetarios
@@ -26,7 +27,7 @@ export const clientLoansApi = {
 
   // Financiamiento de equipo
   getMyEquipmentFinancing: () => {
-    return apiRequest(
+    return apiRequest<ClientRequest[]>(
       api.get('/equipment-financing/my-financing'),
       {
         loading: 'Cargando financiamientos...',
