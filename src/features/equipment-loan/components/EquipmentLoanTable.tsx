@@ -15,10 +15,15 @@ import { EquipmentLoanItem } from '../api/equipment_loan_api';
 import { EquipmentLoanStatusCode, EquipmentLoanStatusLabel } from '../enums/equipment-loan-status.enum';
 import { formatCurrency } from "@/shared/utils/currencyUtils";
 import Pagination from '@/shared/components/Pagination';
+import RowApp from '@/shared/components/RowApp';
+import { Download, FileText, Wallet } from 'lucide-react';
 
 interface EquipmentLoanTableProps {
   loans: EquipmentLoanItem[];
   onViewSchedule: (loan: EquipmentLoanItem) => void;
+  onPayInstallment?: (loan: EquipmentLoanItem) => void;
+  onPayTotal?: (loan: EquipmentLoanItem) => void;
+  onDownloadSchedule?: (loan: EquipmentLoanItem) => void;
   total: number;
   page: number;
   limit: number;
@@ -42,7 +47,17 @@ const getStatusBadgeColor = (statusCode: string) => {
   }
 };
 
-export const EquipmentLoanTable = ({ loans, onViewSchedule, total, page, limit, onPageChange }: EquipmentLoanTableProps) => {
+export const EquipmentLoanTable = ({ 
+  loans, 
+  onViewSchedule, 
+  onPayInstallment,
+  onPayTotal,
+  onDownloadSchedule,
+  total, 
+  page, 
+  limit, 
+  onPageChange 
+}: EquipmentLoanTableProps) => {
   return (
     <div className="space-y-4">
       <div className="rounded-md border">
@@ -56,7 +71,7 @@ export const EquipmentLoanTable = ({ loans, onViewSchedule, total, page, limit, 
               <TableHead>Monto Pendiente</TableHead>
               <TableHead>Fecha de Entrega</TableHead>
               <TableHead>Fecha de Devolución</TableHead>
-              <TableHead>Acciones</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -86,13 +101,46 @@ export const EquipmentLoanTable = ({ loans, onViewSchedule, total, page, limit, 
                     : "-"}
                 </TableCell>
                 <TableCell>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onViewSchedule(loan)}
-                  >
-                    Ver Cronograma
-                  </Button>
+                  <RowApp gap={2} className="justify-end">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => onViewSchedule(loan)}
+                      title="Ver Cronograma"
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                    {onPayInstallment && loan.status.code !== EquipmentLoanStatusCode.CANCELLED && (
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => onPayInstallment(loan)}
+                        title="Pagar Cuota"
+                      >
+                        <Wallet className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {onPayTotal && loan.status.code !== EquipmentLoanStatusCode.CANCELLED && loan.remainingAmount > 0 && (
+                      <Button
+                        size="icon"
+                        variant="default"
+                        onClick={() => onPayTotal(loan)}
+                        title="Pago Total"
+                      >
+                        <Wallet className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {onDownloadSchedule && (
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => onDownloadSchedule(loan)}
+                        title="Descargar Cronograma"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </RowApp>
                 </TableCell>
               </TableRow>
             ))}

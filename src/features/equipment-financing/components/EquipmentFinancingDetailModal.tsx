@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { EquipmentFinancing } from "../types/equipment-financing.types";
+import { EquipmentFinancingItem } from "../api/equipment-financing-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, CreditCard } from "lucide-react";
@@ -14,20 +14,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useLoaderStore } from "@/shared/store/loader.store";
-import { apiRequest } from "@/shared/utils/apiHelper";
 
 interface EquipmentFinancingDetailModalProps {
-  financing: EquipmentFinancing | null;
+  financing: EquipmentFinancingItem | null;
   isOpen: boolean;
   onClose: () => void;
   onUpdate: () => void;
 }
 
-const formatAmount = (amount: number): string => {
+const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('es-PE', {
     style: 'currency',
     currency: 'PEN'
   }).format(amount);
+};
+
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return format(date, 'dd/MM/yyyy', { locale: es });
+};
+
+const getStatusColor = (status: string): string => {
+  switch (status.toUpperCase()) {
+    case 'PENDIENTE':
+      return 'bg-yellow-100 text-yellow-800 border border-yellow-300';
+    case 'PAGADO':
+      return 'bg-green-100 text-green-800 border border-green-300';
+    case 'VENCIDO':
+      return 'bg-red-100 text-red-800 border border-red-300';
+    default:
+      return 'bg-gray-100 text-gray-800 border border-gray-300';
+  }
 };
 
 export default function EquipmentFinancingDetailModal({
@@ -38,100 +55,74 @@ export default function EquipmentFinancingDetailModal({
 }: EquipmentFinancingDetailModalProps) {
   const [paymentNotes, setPaymentNotes] = useState('');
   const { show: showLoader, hide: hideLoader } = useLoaderStore();
-  
+
   if (!financing) return null;
 
-  const handleDownloadSchedule = async () => {
-    const cuotas = financing.installments.map(installment => ({
-      nro: installment.number,
-      fecha: format(new Date(installment.dueDate), 'dd/MM/yyyy', { locale: es }),
-      cuota: installment.amount,
-      interes: installment.interest,
-      capital: installment.capital,
-      saldo: installment.balance,
-      status: installment.status.code
-    }));
-
-    pdfUtils.generateSchedulePDF(
-      financing.client.fullName,
-      financing.id,
-      financing.totalAmount,
-      financing.annualRate,
-      financing.term,
-      financing.startDate,
-      cuotas
-    );
-  };
-
   const handlePayInstallment = async (installmentId: string) => {
-    const isConfirmed = await showConfirm('¿Estás seguro de realizar el pago de esta cuota?', 'Confirmar pago');
-
-    if (!isConfirmed) return;
-
-    const { show: showLoader, hide: hideLoader } = useLoaderStore.getState();
+    const confirmed = await showConfirm(
+      '¿Estás seguro de realizar el pago de esta cuota?',
+      'Esta acción no se puede deshacer'
+    );
+    if (!confirmed) return;
 
     try {
       showLoader();
-      await equipmentFinancingApi.payInstallment(financing.id, installmentId, {
-        notes: paymentNotes || undefined
-      });
-      const voucherBlob = await equipmentFinancingApi.generateVoucher(installmentId);
-      
-      // Abrir el voucher en una nueva pestaña
-      const fileURL = window.URL.createObjectURL(new Blob([voucherBlob], { type: 'application/pdf' }));
-      window.open(fileURL);
-      
-      // Verificar si quedan cuotas pendientes
-      const hasPendingInstallments = financing.installments.some(
-        i => i.status.code === 'Pendiente' && i.id !== installmentId
-      );
-      
-      if (!hasPendingInstallments) {
-        const certificateBlob = await equipmentFinancingApi.generateNoDebtCertificate(financing.id);
-        const certificateURL = window.URL.createObjectURL(new Blob([certificateBlob], { type: 'application/pdf' }));
-        window.open(certificateURL);
-      }
-
-      showSuccess('Éxito', 'Pago realizado correctamente');
-      setPaymentNotes(''); // Limpiar las notas después del pago
+      await equipmentFinancingApi.payInstallment(financing.id, installmentId, { notes: paymentNotes });
+      showSuccess('Pago realizado correctamente', 'El pago se ha procesado exitosamente');
       onUpdate();
     } catch (error) {
-      console.error('Error al procesar el pago:', error);
+      console.error('Error al realizar el pago:', error);
     } finally {
       hideLoader();
     }
   };
 
   const handlePayTotal = async () => {
-    const isConfirmed = await showConfirm('¿Estás seguro de realizar el pago total del financiamiento?', 'Confirmar pago total');
-
-    if (!isConfirmed) return;
-
-    const { show: showLoader, hide: hideLoader } = useLoaderStore.getState();
+    const confirmed = await showConfirm(
+      '¿Estás seguro de realizar el pago total del financiamiento?',
+      'Esta acción no se puede deshacer'
+    );
+    if (!confirmed) return;
 
     try {
       showLoader();
-      await equipmentFinancingApi.payAll(financing.id, {
-        notes: paymentNotes || undefined
-      });
-      const voucherBlob = await equipmentFinancingApi.generateVoucher(financing.id);
-      const certificateBlob = await equipmentFinancingApi.generateNoDebtCertificate(financing.id);
-      
-      // Abrir los documentos en nuevas pestañas
-      const voucherURL = window.URL.createObjectURL(new Blob([voucherBlob], { type: 'application/pdf' }));
-      const certificateURL = window.URL.createObjectURL(new Blob([certificateBlob], { type: 'application/pdf' }));
-      window.open(voucherURL);
-      window.open(certificateURL);
-      
-      showSuccess('Éxito', 'Pago total realizado correctamente');
-      setPaymentNotes(''); // Limpiar las notas después del pago
+      await equipmentFinancingApi.payAll(financing.id, { notes: paymentNotes });
+      showSuccess('Pago total realizado correctamente', 'El pago total se ha procesado exitosamente');
       onUpdate();
     } catch (error) {
-      console.error('Error al procesar el pago total:', error);
+      console.error('Error al realizar el pago total:', error);
     } finally {
       hideLoader();
     }
   };
+
+  const handleDownloadSchedule = async () => {
+    try {
+      showLoader();
+      const blob = await equipmentFinancingApi.generateVoucher(financing.id);
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Error al descargar el cronograma:', error);
+    } finally {
+      hideLoader();
+    }
+  };
+
+  const handleDownloadCertificate = async () => {
+    try {
+      showLoader();
+      const blob = await equipmentFinancingApi.generateNoDebtCertificate(financing.id);
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Error al descargar el certificado:', error);
+    } finally {
+      hideLoader();
+    }
+  };
+
+  const allInstallmentsPaid = financing.installments.every(i => i.status.code === 'Pagado');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -150,11 +141,38 @@ export default function EquipmentFinancingDetailModal({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-500">Código</p>
-                  <p className="font-medium">{financing.equipment?.code}</p>
+                  <p className="font-medium">{financing.equipment.code}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Nombre</p>
-                  <p className="font-medium">{financing.equipment?.name}</p>
+                  <p className="font-medium">{financing.equipment.name}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Información del Cliente */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Información del Cliente</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Nombre Completo</p>
+                  <p className="font-medium">{financing.client.fullName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Documento</p>
+                  <p className="font-medium">{financing.client.document}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="font-medium">{financing.client.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Teléfono</p>
+                  <p className="font-medium">{financing.client.phone}</p>
                 </div>
               </div>
             </CardContent>
@@ -169,15 +187,15 @@ export default function EquipmentFinancingDetailModal({
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm text-gray-500">Monto Total</p>
-                  <p className="font-medium">{formatAmount(financing.totalAmount)}</p>
+                  <p className="font-medium">{formatCurrency(financing.totalAmount)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Cuota Inicial</p>
-                  <p className="font-medium">{formatAmount(financing.downPayment)}</p>
+                  <p className="font-medium">{formatCurrency(financing.downPayment)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Monto Financiado</p>
-                  <p className="font-medium">{formatAmount(financing.financedAmount)}</p>
+                  <p className="font-medium">{formatCurrency(financing.financedAmount)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Tasa Anual</p>
@@ -189,7 +207,7 @@ export default function EquipmentFinancingDetailModal({
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Fecha de Inicio</p>
-                  <p className="font-medium">{format(new Date(financing.startDate), 'dd/MM/yyyy', { locale: es })}</p>
+                  <p className="font-medium">{formatDate(financing.startDate)}</p>
                 </div>
               </div>
             </CardContent>
@@ -197,28 +215,30 @@ export default function EquipmentFinancingDetailModal({
 
           {/* Cronograma de Pagos */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Cronograma de Pagos</CardTitle>
-              <div className="flex gap-2">
-                {financing.installments.some(i => i.status.code === 'Pendiente') && (
-                  <Button 
+            <CardHeader>
+              <CardTitle className="text-lg flex justify-between items-center">
+                <span>Cronograma de Pagos</span>
+                <div className="space-x-2">
+                  <Button
                     variant="default"
-                    onClick={handlePayTotal}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={handleDownloadSchedule}
                   >
-                    <CreditCard className="h-4 w-4" />
-                    Pagar Total
+                    <Download className="h-4 w-4 mr-2" />
+                    Descargar Cronograma
                   </Button>
-                )}
-                <Button 
-                  variant="default"
-                  onClick={handleDownloadSchedule}
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                >
-                  <Download className="h-4 w-4" />
-                  Descargar Cronograma
-                </Button>
-              </div>
+                  {allInstallmentsPaid && (
+                    <Button
+                      variant="default"
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                      onClick={handleDownloadCertificate}
+                    >
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Descargar Certificado
+                    </Button>
+                  )}
+                </div>
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {/* Campo de notas para el pago */}
@@ -255,21 +275,15 @@ export default function EquipmentFinancingDetailModal({
                     <TableRow key={installment.id}>
                       <TableCell>{installment.number}</TableCell>
                       <TableCell>
-                        {format(new Date(installment.dueDate), 'dd/MM/yyyy', { locale: es })}
+                        {formatDate(installment.dueDate)}
                       </TableCell>
-                      <TableCell>{formatAmount(installment.amount)}</TableCell>
-                      <TableCell>{formatAmount(installment.capital)}</TableCell>
-                      <TableCell>{formatAmount(installment.interest)}</TableCell>
-                      <TableCell>{formatAmount(installment.balance)}</TableCell>
+                      <TableCell>{formatCurrency(installment.amount)}</TableCell>
+                      <TableCell>{formatCurrency(installment.capital)}</TableCell>
+                      <TableCell>{formatCurrency(installment.interest)}</TableCell>
+                      <TableCell>{formatCurrency(installment.balance)}</TableCell>
                       <TableCell>
                         <Badge 
-                          className={
-                            installment.status.code === 'Pendiente' 
-                              ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
-                              : installment.status.code === 'Pagado'
-                              ? 'bg-green-100 text-green-800 border border-green-300'
-                              : 'bg-red-100 text-red-800 border border-red-300'
-                          }
+                          className={getStatusColor(installment.status.code)}
                         >
                           {installment.status.name}
                         </Badge>
@@ -277,12 +291,11 @@ export default function EquipmentFinancingDetailModal({
                       <TableCell>
                         {installment.status.code === 'Pendiente' && (
                           <Button
-                            variant="ghost"
+                            variant="default"
                             size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white"
                             onClick={() => handlePayInstallment(installment.id)}
-                            className="flex items-center gap-1"
                           >
-                            <CreditCard className="h-3 w-3" />
                             Pagar
                           </Button>
                         )}
@@ -291,6 +304,19 @@ export default function EquipmentFinancingDetailModal({
                   ))}
                 </TableBody>
               </Table>
+
+              {/* Botón de pago total */}
+              {financing.installments.some(i => i.status.code === 'Pendiente') && (
+                <div className="mt-4 flex justify-end">
+                  <Button
+                    variant="default"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={handlePayTotal}
+                  >
+                    Pagar Total
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

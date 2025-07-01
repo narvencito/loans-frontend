@@ -1,3 +1,5 @@
+import { EquipmentFinancingItem } from "../api/equipment-financing-api";
+
 export interface EquipmentFinancingInstallment {
   id: string;
   number: number;
@@ -13,32 +15,4 @@ export interface EquipmentFinancingInstallment {
   };
 }
 
-export interface EquipmentFinancing {
-  id: string;
-  totalAmount: number;
-  downPayment: number;
-  financedAmount: number;
-  annualRate: number;
-  term: number;
-  startDate: string;
-  requestId: string;
-  statusId: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  client: {
-    id: string;
-    name: string;
-    fullName: string;
-  };
-  status: {
-    id: string;
-    name: string;
-  };
-  equipment: {
-    id: string;
-    name: string;
-    code: string;
-  };
-  installments: EquipmentFinancingInstallment[];
-} 
+export interface EquipmentFinancing extends EquipmentFinancingItem {} 

@@ -103,6 +103,12 @@ export interface EquipmentLoanSchedule {
     type: string;
     status: string;
   }[];
+  installments: {
+    number: number;
+    dueDate: string;
+    amount: number;
+    status: string;
+  }[];
 }
 
 export interface CreateEquipmentLoanDto {
@@ -260,6 +266,28 @@ export const equipmentLoanApi = {
         loading: 'Actualizando estado...',
         success: 'Estado actualizado exitosamente',
         error: 'Error al actualizar el estado',
+      }
+    );
+  },
+
+  payInstallment: async (id: string): Promise<void> => {
+    return apiRequest(
+      api.post(`/equipment-loans/${id}/pay-installment`),
+      {
+        loading: 'Procesando pago...',
+        success: 'Pago realizado correctamente',
+        error: 'Error al procesar el pago',
+      }
+    );
+  },
+
+  payTotal: async (id: string): Promise<void> => {
+    return apiRequest(
+      api.post(`/equipment-loans/${id}/pay-total`),
+      {
+        loading: 'Procesando pago total...',
+        success: 'Pago total realizado correctamente',
+        error: 'Error al procesar el pago total',
       }
     );
   },

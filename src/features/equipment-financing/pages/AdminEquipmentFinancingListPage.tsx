@@ -5,11 +5,22 @@ import EquipmentFinancingScheduleModal from '../components/EquipmentFinancingSch
 import { Button } from '@/components/ui/button';
 import { showConfirm } from '@/shared/utils/global-dialog-utils';
 import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { EquipmentFinancingStatusCode, EquipmentFinancingStatusLabel } from '../enums/equipment-financing-status.enum';
+import { useDialogStore } from '@/shared/utils/global-dialog';
+import { generatePDF } from '@/shared/utils/pdfUtils';
+import { formatCurrency } from '@/shared/utils/currencyUtils';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+const ALL_STATUS = 'ALL';
 
 const AdminEquipmentFinancingListPage = () => {
   const [financings, setFinancings] = useState<EquipmentFinancingItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [financingSelected, setFinancingSelected] = useState<EquipmentFinancingItem | null>(null);
+  const { showDialog } = useDialogStore();
 
   // Filtros visuales
   const [clientFilter, setClientFilter] = useState<string | null>(null);
@@ -20,7 +31,7 @@ const AdminEquipmentFinancingListPage = () => {
     try {
       const data = await equipmentFinancingApi.getAll({
         clientId: clientFilter ?? undefined,
-        statusId: statusFilter ?? undefined,
+        statusId: statusFilter === ALL_STATUS ? undefined : statusFilter ?? undefined,
       });
       setFinancings(data);
     } catch (error) {
@@ -46,6 +57,106 @@ const AdminEquipmentFinancingListPage = () => {
     if (financing) setFinancingSelected(financing);
   };
 
+  const handlePayInstallment = async (financing: EquipmentFinancingItem, installmentId: string) => {
+    const installment = financing.installments.find(i => i.id === installmentId);
+
+    if (!installment) {
+      showDialog({
+        title: "Error",
+        message: "No se encontró la cuota seleccionada",
+        type: "error"
+      });
+      return;
+    }
+
+    showDialog({
+      title: "Pagar Cuota",
+      message: `¿Desea pagar la cuota ${installment.number} por ${formatCurrency(installment.amount)}?`,
+      type: "confirm",
+      onConfirm: async () => {
+        try {
+          await equipmentFinancingApi.payInstallment(financing.id, installmentId);
+          showDialog({
+            title: "Éxito",
+            message: "Pago realizado correctamente",
+            type: "success"
+          });
+          searchFinancings();
+          // Actualizar el financiamiento seleccionado
+          const updatedFinancing = await equipmentFinancingApi.getById(financing.id);
+          setFinancingSelected(updatedFinancing);
+        } catch (error) {
+          showDialog({
+            title: "Error",
+            message: "No se pudo procesar el pago",
+            type: "error"
+          });
+        }
+      }
+    });
+  };
+
+  const handlePayTotal = async (financing: EquipmentFinancingItem) => {
+    const pendingAmount = financing.installments
+      .filter(i => i.status.code === 'PENDING' || i.status.code === 'OVERDUE')
+      .reduce((sum, i) => sum + i.amount, 0);
+
+    showDialog({
+      title: "Pago Total",
+      message: `¿Desea realizar el pago total de ${formatCurrency(pendingAmount)}?`,
+      type: "confirm",
+      onConfirm: async () => {
+        try {
+          await equipmentFinancingApi.payAll(financing.id);
+          showDialog({
+            title: "Éxito",
+            message: "Pago total realizado correctamente",
+            type: "success"
+          });
+          searchFinancings();
+          // Actualizar el financiamiento seleccionado
+          const updatedFinancing = await equipmentFinancingApi.getById(financing.id);
+          setFinancingSelected(updatedFinancing);
+        } catch (error) {
+          showDialog({
+            title: "Error",
+            message: "No se pudo procesar el pago total",
+            type: "error"
+          });
+        }
+      }
+    });
+  };
+
+  const handleDownloadSchedule = async (financing: EquipmentFinancingItem) => {
+    try {
+      const headers = ['N° Cuota', 'Fecha Vencimiento', 'Capital', 'Interés', 'Cuota', 'Saldo', 'Estado'];
+      const rows = financing.installments.map(installment => [
+        installment.number.toString(),
+        format(new Date(installment.dueDate), 'dd/MM/yyyy', { locale: es }),
+        formatCurrency(installment.capital),
+        formatCurrency(installment.interest),
+        formatCurrency(installment.amount),
+        formatCurrency(installment.balance),
+        installment.status.name
+      ]);
+
+      await generatePDF({
+        title: `Cronograma de Financiamiento - ${financing.client.fullName}`,
+        subtitle: `Equipo: ${financing.equipment.name} | Monto: ${formatCurrency(financing.totalAmount)}`,
+        headers,
+        data: rows,
+        filename: `cronograma_financiamiento_${financing.id}.pdf`
+      });
+    } catch (error) {
+      showDialog({
+        title: "Error",
+        message: "No se pudo descargar el cronograma",
+        type: "error"
+      });
+    }
+  };
+
   useEffect(() => {
     searchFinancings();
   }, []);
@@ -68,19 +179,23 @@ const AdminEquipmentFinancingListPage = () => {
           </div>
 
           <div className="w-full sm:w-48">
-            <select
-              value={statusFilter || ''}
-              onChange={(e) => setStatusFilter(e.target.value || null)}
-              className="w-full p-2 border rounded"
+            <Label htmlFor="status">Estado</Label>
+            <Select
+              value={statusFilter || ALL_STATUS}
+              onValueChange={(value) => setStatusFilter(value === ALL_STATUS ? null : value)}
             >
-              <option value="">Todos los estados</option>
-              <option value="PENDING">Pendiente</option>
-              <option value="APPROVED">Aprobado</option>
-              <option value="REJECTED">Rechazado</option>
-              <option value="IN_PROGRESS">En Progreso</option>
-              <option value="COMPLETED">Completado</option>
-              <option value="CANCELLED">Cancelado</option>
-            </select>
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Todos los estados" />
+              </SelectTrigger>
+              <SelectContent className="bg-white">
+                <SelectItem value={ALL_STATUS}>Todos los estados</SelectItem>
+                {Object.entries(EquipmentFinancingStatusLabel).map(([code, label]) => (
+                  <SelectItem key={code} value={code}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -111,6 +226,9 @@ const AdminEquipmentFinancingListPage = () => {
         open={!!financingSelected}
         onClose={() => setFinancingSelected(null)}
         financing={financingSelected}
+        onPayInstallment={handlePayInstallment}
+        onPayTotal={handlePayTotal}
+        onDownloadSchedule={handleDownloadSchedule}
       />
     </div>
   );

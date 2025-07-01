@@ -1,10 +1,10 @@
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { formatDate } from './dateUtils';
 
 // Extender el tipo jsPDF para incluir autoTable
 interface jsPDFWithAutoTable extends jsPDF {
-  autoTable: (options: any) => void;
+  autoTable: typeof autoTable;
 }
 
 export interface ScheduleInstallmentItem {
@@ -67,7 +67,7 @@ export const generateSchedulePDF = (
     ];
   });
 
-  doc.autoTable({
+  autoTable(doc, {
     startY: 50,
     head: [headers],
     body: body,
@@ -108,7 +108,7 @@ export const generatePDF = async ({
   }
 
   // Agregar tabla
-  doc.autoTable({
+  autoTable(doc, {
     head: [headers],
     body: data,
     startY: subtitle ? 35 : 25,

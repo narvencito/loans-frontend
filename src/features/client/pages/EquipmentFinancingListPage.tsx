@@ -7,31 +7,66 @@ import { Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { clientLoansApi } from '../api/client_loans_api';
-import { EquipmentFinancing } from '@/features/equipment-financing/types/equipment-financing.types';
+import { EquipmentFinancingItem } from '@/features/equipment-financing/api/equipment-financing-api';
 import EquipmentFinancingDetailModal from '@/features/equipment-financing/components/EquipmentFinancingDetailModal';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import RowApp from '@/shared/components/RowApp';
+import ColumnApp from '@/shared/components/ColumnApp';
+import { EquipmentFinancingStatusCode, EquipmentFinancingStatusLabel } from '@/features/equipment-financing/enums/equipment-financing-status.enum';
 
-const RequestStatusColors: Record<string, string> = {
-  'PENDIENTE': 'bg-yellow-500',
-  'APROBADO': 'bg-green-500',
-  'RECHAZADO': 'bg-red-500',
-  'EN_PROCESO': 'bg-blue-500',
-  'COMPLETADO': 'bg-gray-500'
+const RequestStatusColors: Record<EquipmentFinancingStatusCode, string> = {
+  [EquipmentFinancingStatusCode.PENDING]: 'bg-yellow-500',
+  [EquipmentFinancingStatusCode.IN_PROGRESS]: 'bg-blue-500',
+  [EquipmentFinancingStatusCode.CANCELLED]: 'bg-red-500',
+  [EquipmentFinancingStatusCode.VOIDED]: 'bg-gray-500',
+  [EquipmentFinancingStatusCode.COMPLETED]: 'bg-green-500'
 };
 
+const statusOptions = [
+  { value: '', label: 'Todos' },
+  ...Object.entries(EquipmentFinancingStatusLabel).map(([code, label]) => ({
+    value: code,
+    label
+  }))
+];
+
 export default function EquipmentFinancingListPage() {
-  const [financings, setFinancings] = useState<EquipmentFinancing[]>([]);
+  const [financings, setFinancings] = useState<EquipmentFinancingItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFinancing, setSelectedFinancing] = useState<EquipmentFinancing | null>(null);
+  const [selectedFinancing, setSelectedFinancing] = useState<EquipmentFinancingItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    search: '',
+    status: ''
+  });
 
   useEffect(() => {
     loadFinancings();
-  }, []);
+  }, [filters]);
 
   const loadFinancings = async () => {
     try {
       const response = await clientLoansApi.getMyEquipmentFinancing();
-      setFinancings(response);
+      let filteredFinancings = response || [];
+
+      // Aplicar filtros
+      if (filters.search) {
+        const searchTerm = filters.search.toLowerCase();
+        filteredFinancings = filteredFinancings.filter(financing => 
+          financing.equipment?.code?.toLowerCase().includes(searchTerm) ||
+          financing.equipment?.name?.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      if (filters.status) {
+        filteredFinancings = filteredFinancings.filter(financing => 
+          financing.status?.name === filters.status
+        );
+      }
+
+      setFinancings(filteredFinancings);
     } catch (error) {
       console.error('Error loading financings:', error);
       setFinancings([]);
@@ -47,7 +82,7 @@ export default function EquipmentFinancingListPage() {
     }).format(amount);
   };
 
-  const handleViewDetail = (financing: EquipmentFinancing) => {
+  const handleViewDetail = (financing: EquipmentFinancingItem) => {
     setSelectedFinancing(financing);
     setIsDetailModalOpen(true);
   };
@@ -59,6 +94,13 @@ export default function EquipmentFinancingListPage() {
       const updatedFinancing = financings.find(f => f.id === selectedFinancing.id);
       setSelectedFinancing(updatedFinancing || null);
     }
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
   if (loading) {
@@ -81,6 +123,40 @@ export default function EquipmentFinancingListPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Financiamiento de Equipo</h1>
       </div>
+
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <RowApp>
+            <ColumnApp className="w-1/2">
+              <Label htmlFor="search">Buscar por código o nombre de equipo</Label>
+              <Input
+                id="search"
+                placeholder="Buscar..."
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+              />
+            </ColumnApp>
+            <ColumnApp className="w-1/2">
+              <Label htmlFor="status">Estado</Label>
+              <Select
+                value={filters.status}
+                onValueChange={(value) => handleFilterChange('status', value)}
+              >
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Seleccionar estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </ColumnApp>
+          </RowApp>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="pt-6">
@@ -108,8 +184,8 @@ export default function EquipmentFinancingListPage() {
                   <TableCell>{financing.equipment?.code || 'N/A'}</TableCell>
                   <TableCell>{financing.equipment?.name || 'N/A'}</TableCell>
                   <TableCell>
-                    <Badge className={RequestStatusColors[financing.status.name]}>
-                      {financing.status.name}
+                    <Badge className={RequestStatusColors[financing.status?.name as EquipmentFinancingStatusCode] || 'bg-gray-500'}>
+                      {EquipmentFinancingStatusLabel[financing.status?.name as EquipmentFinancingStatusCode] || 'Desconocido'}
                     </Badge>
                   </TableCell>
                   <TableCell>{formatAmount(financing.totalAmount)}</TableCell>
@@ -155,4 +231,4 @@ export default function EquipmentFinancingListPage() {
       />
     </div>
   );
-} 
+}

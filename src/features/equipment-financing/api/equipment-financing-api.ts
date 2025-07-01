@@ -7,6 +7,15 @@ interface Client {
   fullName: string;
   paternalSurname: string;
   maternalSurname: string;
+  document: string;
+  email: string;
+  phone: string;
+  address: string | null;
+  codeStudent: string;
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
+  userId: string;
 }
 
 interface Equipment {
@@ -15,21 +24,57 @@ interface Equipment {
   description: string;
   code: string;
   serial: string;
+  location: string;
+  number: number;
+  purchasePrice: number;
+  salePrice: number;
+  rentalDailyRate: number;
+  usageTypeId: string;
+  brand: string;
+  brandId: string;
+  categoryId: string;
+  generalCategoryId: string;
+  statusId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface FinancingStatus {
   id: string;
+  code: string;
   name: string;
   description: string | null;
   isActive: boolean;
   createdAt: string;
+  updatedAt: string;
+}
+
+interface InstallmentStatus {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Installment {
   id: string;
-  amount: number;
+  financingId: string;
+  number: number;
   dueDate: string;
-  status: string;
+  amount: number;
+  capital: number;
+  interest: number;
+  balance: number;
+  statusId: string;
+  paymentDate: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  status: InstallmentStatus;
 }
 
 export interface EquipmentFinancingFilters {
@@ -40,19 +85,23 @@ export interface EquipmentFinancingFilters {
 
 export interface EquipmentFinancingItem {
   id: string;
-  code: string;
   clientId: string;
-  clientName: string;
   equipmentId: string;
-  equipmentName: string;
-  amount: number;
-  termInMonths: number;
-  interestRate: number;
-  status: string;
+  totalAmount: number;
+  downPayment: number;
+  financedAmount: number;
+  annualRate: number;
+  term: number;
   startDate: string;
-  endDate: string;
+  requestId: string;
+  statusId: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  client: Client;
+  status: FinancingStatus;
+  equipment: Equipment;
+  installments: Installment[];
 }
 
 export interface CreateEquipmentFinancingDto {
