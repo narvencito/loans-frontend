@@ -1,6 +1,7 @@
 import { AxiosPromise } from 'axios';
 import { showGlobalDialog } from '@/shared/utils/global-dialog'; // asegúrate que el path sea correcto
 import { showError, showSuccess } from './global-dialog-utils';
+import { useLoaderStore } from '../store/loader.store';
 
 // Estructura base de respuesta del API
 interface BaseApiResponse {
@@ -29,10 +30,18 @@ export async function apiRequest<T>(
   promise: AxiosPromise<T & BaseApiResponse>,
   messages?: ToastMessages
 ): Promise<T> {
+  const { show: showLoader, hide: hideLoader } = useLoaderStore.getState();
+  
   try {
+    if (messages?.loading) {
+      showLoader();
+    }
+
     const res = await promise;
 
-    console.log("res del api ",res);
+    if (messages?.loading) {
+      hideLoader();
+    }
 
     // Verificar primero el código de estado HTTP
     if (res.status < 200 || res.status >= 300) {
@@ -55,10 +64,12 @@ export async function apiRequest<T>(
     // Retornamos la respuesta completa ya que viene con la estructura correcta
     return res.data;
   } catch (error: any) {
+    if (messages?.loading) {
+      hideLoader();
+    }
     
     // Manejar errores HTTP específicos
     if (error.response) {
-      console.log("error.response ",error.response);
       const status = error.response.status;
       // Intentamos obtener el mensaje del backend primero
       const backendMessage = error.response.data?.message;

@@ -4,6 +4,7 @@ import { PublicEquipmentItem } from "../../api/equipmentPublicApi";
 import ImageCarousel from "./ImageCarousel";
 import { useNavigate } from "react-router-dom";
 import { RequestTypeEnum } from "@/shared/enums/request-type.enum";
+import { EquipmentUsageType } from "../../model/equipment.types";
 
 interface Props {
   product: PublicEquipmentItem;
@@ -12,6 +13,9 @@ interface Props {
 
 const ProductCard = ({ product, onClick }: Props) => {
   const navigate = useNavigate();
+
+  const isFinancing = product.usageTypeCode === 'FINANCING';
+  const isRental = product.usageTypeCode === 'RENTAL';
 
   return (
     <Card className="overflow-hidden flex flex-col h-full">
@@ -41,33 +45,45 @@ const ProductCard = ({ product, onClick }: Props) => {
             <p className="text-sm text-gray-500">Perfil de uso:</p>
             <p className="text-sm font-medium">{product.generalCategory.name}</p>
           </div>
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-gray-500">Tipo de uso:</p>
+            <p className="text-sm font-medium">{product.usageTypeName}</p>
+          </div>
         </div>
-
       </CardContent>
-      <CardFooter className="p-6 pt-0 flex flex-col gap-4">
+      
+      <CardFooter className="p-6 pt-0 space-y-4">
         <div className="flex justify-between items-center w-full">
-          <div>
-            <p className="text-sm text-gray-500">Precio de venta</p>
-            <p className="text-xl font-bold">S/ {product.salePrice.toFixed(2)}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-500">Alquiler diario</p>
-            <p className="text-xl font-bold">S/ {product.rentalDailyRate.toFixed(2)}</p>
-          </div>
+          {isFinancing && (
+            <div>
+              <p className="text-sm text-gray-500">Precio total</p>
+              <p className="text-xl font-bold">S/ {product.salePrice.toFixed(2)}</p>
+            </div>
+          )}
+          {isRental && (
+            <div>
+              <p className="text-sm text-gray-500">Alquiler diario</p>
+              <p className="text-xl font-bold">S/ {product.rentalDailyRate.toFixed(2)}</p>
+            </div>
+          )}
         </div>
         <div className="flex flex-col gap-2">
-          <button
-            onClick={() => navigate(`/general/request-wizard?type=${RequestTypeEnum.EQUIPMENT_FINANCING}&equipmentId=${product.id}`)}
-            className="w-full bg-yellow-400 py-1 px-4 rounded font-bold text-sm text-gray-700 "
-          >
-             Solicitar financiamiento
-          </button>
-          <button
-            onClick={() => navigate(`/general/request-wizard?type=${RequestTypeEnum.EQUIPMENT_LOAN}&equipmentId=${product.id}`)}
-            className="w-full bg-blue-500 py-1 px-4 rounded font-bold text-sm text-gray-700 "
-          >
-            Solicitar préstamo
-          </button>
+          {isFinancing && (
+            <button
+              onClick={() => navigate(`/general/request-wizard?type=${RequestTypeEnum.EQUIPMENT_FINANCING}&equipmentId=${product.id}`)}
+              className="w-full bg-yellow-400 py-1 px-4 rounded font-bold text-sm text-gray-700"
+            >
+              Solicitar financiamiento
+            </button>
+          )}
+          {isRental && (
+            <button
+              onClick={() => navigate(`/general/request-wizard?type=${RequestTypeEnum.EQUIPMENT_LOAN}&equipmentId=${product.id}`)}
+              className="w-full bg-blue-500 py-1 px-4 rounded font-bold text-sm text-gray-700"
+            >
+              Solicitar préstamo
+            </button>
+          )}
         </div>
       </CardFooter>
     </Card>

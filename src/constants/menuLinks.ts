@@ -9,7 +9,11 @@ interface MenuLink {
 
 export const menuLinks: MenuLink[] = [
   { label: 'Inicio', path: '/' },
+  { label: 'Nosotros', path: '#nosotros' },
+  { label: 'Testimonios', path: '#testimonios' },
+  { label: 'Aliados', path: '#aliados' },
   { label: 'Equipos', path: '/equipment' },
+  { label: 'Contacto', path: '#contacto' },
   //{ label: 'Préstamos', path: '/loans' },
   //{ label: 'Financiamiento', path: '/financing' },
 ];

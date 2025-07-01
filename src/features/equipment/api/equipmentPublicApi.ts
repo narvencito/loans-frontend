@@ -1,5 +1,6 @@
 import { api } from '@/shared/utils/api';
 import { apiRequest } from '@/shared/utils/apiHelper';
+import { EquipmentUsageType } from '../model/equipment.types';
 
 export interface PublicEquipmentFilters {
   name?: string;
@@ -12,6 +13,17 @@ export interface PublicEquipmentFilters {
   location?: string;
   serial?: string;
   code?: string;
+  usageType?: EquipmentUsageType;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface PublicEquipmentItem {
@@ -50,6 +62,10 @@ export interface PublicEquipmentItem {
   statusName: string;
   location?: string;
   isActive: boolean;
+  usageType: EquipmentUsageType;
+  usageTypeId: string;
+  usageTypeName: string;
+  usageTypeCode: string;
   features: {
     id: string;
     name: string;
@@ -65,7 +81,7 @@ export interface PublicEquipmentItem {
 }
 
 export const equipmentPublicApi = {
-  getByFilter(filters: PublicEquipmentFilters): Promise<PublicEquipmentItem[]> {
+  getByFilter(filters: PublicEquipmentFilters): Promise<PaginatedResponse<PublicEquipmentItem>> {
     console.log('listado de equipos publicos ');
     console.log(filters);
     return apiRequest(

@@ -14,6 +14,9 @@ import { Button } from '@/components/ui/button';
 import ColumnApp from '@/shared/components/ColumnApp';
 import RowApp from '@/shared/components/RowApp';
 import LabelApp from '@/shared/components/LabelApp';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { EquipmentUsageType, EQUIPMENT_USAGE_TYPE_LABELS } from '../model/equipment.types';
+import EquipmentUsageTypeSelect from './EquipmentUsageTypeSelect';
 
 interface Props {
   open: boolean;
@@ -54,6 +57,7 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
       featureIds: [],
       images: [],
       newImages: [],
+      usageType: EquipmentUsageType.FINANCING,
     }
   );
 
@@ -81,6 +85,7 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
         featureIds: defaultValues.features?.map(f => f.id) || [],
         images: copiedImages,
         newImages: [],
+        usageType: (defaultValues.usageTypeId === 'RENTAL' ? EquipmentUsageType.RENTAL : EquipmentUsageType.FINANCING),
       });
     } else {
       setForm({
@@ -100,6 +105,7 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
         featureIds: [],
         images: [],
         newImages: [],
+        usageType: EquipmentUsageType.FINANCING,
       });
     }
     setErrors({});
@@ -122,6 +128,7 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
     if (!form.generalCategoryId) newErrors.generalCategoryId = 'El perfil de uso es requerido';
     if (!form.statusId) newErrors.statusId = 'El estado es requerido';
     if (!form.brandId) newErrors.brandId = 'La marca es requerida';
+    if (!form.usageType) newErrors.usageType = 'El tipo de uso es requerido';
     if (form.purchasePrice <= 0) newErrors.purchasePrice = 'El precio de compra debe ser mayor a 0';
     if (form.salePrice <= 0) newErrors.salePrice = 'El precio de venta debe ser mayor a 0';
     if (form.rentalDailyRate <= 0) newErrors.rentalDailyRate = 'La tarifa diaria debe ser mayor a 0';
@@ -146,6 +153,7 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
     formData.append('purchasePrice', String(form.purchasePrice || 0));
     formData.append('salePrice', String(form.salePrice || 0));
     formData.append('rentalDailyRate', String(form.rentalDailyRate || 0));
+    formData.append('usageType', form.usageType);
     
     // Asegurarnos de que featureIds siempre se envíe como array
     const featureIds = form.featureIds || [];
@@ -201,6 +209,20 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
               {errors.code && <span className="text-red-500 text-xs">{errors.code}</span>}
             </ColumnApp>
 
+            <ColumnApp className="w-full col-span-2">
+              <EquipmentUsageTypeSelect
+                value={form.usageType}
+                onChange={(value) => {
+                  setForm(prev => ({ ...prev, usageType: value as EquipmentUsageType }));
+                  setErrors(prev => ({ ...prev, usageType: '' }));
+                }}
+                required
+              />
+              {errors.usageType && <span className="text-red-500 text-xs">{errors.usageType}</span>}
+            </ColumnApp>
+          </RowApp>
+
+          <RowApp className="grid grid-cols-2 gap-4 w-full">
             <ColumnApp className="w-full">
               <LabelApp className="text-sm font-medium">Nombre *</LabelApp>
               <Input 
@@ -212,17 +234,15 @@ const EquipmentFormModal = ({ open, onClose, onSubmit, defaultValues }: Props) =
               {errors.name && <span className="text-red-500 text-xs">{errors.name}</span>}
             </ColumnApp>
 
-            <ColumnApp className="w-full">
-              <BrandSelect 
-                value={form.brandId} 
-                onChange={val => {
-                  setForm(prev => ({ ...prev, brandId: val }));
-                  setErrors(prev => ({ ...prev, brandId: '' }));
-                }}
-                required
-              />
-              {errors.brandId && <span className="text-red-500 text-xs">{errors.brandId}</span>}
-            </ColumnApp>
+            <BrandSelect 
+              value={form.brandId} 
+              onChange={val => {
+                setForm(prev => ({ ...prev, brandId: val || '' }));
+                setErrors(prev => ({ ...prev, brandId: '' }));
+              }}
+              required
+            />
+            {errors.brandId && <span className="text-red-500 text-xs">{errors.brandId}</span>}
           </RowApp>
 
           <RowApp className="grid grid-cols-2 gap-4 w-full">

@@ -1,6 +1,7 @@
 import { EquipmentFeature, ImageApp } from '@/features/equipment-feature/api/equipment-feature-api';
 import { api } from '@/shared/utils/api';
 import { apiRequest } from '@/shared/utils/apiHelper';
+import { EquipmentUsageType } from '../model/equipment.types';
 
 export interface CreateEquipmentDto {
   code: string;
@@ -18,6 +19,7 @@ export interface CreateEquipmentDto {
   rentalDailyRate: number;
   featureIds?: string[];
   images?: ImageApp[];
+  usageType: EquipmentUsageType;
 }
 
 export interface UpdateEquipmentDto extends Partial<CreateEquipmentDto> {
@@ -49,6 +51,7 @@ export interface EquipmentItem {
     updatedAt: string;
   };
   brandId: string;
+  brand: null;
   brandRelation: {
     id: string;
     name: string;
@@ -62,6 +65,8 @@ export interface EquipmentItem {
   isActive: boolean;
   features: EquipmentFeature[];
   images: ImageApp[];
+  usageTypeId: string;
+  usageTypeName: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -91,6 +96,7 @@ export interface Equipment {
     id: string;
     name: string;
   };
+  usageType: EquipmentUsageType;
 }
 
 export interface EquipmentFilters {
@@ -101,6 +107,7 @@ export interface EquipmentFilters {
   generalCategoryId?: string;
   statusId?: string;
   equipmentCategoryId?: string;
+  usageType?: EquipmentUsageType;
 }
 
 export const equipmentApi = {
@@ -108,7 +115,7 @@ export const equipmentApi = {
     return apiRequest(
       api.post('/equipment/list', filters),
       {
-        loading: 'Cargando equipos...',
+        loading: 'Buscando equipos...',
         error: 'No se pudieron cargar los equipos',
       }
     );

@@ -1,155 +1,190 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Menu } from 'lucide-react';
 import { menuLinks } from '@/constants/menuLinks';
-import { useAuthStore } from '@/features/auth/store/auth.store';
-import LoginDialog from '@/features/auth/components/LoginDialog';
-import { showConfirm } from '@/shared/utils/global-dialog-utils';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('inicio');
   const location = useLocation();
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
-  const loginRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated } = useAuth();
 
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const handleNavigation = async (path: string) => {
+    setIsOpen(false);
+    
+    // Si el path es '/' y no estamos en la página principal
+    if (path === '/' && location.pathname !== '/') {
+      navigate('/');
+      return;
+    }
+    
+    // Si el path es un anchor y no estamos en la página principal
+    if (path.startsWith('#') && location.pathname !== '/') {
+      // Primero navegamos a la página principal
+      await navigate('/');
+      // Esperamos un momento para que la página se cargue
+      setTimeout(() => {
+        const section = document.getElementById(path.substring(1));
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+      return;
+    }
 
-  const toggleMenu = () => setMenuOpen(!menuOpen);
-
-  const handleLogout = async () => {
-    try {
-      const isConfirmed = await showConfirm('¿Estás seguro de cerrar sesión?');
-      if (!isConfirmed) return;
-
-      await logout();
-      navigate('/', { replace: true });
-    } catch (error) {
-      console.error('Error during logout:', error);
-      // El logout local ya se realizó en el store, así que redirigimos de todos modos
-      navigate('/', { replace: true });
+    // Si estamos en la página principal
+    if (path === '/') {
+      const section = document.getElementById('inicio');
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else if (path.startsWith('#')) {
+      const section = document.getElementById(path.substring(1));
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      navigate(path);
     }
   };
 
-  // Cerrar login popover al hacer clic fuera
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (loginRef.current && !loginRef.current.contains(event.target as Node)) {
-        setShowLogin(false);
-      }
-    };
+    // Solo activar el observer si estamos en la página principal
+    if (location.pathname === '/') {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setActiveSection(entry.target.id);
+            }
+          });
+        },
+        {
+          threshold: 0.5,
+        }
+      );
 
-    if (showLogin) {
-      document.addEventListener('mousedown', handleClickOutside);
+      const sections = document.querySelectorAll('section[id]');
+      sections.forEach((section) => observer.observe(section));
+
+      return () => {
+        sections.forEach((section) => observer.unobserve(section));
+      };
+    } else {
+      // Si no estamos en la página principal, no hay sección activa
+      setActiveSection('');
     }
+  }, [location.pathname]);
 
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showLogin]);
+  // Función para determinar si un enlace está activo
+  const isLinkActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/' && activeSection === 'inicio';
+    }
+    if (path.startsWith('#')) {
+      return location.pathname === '/' && activeSection === path.substring(1);
+    }
+    return location.pathname === path;
+  };
 
   return (
-    <nav className="bg-background text-foreground shadow-md fixed top-0 w-full z-50 border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center relative">
-        <Link to="/" className="text-xl font-bold text-primary">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b">
+      <nav className="container mx-auto px-4 h-[60px] flex items-center justify-between">
+        <Link to="/" className="text-2xl font-bold text-yellow-500">
           StudyCash
         </Link>
 
-        {/* Desktop */}
-        <ul className="hidden md:flex gap-6 items-center">
+        {/* Menú de escritorio */}
+        <ul className="hidden md:flex items-center space-x-6">
           {menuLinks.map((link) => (
             <li key={link.path}>
-              <Link
-                to={link.path}
-                className={`text-sm font-medium transition-colors ${location.pathname === link.path
-                    ? 'text-primary underline'
-                    : 'text-muted-foreground hover:text-primary'
-                  }`}
+              <button
+                onClick={() => handleNavigation(link.path)}
+                className={`text-sm font-medium transition-colors ${
+                  isLinkActive(link.path)
+                    ? 'text-yellow-500'
+                    : 'text-muted-foreground hover:text-yellow-500'
+                }`}
               >
                 {link.label}
-              </Link>
+              </button>
             </li>
           ))}
-
-          {!isAuthenticated ? (
-            <li>
-              <button
-                onClick={() => setShowLogin(!showLogin)}
-                className="text-sm font-medium text-muted-foreground hover:text-primary"
-              >
-                Iniciar sesión
-              </button>
-            </li>
-          ) : (
-            <li className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">
-                Bienvenido, <strong>{user?.email}</strong>
-              </span>
-              <button
-                onClick={handleLogout}
-                className="text-destructive hover:underline"
-              >
-                Cerrar sesión
-              </button>
-            </li>
-          )}
         </ul>
 
-        {/* Mobile */}
-        <button className="md:hidden" onClick={toggleMenu}>
-          {menuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-        
-        <LoginDialog open={showLogin} onClose={() => setShowLogin(false)} />
-      </div>
+        <div className="flex items-center space-x-4">
+          {!isAuthenticated ? (
+            <Button
+              onClick={() => navigate('/login')}
+              className="hidden md:flex bg-yellow-500 hover:bg-yellow-600"
+            >
+              Iniciar sesión
+            </Button>
+          ) : (
+            <Button
+              onClick={() => navigate('/client')}
+              variant="outline"
+              className="hidden md:flex"
+            >
+              Mi cuenta
+            </Button>
+          )}
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-background px-4 pb-4 border-t border-border">
-          <ul className="flex flex-col gap-2">
-            {menuLinks.map((link) => (
-              <li key={link.path}>
-                <Link
-                  to={link.path}
-                  className={`block py-2 text-sm font-medium transition-colors ${location.pathname === link.path
-                      ? 'text-primary underline'
-                      : 'text-muted-foreground hover:text-primary'
-                    }`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-
-            {!isAuthenticated ? (
-              <li>
-                <button
-                  onClick={() => {
-                    setShowLogin(true);
-                    setMenuOpen(false);
-                  }}
-                  className="text-sm font-medium text-muted-foreground hover:text-primary"
-                >
-                  Iniciar sesión
-                </button>
-              </li>
-            ) : (
-              <li className="flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground">
-                  Bienvenido, <strong>{user?.email}</strong>
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="text-destructive hover:underline"
-                >
-                  Cerrar sesión
-                </button>
-              </li>
-            )}
-          </ul>
+          {/* Menú móvil */}
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <nav className="flex flex-col h-full">
+                <ul className="flex-1 space-y-2">
+                  {menuLinks.map((link) => (
+                    <li key={link.path}>
+                      <button
+                        onClick={() => handleNavigation(link.path)}
+                        className={`block w-full text-left py-2 text-sm font-medium transition-colors ${
+                          isLinkActive(link.path)
+                            ? 'text-yellow-500'
+                            : 'text-muted-foreground hover:text-yellow-500'
+                        }`}
+                      >
+                        {link.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                {!isAuthenticated ? (
+                  <Button
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate('/login');
+                    }}
+                    className="w-full bg-yellow-500 hover:bg-yellow-600"
+                  >
+                    Iniciar sesión
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate('/client');
+                    }}
+                    className="w-full"
+                  >
+                    Mi cuenta
+                  </Button>
+                )}
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
-      )}
-    </nav>
+      </nav>
+    </header>
   );
 }

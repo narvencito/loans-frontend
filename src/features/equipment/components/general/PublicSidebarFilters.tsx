@@ -6,6 +6,10 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import PublicBrandCheckboxList from './PublicBrandCheckboxList';
 import PublicGeneralCategoryCheckboxList from './PublicGeneralCategoryCheckboxList';
 import PublicEquipmentCategoryCheckboxList from './PublicEquipmentCategoryCheckboxList';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { EquipmentUsageType, EQUIPMENT_USAGE_TYPE_LABELS } from '../../model/equipment.types';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import EquipmentUsageTypeCheckboxList from "../EquipmentUsageTypeCheckboxList";
 
 interface Props {
   search: string;
@@ -20,6 +24,8 @@ interface Props {
   onMinPriceChange: (value: string) => void;
   maxPrice: string;
   onMaxPriceChange: (value: string) => void;
+  selectedUsageType: EquipmentUsageType | 'all';
+  onUsageTypeChange: (value: EquipmentUsageType | 'all') => void;
   onSearch: () => void;
   onClearFilters: () => void;
 }
@@ -37,97 +43,106 @@ const PublicSidebarFilters = ({
   onMinPriceChange,
   maxPrice,
   onMaxPriceChange,
+  selectedUsageType,
+  onUsageTypeChange,
   onSearch,
   onClearFilters
 }: Props) => {
   return (
-    <div className="bg-white rounded-lg flex flex-col h-full">
-      <div className="p-4 border-b">
-        <h2 className="text-lg font-bold">Filtros de Búsqueda</h2>
-      </div>
-      
-      <div className="p-4 space-y-6 overflow-auto flex-1">
-        {/* Búsqueda  <div className="space-y-2">
-          <Label>Búsqueda</Label>
-          <Input
-            type="text"
-            placeholder="Buscar equipos..."
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-          />
-        </div>
-         */}
+    <div className="w-full space-y-4">
+      <h2 className="text-xl font-semibold mb-4">Filtros de Búsqueda</h2>
 
-        <Accordion type="multiple" className="w-full">
-          {/* Marca */}
-          <AccordionItem value="brand">
-            <AccordionTrigger>Marca</AccordionTrigger>
-            <AccordionContent>
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="usageType" className="border-b">
+          <AccordionTrigger className="hover:no-underline hover:bg-gray-100 px-4 py-2 flex justify-between items-center">
+            <span className="text-sm font-medium">Tipo de Uso</span>
+          </AccordionTrigger>
+          <AccordionContent className="px-4 pb-3 pt-1">
+            <EquipmentUsageTypeCheckboxList
+              selectedUsageType={selectedUsageType}
+              onChange={onUsageTypeChange}
+            />
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="brand">
+          <AccordionTrigger className="hover:no-underline hover:bg-gray-100 px-4 py-2 flex justify-between items-center">
+            <span className="text-sm font-medium">Marca</span>
+          </AccordionTrigger>
+          <AccordionContent>
+            <ScrollArea className="h-[200px] pr-4">
               <PublicBrandCheckboxList
                 selectedBrands={selectedBrands}
                 onChange={onBrandsChange}
               />
-            </AccordionContent>
-          </AccordionItem>
+            </ScrollArea>
+          </AccordionContent>
+        </AccordionItem>
 
-          {/* Perfil de uso */}
-          <AccordionItem value="generalCategory">
-            <AccordionTrigger>Perfil de uso</AccordionTrigger>
-            <AccordionContent>
-              <PublicGeneralCategoryCheckboxList
-                selectedCategories={selectedGeneralCategories}
-                onChange={onGeneralCategoriesChange}
-              />
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* Categoría */}
-          <AccordionItem value="category">
-            <AccordionTrigger>Categoría</AccordionTrigger>
-            <AccordionContent>
+        <AccordionItem value="generalCategory">
+          <AccordionTrigger className="hover:no-underline hover:bg-gray-100 px-4 py-2 flex justify-between items-center">
+            <span className="text-sm font-medium">Perfil de uso</span>
+          </AccordionTrigger>
+          <AccordionContent>
+            <ScrollArea className="h-[200px] pr-4">
               <PublicEquipmentCategoryCheckboxList
                 selectedCategories={selectedCategories}
                 onChange={onCategoriesChange}
               />
-            </AccordionContent>
-          </AccordionItem>
+            </ScrollArea>
+          </AccordionContent>
+        </AccordionItem>
 
-          {/* Rango de precios */}
-          <AccordionItem value="price">
-            <AccordionTrigger>Rango de precios</AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-2">
-                <Input
-                  type="number"
-                  placeholder="Precio mínimo"
-                  value={minPrice}
-                  onChange={(e) => onMinPriceChange(e.target.value)}
-                  min={0}
-                />
-                <Input
-                  type="number"
-                  placeholder="Precio máximo"
-                  value={maxPrice}
-                  onChange={(e) => onMaxPriceChange(e.target.value)}
-                  min={0}
-                />
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      </div>
+        <AccordionItem value="category">
+          <AccordionTrigger className="hover:no-underline hover:bg-gray-100 px-4 py-2 flex justify-between items-center">
+            <span className="text-sm font-medium">Categoría</span>
+          </AccordionTrigger>
+          <AccordionContent>
+            <ScrollArea className="h-[200px] pr-4">
+              <PublicGeneralCategoryCheckboxList
+                selectedCategories={selectedGeneralCategories}
+                onChange={onGeneralCategoriesChange}
+              />
+            </ScrollArea>
+          </AccordionContent>
+        </AccordionItem>
 
-      <div className="p-4 border-t space-y-2">
+        <AccordionItem value="price">
+          <AccordionTrigger className="hover:no-underline hover:bg-gray-100 px-4 py-2 flex justify-between items-center">
+            <span className="text-sm font-medium">Rango de precios</span>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-2">
+              <Input
+                type="number"
+                placeholder="Precio mínimo"
+                value={minPrice}
+                onChange={(e) => onMinPriceChange(e.target.value)}
+                min={0}
+              />
+              <Input
+                type="number"
+                placeholder="Precio máximo"
+                value={maxPrice}
+                onChange={(e) => onMaxPriceChange(e.target.value)}
+                min={0}
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
+      <div className="space-y-2 pt-4">
         <Button 
           onClick={onSearch}
-          className="w-full"
+          className="w-full bg-yellow-500 hover:bg-yellow-600"
         >
           Aplicar filtros
         </Button>
         <Button 
           onClick={onClearFilters}
-          className="w-full border-2 border-yellow-600 hover:bg-blue-50"
-          variant="ghost"
+          variant="outline"
+          className="w-full"
         >
           Limpiar filtros
         </Button>

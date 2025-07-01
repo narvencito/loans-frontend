@@ -6,6 +6,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import BrandCheckboxList from '@/features/brand/components/BrandCheckboxList';
 import GeneralCategoryCheckboxList from '@/features/general-category/components/GeneralCategoryCheckboxList';
 import EquipmentCategoryCheckboxList from '@/features/equipment-category/components/EquipmentCategoryCheckboxList';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { EquipmentUsageType, EQUIPMENT_USAGE_TYPE_LABELS } from '../../model/equipment.types';
 
 interface Props {
   search: string;
@@ -20,6 +22,8 @@ interface Props {
   onMinPriceChange: (value: string) => void;
   maxPrice: string;
   onMaxPriceChange: (value: string) => void;
+  selectedUsageType: EquipmentUsageType | '';
+  onUsageTypeChange: (value: EquipmentUsageType | '') => void;
   onSearch: () => void;
   onClearFilters: () => void;
 }
@@ -37,6 +41,8 @@ const SidebarFilters = ({
   onMinPriceChange,
   maxPrice,
   onMaxPriceChange,
+  selectedUsageType,
+  onUsageTypeChange,
   onSearch,
   onClearFilters
 }: Props) => {
@@ -57,6 +63,29 @@ const SidebarFilters = ({
         </div>
 
         <Accordion type="multiple" className="w-full">
+          {/* Tipo de Uso */}
+          <AccordionItem value="usageType">
+            <AccordionTrigger>Tipo de Uso</AccordionTrigger>
+            <AccordionContent>
+              <Select
+                value={selectedUsageType}
+                onValueChange={(value) => onUsageTypeChange(value as EquipmentUsageType | '')}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos los tipos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todos los tipos</SelectItem>
+                  {Object.entries(EQUIPMENT_USAGE_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </AccordionContent>
+          </AccordionItem>
+
           {/* Marca */}
           <AccordionItem value="brand">
             <AccordionTrigger>Marca</AccordionTrigger>

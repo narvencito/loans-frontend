@@ -10,6 +10,14 @@ interface Props {
 const ProductGrid = ({ products }: Props) => {
   const [selectedProduct, setSelectedProduct] = useState<PublicEquipmentItem | null>(null);
 
+  if (products.length === 0) {
+    return (
+      <div className="text-center text-gray-500 py-8">
+        <p>No se encontraron equipos que coincidan con los filtros seleccionados.</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">

@@ -17,10 +17,10 @@ export default function ContactSection({ delay = 0 }: { delay?: number }) {
       </p>
 
       <a
-        href="mailto:contacto@mvp.com"
+        href="mailto:contacto@studycash.com"
         className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:opacity-90 transition-colors"
       >
-        contacto@mvp.com
+        contacto@studycash.com
       </a>
     </motion.section>
   );

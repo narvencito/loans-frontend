@@ -8,10 +8,12 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { EquipmentItem } from "../api/equipment_api";
+import { Edit, Trash2 } from "lucide-react";
 import TruncatedWithTooltip from "@/components/common/TruncatedWithTooltip";
 import Pagination from "@/shared/components/Pagination";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { EQUIPMENT_USAGE_TYPE_LABELS } from "../model/equipment.types";
 
 interface Props {
   equipos: EquipmentItem[];
@@ -69,9 +71,9 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
                 <TableHead>Código</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Marca</TableHead>
-                <TableHead>Descripción</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead>Perfil de uso</TableHead>
+                <TableHead>Tipo de uso</TableHead>
                 <TableHead className="text-right">Precio venta</TableHead>
                 <TableHead className="text-right">Tarifa diaria</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
@@ -82,13 +84,13 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
               {paginated.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="text-foreground">{item.code}</TableCell>
-                  <TableCell className="text-foreground">{item.name}</TableCell>
-                  <TableCell className="text-foreground">{item.brandRelation?.name || '-'}</TableCell>
                   <TableCell className="text-foreground">
-                    <TruncatedWithTooltip text={item.description} />
+                    <TruncatedWithTooltip text={item.name}  />
                   </TableCell>
+                  <TableCell className="text-foreground">{item.brandRelation?.name || '-'}</TableCell>
                   <TableCell className="text-foreground">{item.category?.name || '-'}</TableCell>
                   <TableCell className="text-foreground">{item.generalCategory?.name || '-'}</TableCell>
+                  <TableCell className="text-foreground">{item.usageTypeName || '-'}</TableCell>
                   <TableCell className="text-foreground text-right">{formatPrice(item.salePrice)}</TableCell>
                   <TableCell className="text-foreground text-right">{formatPrice(item.rentalDailyRate)}</TableCell>
                   <TableCell className="text-center">
@@ -98,18 +100,18 @@ const EquipmentTable = ({ equipos, onDelete, onEdit }: Props) => {
                   </TableCell>
                   <TableCell className="flex items-center justify-center gap-2">
                     <Button
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => onEdit(item)}
                     >
-                      Editar
+                      <Edit className="h-4 w-4" />
                     </Button>
                     <Button
-                      size="sm"
-                      className="bg-red-600 hover:bg-red-700 text-white"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => onDelete(item.id)}
                     >
-                      Eliminar
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
