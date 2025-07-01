@@ -2,6 +2,11 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { formatDate } from './dateUtils';
 
+// Extender el tipo jsPDF para incluir autoTable
+interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: (options: any) => void;
+}
+
 export interface ScheduleInstallmentItem {
   nro: number;
   fecha: string;
@@ -21,7 +26,7 @@ export const generateSchedulePDF = (
   startDate: string,
   cuotas: ScheduleInstallmentItem[]
 ) => {
-  const doc = new jsPDF();
+  const doc = new jsPDF() as jsPDFWithAutoTable;
 
   doc.setFontSize(14);
   doc.text('Cronograma de Pagos', 14, 20);
@@ -62,7 +67,7 @@ export const generateSchedulePDF = (
     ];
   });
 
-  autoTable(doc, {
+  doc.autoTable({
     startY: 50,
     head: [headers],
     body: body,
@@ -87,7 +92,7 @@ export const generatePDF = async ({
   filename
 }: GeneratePDFParams) => {
   // Crear nuevo documento PDF
-  const doc = new jsPDF();
+  const doc = new jsPDF() as jsPDFWithAutoTable;
 
   // Configurar fuente y tamaño
   doc.setFont('helvetica');
@@ -103,7 +108,7 @@ export const generatePDF = async ({
   }
 
   // Agregar tabla
-  (doc as any).autoTable({
+  doc.autoTable({
     head: [headers],
     body: data,
     startY: subtitle ? 35 : 25,
@@ -149,5 +154,6 @@ const downloadBlob = (blob: Blob, filename: string) => {
 
 export const pdfUtils = {
   generatePDF,
+  generateSchedulePDF,
   downloadBlob
 };

@@ -256,7 +256,7 @@ export const requestApi = {
   async updateStatus(requestId: string, status: RequestStatusCode, comments?: string): Promise<void> {
     return apiRequest(
       api.post(`/requests/${requestId}/status`, { 
-        status,
+        newStatus: status,
         comments 
       })
     );

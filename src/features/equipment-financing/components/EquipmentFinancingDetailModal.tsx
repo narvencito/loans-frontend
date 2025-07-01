@@ -42,26 +42,25 @@ export default function EquipmentFinancingDetailModal({
   if (!financing) return null;
 
   const handleDownloadSchedule = async () => {
-    // Crear la estructura de datos para el PDF
-    const headers = ['N°', 'Fecha de Vencimiento', 'Cuota', 'Capital', 'Interés', 'Saldo', 'Estado'];
-    const data = financing.installments.map(installment => [
-      installment.number.toString(),
-      format(new Date(installment.dueDate), 'dd/MM/yyyy', { locale: es }),
-      formatAmount(installment.amount),
-      formatAmount(installment.capital),
-      formatAmount(installment.interest),
-      formatAmount(installment.balance),
-      installment.status.name
-    ]);
+    const cuotas = financing.installments.map(installment => ({
+      nro: installment.number,
+      fecha: format(new Date(installment.dueDate), 'dd/MM/yyyy', { locale: es }),
+      cuota: installment.amount,
+      interes: installment.interest,
+      capital: installment.capital,
+      saldo: installment.balance,
+      status: installment.status.code
+    }));
 
-    // Generar el PDF
-    await pdfUtils.generatePDF({
-      title: `Cronograma de Pagos - ${financing.equipment?.name}`,
-      subtitle: `Código: ${financing.equipment?.code} | Monto Total: ${formatAmount(financing.totalAmount)} | Tasa Anual: ${financing.annualRate}% | Plazo: ${financing.term} meses`,
-      headers,
-      data,
-      filename: `cronograma_${financing.equipment?.code}_${format(new Date(), 'yyyyMMdd')}.pdf`
-    });
+    pdfUtils.generateSchedulePDF(
+      financing.client.fullName,
+      financing.id,
+      financing.totalAmount,
+      financing.annualRate,
+      financing.term,
+      financing.startDate,
+      cuotas
+    );
   };
 
   const handlePayInstallment = async (installmentId: string) => {
