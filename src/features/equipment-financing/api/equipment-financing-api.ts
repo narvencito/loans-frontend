@@ -66,6 +66,10 @@ export interface UpdateEquipmentFinancingDto extends CreateEquipmentFinancingDto
   id: string;
 }
 
+interface PaymentNotes {
+  notes?: string;
+}
+
 export const equipmentFinancingApi = {
   async getAll(filters: EquipmentFinancingFilters = {}): Promise<EquipmentFinancingItem[]> {
     return apiRequest(
@@ -114,44 +118,44 @@ export const equipmentFinancingApi = {
     });
   },
 
-  payInstallment(financingId: string, installmentId: string): Promise<EquipmentFinancingItem> {
+  async payInstallment(financingId: string, installmentId: string, data?: PaymentNotes) {
     return apiRequest(
-      api.post(`/equipment-financing/${financingId}/installments/${installmentId}/pay`),
+      api.patch(`/financing-installments/${installmentId}/pay`, data),
       {
         loading: 'Procesando pago...',
-        success: 'Cuota pagada exitosamente',
-        error: 'No se pudo procesar el pago',
+        success: 'Pago realizado correctamente',
+        error: 'Error al procesar el pago',
       }
     );
   },
 
-  payAllInstallments(financingId: string): Promise<EquipmentFinancingItem> {
+  async payAll(financingId: string, data?: PaymentNotes) {
     return apiRequest(
-      api.post(`/equipment-financing/${financingId}/pay-all`),
+      api.post(`/equipment-financing/${financingId}/pay-all`, data),
       {
         loading: 'Procesando pago total...',
-        success: 'Pago total realizado exitosamente',
-        error: 'No se pudo procesar el pago total',
+        success: 'Pago total realizado correctamente',
+        error: 'Error al procesar el pago total',
       }
     );
   },
 
-  generatePaymentVoucher(financingId: string, installmentId: string): Promise<Blob> {
-    return apiRequest(
-      api.get(`/equipment-financing/${financingId}/installments/${installmentId}/voucher`, { responseType: 'blob' }),
-      {
-        loading: 'Generando comprobante...',
-        error: 'No se pudo generar el comprobante',
+  async generateVoucher(financingId: string): Promise<Blob> {
+    return apiRequest<Blob>(
+      api.post(`/equipment-financing-printer/${financingId}/voucher`, undefined, { responseType: 'blob' }),
+      { 
+        loading: 'Generando voucher...', 
+        success: 'Voucher generado correctamente' 
       }
     );
   },
 
-  generateNoDebtCertificate(financingId: string): Promise<Blob> {
-    return apiRequest(
-      api.get(`/equipment-financing/${financingId}/no-debt-certificate`, { responseType: 'blob' }),
-      {
-        loading: 'Generando certificado...',
-        error: 'No se pudo generar el certificado',
+  async generateNoDebtCertificate(financingId: string): Promise<Blob> {
+    return apiRequest<Blob>(
+      api.post(`/equipment-financing-printer/${financingId}/no-debt-certificate`, undefined, { responseType: 'blob' }),
+      { 
+        loading: 'Generando constancia de no adeudo...', 
+        success: 'Constancia de no adeudo generada correctamente' 
       }
     );
   }

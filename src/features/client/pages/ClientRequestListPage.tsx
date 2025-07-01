@@ -12,6 +12,8 @@ import { clientRequestsApi } from '../api/client_requests_api';
 import { Skeleton } from '@/components/ui/skeleton';
 import RequestDetailModal from '../components/RequestDetailModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { REQUEST_STATUS_STYLES } from '@/features/request/constants/request-status.constants';
+import { RequestStatusCode } from '@/features/request/enums/request-status.enum';
 
 const RequestTypeLabels: Record<string, string> = {
   'cash': 'Préstamo en efectivo',
@@ -135,7 +137,9 @@ export default function ClientRequestListPage() {
             <TableCell>{request.code}</TableCell>
             <TableCell>{RequestTypeLabels[request.requestType.name]}</TableCell>
             <TableCell>
-              <Badge className={RequestStatusColors[request.status]}>
+              <Badge 
+                className={`${REQUEST_STATUS_STYLES[request.status as RequestStatusCode]?.bg} ${REQUEST_STATUS_STYLES[request.status as RequestStatusCode]?.text} border ${REQUEST_STATUS_STYLES[request.status as RequestStatusCode]?.border}`}
+              >
                 {request.requestStatus.name}
               </Badge>
             </TableCell>

@@ -8,7 +8,6 @@ import DrawerApp from '@/shared/components/DrawerApp';
 
 const navItems = [
   { to: '/client/dashboard', label: 'Inicio' },
-  { to: '/equipment', label: 'Explorar equipos' },
   { to: '/client/cash-loans', label: 'Préstamos Monetarios' },
   { to: '/client/equipment-loans', label: 'Préstamos de Equipo' },
   { to: '/client/equipment-financing', label: 'Financiamiento de Equipo' },

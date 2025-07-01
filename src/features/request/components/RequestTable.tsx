@@ -57,8 +57,7 @@ export const RequestTable = ({ requests, showActions = false, onRefresh, onAlert
       onAlert?.('La solicitud ha pasado a revisión', 'success');
       if (onRefresh) onRefresh();
       setShowStatusDialog(false);
-      // Abrimos el modal de detalles después del cambio de estado
-      setShowDetailModal(true);
+      setSelectedRequest(null); // Limpiamos la solicitud seleccionada
     } catch (error) {
       onAlert?.('No se pudo actualizar el estado de la solicitud', 'error');
     } finally {
@@ -159,23 +158,6 @@ export const RequestTable = ({ requests, showActions = false, onRefresh, onAlert
                   <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell className="p-2">
                     <div className="flex justify-end items-center gap-2">
-                      {showActions && (
-                        request.requestStatus.code !== RequestStatusCode.CONVERTED && 
-                        request.requestStatus.code !== RequestStatusCode.PENDING && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-orange-100 hover:bg-orange-200 text-orange-800 border-orange-300"
-                            onClick={() => {
-                              // TODO: Implementar edición
-                              console.log('Editar solicitud:', request.id);
-                            }}
-                          >
-                            Editar
-                          </Button>
-                        )
-                      )}
-
                       <Button
                         variant="outline"
                         size="sm"

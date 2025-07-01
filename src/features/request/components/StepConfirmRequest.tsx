@@ -4,6 +4,7 @@ import { DocumentUploader } from "@/features/document/components/DocumentUploade
 import { DocumentList } from "@/features/document/components/DocumentList";
 import { DocumentEntityType } from "@/features/document/types/document.types";
 import { useState } from "react";
+import { useLoaderStore } from '@/shared/store/loader.store';
 
 interface Props {
   personalData: {
@@ -36,6 +37,7 @@ export const StepConfirmRequest = ({
   requestId 
 }: Props) => {
   const [documentsUpdated, setDocumentsUpdated] = useState(false);
+  const { show: showLoader, hide: hideLoader } = useLoaderStore();
 
   const DetailItem = ({ label, value }: { label: string; value?: string | null }) => {
     if (!value) return null;
@@ -45,6 +47,16 @@ export const StepConfirmRequest = ({
         <dd className="mt-1 text-sm text-gray-800 sm:mt-0 sm:col-span-2">{value}</dd>
       </div>
     );
+  };
+
+  const handleConfirm = async () => {
+    if (!requestId) {
+      showLoader();
+    }
+    await onConfirm();
+    if (!requestId) {
+      hideLoader();
+    }
   };
 
   return (
@@ -137,7 +149,7 @@ export const StepConfirmRequest = ({
           </button>
           <button
             type="button"
-            onClick={onConfirm}
+            onClick={handleConfirm}
             className="w-1/2 bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
           >
             {requestId ? 'Finalizar' : 'Enviar Solicitud'}

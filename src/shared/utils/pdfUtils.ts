@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import 'jspdf-autotable';
 import { formatDate } from './dateUtils';
 
 export interface ScheduleInstallmentItem {
@@ -69,4 +69,64 @@ export const generateSchedulePDF = (
   });
 
   doc.save(`cronograma_${cliente}.pdf`);
+};
+
+interface GeneratePDFParams {
+  title: string;
+  subtitle?: string;
+  headers: string[];
+  data: string[][];
+  filename: string;
+}
+
+export const generatePDF = async ({
+  title,
+  subtitle,
+  headers,
+  data,
+  filename
+}: GeneratePDFParams) => {
+  // Crear nuevo documento PDF
+  const doc = new jsPDF();
+
+  // Configurar fuente y tamaño
+  doc.setFont('helvetica');
+  
+  // Agregar título
+  doc.setFontSize(16);
+  doc.text(title, 14, 20);
+
+  // Agregar subtítulo si existe
+  if (subtitle) {
+    doc.setFontSize(12);
+    doc.text(subtitle, 14, 30);
+  }
+
+  // Agregar tabla
+  (doc as any).autoTable({
+    head: [headers],
+    body: data,
+    startY: subtitle ? 35 : 25,
+    headStyles: {
+      fillColor: [41, 128, 185],
+      textColor: 255,
+      fontSize: 10,
+      halign: 'center'
+    },
+    bodyStyles: {
+      fontSize: 9,
+      halign: 'center'
+    },
+    alternateRowStyles: {
+      fillColor: [245, 245, 245]
+    },
+    margin: { top: 10 }
+  });
+
+  // Guardar el PDF
+  doc.save(filename);
+};
+
+export const pdfUtils = {
+  generatePDF
 };

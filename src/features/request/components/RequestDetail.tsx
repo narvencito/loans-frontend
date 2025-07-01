@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -13,6 +13,8 @@ import { CancelButton, ConfirmButton } from '@/components/common/ActionButtons';
 import { getRequestTypeName } from '../utils/requestTypeUtils';
 import { showConfirm } from '@/shared/utils/global-dialog-utils';
 import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { RoleEnum } from '@/features/auth/types/auth.types';
 
 interface RequestDetailProps {
   request: RequestItem;
@@ -22,19 +24,37 @@ interface RequestDetailProps {
   isUserView?: boolean;
 }
 
-export const RequestDetail = ({ request, showActions = false, onStatusChange, onAlert, isUserView = false }: RequestDetailProps) => {
+export const RequestDetail = ({ request: initialRequest, showActions = false, onStatusChange, onAlert, isUserView = false }: RequestDetailProps) => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showConvertDialog, setShowConvertDialog] = useState(false);
-  const [actionType, setActionType] = useState<'approve' | 'reject' | 'cancel' | null>(null);
+  const [actionType, setActionType] = useState<'approve' | 'reject' | 'cancel' | 'review' | null>(null);
   const [downPayment, setDownPayment] = useState<number>(0);
+  const [request, setRequest] = useState<RequestItem>(initialRequest);
+  const { user } = useAuthStore();
+
+  const userRole = user?.role.name?.toUpperCase();
+
+  // Verificamos los permisos según el rol
+  const canApproveOrCancel = userRole === 'BOSS' || userRole === 'ADMIN';
+  const canReviewRequest = userRole === 'WORKER' || userRole === 'ADMIN' || userRole === 'BOSS';
+  const canConvertRequest = userRole === 'ADMIN' || userRole === 'BOSS';
 
   // Verificamos si se pueden mostrar acciones
   const canShowActions = showActions && 
     request.requestStatus.code !== RequestStatusCode.CONVERTED &&
     request.requestStatus.code !== RequestStatusCode.CANCELLED &&
     request.requestStatus.code !== RequestStatusCode.REJECTED;
+
+  const loadRequestDetails = async () => {
+    try {
+      const updatedRequest = await requestApi.getById(request.id);
+      setRequest(updatedRequest);
+    } catch (error) {
+      onAlert?.('No se pudo actualizar la información de la solicitud', 'error');
+    }
+  };
 
   const handleStatusChange = async (comments?: string) => {
     if (!showActions || !actionType) return;
@@ -55,6 +75,10 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
         newStatus = RequestStatusCode.CANCELLED;
         actionText = 'cancelada';
         break;
+      case 'review':
+        newStatus = RequestStatusCode.IN_REVIEW;
+        actionText = 'en revisión';
+        break;
       default:
         return;
     }
@@ -63,6 +87,7 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
       setIsLoading(true);
       await requestApi.updateStatus(request.id, newStatus, comments);
       onAlert?.(`La solicitud ha sido ${actionText}`, 'success');
+      await loadRequestDetails(); // Recargamos los detalles
       if (onStatusChange) onStatusChange();
       setShowStatusDialog(false);
       setActionType(null);
@@ -86,6 +111,7 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
       }
 
       onAlert?.('La solicitud ha sido convertida a préstamo', 'success');
+      await loadRequestDetails(); // Recargamos los detalles
       if (onStatusChange) onStatusChange();
       setShowConvertDialog(false);
     } catch (error :any) {
@@ -95,7 +121,7 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
     }
   };
 
-  const openStatusDialog = (type: 'approve' | 'reject' | 'convert' | 'cancel') => {
+  const openStatusDialog = (type: 'approve' | 'reject' | 'convert' | 'cancel' | 'review') => {
     if (type === 'convert') {
       if (request.requestType.name === RequestTypeEnum.EQUIPMENT_LOAN || 
           request.requestType.name === RequestTypeEnum.EQUIPMENT_FINANCING) {
@@ -150,6 +176,11 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
         title: 'Cancelar Solicitud',
         description: 'Por favor, ingrese un comentario para cancelar la solicitud.',
         confirmLabel: 'Cancelar',
+      },
+      review: {
+        title: 'Pasar a Revisión',
+        description: 'Por favor, ingrese un comentario para pasar la solicitud a revisión.',
+        confirmLabel: 'Pasar a Revisión',
       }
     };
 
@@ -194,10 +225,23 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
                 </div>
               )}
 
-              {/* Vista de admin - Puede rechazar, aprobar y convertir */}
+              {/* Vista de admin/staff - Acciones según rol */}
               {!isUserView && (
-                <>
-                  {request.requestStatus.code === RequestStatusCode.IN_REVIEW && (
+                <div className="flex flex-col gap-2">
+                  {/* Botón para pasar a revisión (Worker o superior) */}
+                  {request.requestStatus.code === RequestStatusCode.PENDING && canReviewRequest && (
+                    <div className="flex gap-2">
+                      <ConfirmButton
+                        onClick={() => openStatusDialog('review')}
+                        disabled={isLoading}
+                      >
+                        Pasar a Revisión
+                      </ConfirmButton>
+                    </div>
+                  )}
+
+                  {/* Botones de aprobar/rechazar (Boss o Admin) */}
+                  {request.requestStatus.code === RequestStatusCode.IN_REVIEW && canApproveOrCancel && (
                     <div className="flex gap-2">
                       <CancelButton
                         onClick={() => openStatusDialog('reject')}
@@ -213,7 +257,9 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
                       </ConfirmButton>
                     </div>
                   )}
-                  {request.requestStatus.code === RequestStatusCode.APPROVED && (
+
+                  {/* Botón de convertir (Admin o Boss) */}
+                  {request.requestStatus.code === RequestStatusCode.APPROVED && canConvertRequest && (
                     <div className="flex">
                       <ConfirmButton
                         onClick={() => openStatusDialog('convert')}
@@ -224,7 +270,7 @@ export const RequestDetail = ({ request, showActions = false, onStatusChange, on
                       </ConfirmButton>
                     </div>
                   )}
-                </>
+                </div>
               )}
             </div>
           )}
