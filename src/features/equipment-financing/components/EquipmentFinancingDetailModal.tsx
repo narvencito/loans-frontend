@@ -13,6 +13,8 @@ import { showConfirm, showSuccess } from "@/shared/utils/global-dialog-utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { useLoaderStore } from "@/shared/store/loader.store";
+import { apiRequest } from "@/shared/utils/apiHelper";
 
 interface EquipmentFinancingDetailModalProps {
   financing: EquipmentFinancing | null;
@@ -35,6 +37,7 @@ export default function EquipmentFinancingDetailModal({
   onUpdate
 }: EquipmentFinancingDetailModalProps) {
   const [paymentNotes, setPaymentNotes] = useState('');
+  const { show: showLoader, hide: hideLoader } = useLoaderStore();
   
   if (!financing) return null;
 
@@ -66,11 +69,18 @@ export default function EquipmentFinancingDetailModal({
 
     if (!isConfirmed) return;
 
+    const { show: showLoader, hide: hideLoader } = useLoaderStore.getState();
+
     try {
+      showLoader();
       await equipmentFinancingApi.payInstallment(financing.id, installmentId, {
         notes: paymentNotes || undefined
       });
-      await equipmentFinancingApi.generateVoucher(financing.id);
+      const voucherBlob = await equipmentFinancingApi.generateVoucher(installmentId);
+      
+      // Abrir el voucher en una nueva pestaña
+      const fileURL = window.URL.createObjectURL(new Blob([voucherBlob], { type: 'application/pdf' }));
+      window.open(fileURL);
       
       // Verificar si quedan cuotas pendientes
       const hasPendingInstallments = financing.installments.some(
@@ -78,7 +88,9 @@ export default function EquipmentFinancingDetailModal({
       );
       
       if (!hasPendingInstallments) {
-        await equipmentFinancingApi.generateNoDebtCertificate(financing.id);
+        const certificateBlob = await equipmentFinancingApi.generateNoDebtCertificate(financing.id);
+        const certificateURL = window.URL.createObjectURL(new Blob([certificateBlob], { type: 'application/pdf' }));
+        window.open(certificateURL);
       }
 
       showSuccess('Éxito', 'Pago realizado correctamente');
@@ -86,6 +98,8 @@ export default function EquipmentFinancingDetailModal({
       onUpdate();
     } catch (error) {
       console.error('Error al procesar el pago:', error);
+    } finally {
+      hideLoader();
     }
   };
 
@@ -94,18 +108,29 @@ export default function EquipmentFinancingDetailModal({
 
     if (!isConfirmed) return;
 
+    const { show: showLoader, hide: hideLoader } = useLoaderStore.getState();
+
     try {
+      showLoader();
       await equipmentFinancingApi.payAll(financing.id, {
         notes: paymentNotes || undefined
       });
-      await equipmentFinancingApi.generateVoucher(financing.id);
-      await equipmentFinancingApi.generateNoDebtCertificate(financing.id);
+      const voucherBlob = await equipmentFinancingApi.generateVoucher(financing.id);
+      const certificateBlob = await equipmentFinancingApi.generateNoDebtCertificate(financing.id);
+      
+      // Abrir los documentos en nuevas pestañas
+      const voucherURL = window.URL.createObjectURL(new Blob([voucherBlob], { type: 'application/pdf' }));
+      const certificateURL = window.URL.createObjectURL(new Blob([certificateBlob], { type: 'application/pdf' }));
+      window.open(voucherURL);
+      window.open(certificateURL);
       
       showSuccess('Éxito', 'Pago total realizado correctamente');
       setPaymentNotes(''); // Limpiar las notas después del pago
       onUpdate();
     } catch (error) {
       console.error('Error al procesar el pago total:', error);
+    } finally {
+      hideLoader();
     }
   };
 
@@ -178,18 +203,18 @@ export default function EquipmentFinancingDetailModal({
               <div className="flex gap-2">
                 {financing.installments.some(i => i.status.code === 'Pendiente') && (
                   <Button 
-                    variant="outline" 
+                    variant="default"
                     onClick={handlePayTotal}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                   >
                     <CreditCard className="h-4 w-4" />
                     Pagar Total
                   </Button>
                 )}
                 <Button 
-                  variant="outline" 
+                  variant="default"
                   onClick={handleDownloadSchedule}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                 >
                   <Download className="h-4 w-4" />
                   Descargar Cronograma
@@ -225,7 +250,9 @@ export default function EquipmentFinancingDetailModal({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {financing.installments.map((installment) => (
+                  {[...financing.installments]
+                    .sort((a, b) => a.number - b.number)
+                    .map((installment) => (
                     <TableRow key={installment.id}>
                       <TableCell>{installment.number}</TableCell>
                       <TableCell>

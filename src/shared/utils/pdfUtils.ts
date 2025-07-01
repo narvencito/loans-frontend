@@ -127,6 +127,27 @@ export const generatePDF = async ({
   doc.save(filename);
 };
 
+const downloadBlob = (blob: Blob, filename: string) => {
+  // Crear URL del blob
+  const url = window.URL.createObjectURL(blob);
+  
+  // Crear un elemento <a> temporal
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  
+  // Agregar el link al documento
+  document.body.appendChild(link);
+  
+  // Simular click para descargar
+  link.click();
+  
+  // Limpiar
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
 export const pdfUtils = {
-  generatePDF
+  generatePDF,
+  downloadBlob
 };
