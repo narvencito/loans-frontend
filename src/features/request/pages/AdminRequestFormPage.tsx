@@ -13,6 +13,7 @@ import { CreateRequestAdminDto, CreateRequestDto, requestApi } from '../api/requ
 import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
 import { showError, showSuccess } from '@/shared/utils/global-dialog-utils';
 import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
+import { GrayButton, YellowButton } from '@/components/common/ColorButtons';
 
 interface Props {
   open: boolean;
@@ -212,19 +213,18 @@ const AdminRequestFormModal = ({ open, onClose, onSuccess }: Props) => {
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
-          <Button 
-            variant="outline" 
+          <GrayButton 
             onClick={() => { resetForm(); onClose(); }}
             disabled={isSubmitting}
           >
             Cancelar
-          </Button>
-          <Button 
+          </GrayButton>
+          <YellowButton 
             onClick={handleSubmit}
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Guardando...' : 'Guardar'}
-          </Button>
+          </YellowButton>
         </div>
       </DialogContent>
     </Dialog>

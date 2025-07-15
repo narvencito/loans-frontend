@@ -7,7 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -17,6 +16,7 @@ import { formatCurrency } from "@/shared/utils/currencyUtils";
 import Pagination from '@/shared/components/Pagination';
 import RowApp from '@/shared/components/RowApp';
 import { Download, FileText, Wallet } from 'lucide-react';
+import { BlueButton, GreenButton } from '@/components/common/ColorButtons';
 
 interface EquipmentLoanTableProps {
   loans: EquipmentLoanItem[];
@@ -102,43 +102,39 @@ export const EquipmentLoanTable = ({
                 </TableCell>
                 <TableCell>
                   <RowApp gap={2} className="justify-end">
-                    <Button
+                    <BlueButton
                       size="icon"
-                      variant="outline"
                       onClick={() => onViewSchedule(loan)}
                       title="Ver Cronograma"
                     >
                       <FileText className="h-4 w-4" />
-                    </Button>
+                    </BlueButton>
                     {onPayInstallment && loan.status.code !== EquipmentLoanStatusCode.CANCELLED && (
-                      <Button
+                      <GreenButton
                         size="icon"
-                        variant="outline"
                         onClick={() => onPayInstallment(loan)}
                         title="Pagar Cuota"
                       >
                         <Wallet className="h-4 w-4" />
-                      </Button>
+                      </GreenButton>
                     )}
                     {onPayTotal && loan.status.code !== EquipmentLoanStatusCode.CANCELLED && loan.remainingAmount > 0 && (
-                      <Button
+                      <GreenButton
                         size="icon"
-                        variant="default"
                         onClick={() => onPayTotal(loan)}
                         title="Pago Total"
                       >
                         <Wallet className="h-4 w-4" />
-                      </Button>
+                      </GreenButton>
                     )}
                     {onDownloadSchedule && (
-                      <Button
+                      <BlueButton
                         size="icon"
-                        variant="outline"
                         onClick={() => onDownloadSchedule(loan)}
                         title="Descargar Cronograma"
                       >
                         <Download className="h-4 w-4" />
-                      </Button>
+                      </BlueButton>
                     )}
                   </RowApp>
                 </TableCell>

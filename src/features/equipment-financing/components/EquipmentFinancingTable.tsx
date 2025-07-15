@@ -9,16 +9,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Trash2 } from "lucide-react";
+import { Eye, Trash2, Edit } from "lucide-react";
 import { EquipmentFinancingItem } from '../api/equipment-financing-api';
 import { format, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { EquipmentFinancingStatusCode, EquipmentFinancingStatusLabel } from '../enums/equipment-financing-status.enum';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { BlueButton, RedButton } from "@/components/common/ColorButtons";
 
 interface Props {
   financings: EquipmentFinancingItem[];
+  onEdit: (item: EquipmentFinancingItem) => void;
   onDelete: (id: string) => void;
   onViewSchedule: (id: string) => void;
 }
@@ -54,7 +56,7 @@ const getStatusColor = (status: string): string => {
   }
 };
 
-const EquipmentFinancingTable = ({ financings, onDelete, onViewSchedule }: Props) => {
+const EquipmentFinancingTable = ({ financings, onEdit, onDelete, onViewSchedule }: Props) => {
   return (
     <Table>
       <TableHeader>
@@ -93,13 +95,12 @@ const EquipmentFinancingTable = ({ financings, onDelete, onViewSchedule }: Props
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
+                    <BlueButton
                       size="icon"
                       onClick={() => onViewSchedule(financing.id)}
                     >
                       <Eye className="h-4 w-4" />
-                    </Button>
+                    </BlueButton>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Ver Cronograma</p>
@@ -108,13 +109,26 @@ const EquipmentFinancingTable = ({ financings, onDelete, onViewSchedule }: Props
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
+                    <BlueButton
+                      size="icon"
+                      onClick={() => onEdit(financing)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </BlueButton>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Editar</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <RedButton
                       size="icon"
                       onClick={() => onDelete(financing.id)}
                     >
                       <Trash2 className="h-4 w-4" />
-                    </Button>
+                    </RedButton>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Eliminar</p>

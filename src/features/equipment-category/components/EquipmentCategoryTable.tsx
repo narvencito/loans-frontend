@@ -7,11 +7,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
 import { Pencil, Trash2 } from 'lucide-react';
 import { equipmentCategoryApi } from '../api/equipment-category-api';
 import { EquipmentCategory } from '../types/equipment-category.types';
 import { showConfirm } from '@/shared/utils/global-dialog-utils';
+import { BlueButton, RedButton } from '@/components/common/ColorButtons';
 
 interface Props {
   onEdit: (id: string) => void;
@@ -83,20 +83,18 @@ export default function EquipmentCategoryTable({ onEdit }: Props) {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
+                    <BlueButton
                       size="icon"
                       onClick={() => onEdit(category.id)}
                     >
                       <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
+                    </BlueButton>
+                    <RedButton
                       size="icon"
                       onClick={() => handleDelete(category.id)}
                     >
                       <Trash2 className="h-4 w-4" />
-                    </Button>
+                    </RedButton>
                   </div>
                 </TableCell>
               </TableRow>

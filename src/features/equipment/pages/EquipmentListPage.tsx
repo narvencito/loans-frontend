@@ -12,6 +12,7 @@ import LabelApp from '@/shared/components/LabelApp';
 import EquipmentCategorySelect from '@/features/equipment-category/components/EquipmentCategorySelect';
 import { EquipmentUsageType } from '../model/equipment.types';
 import EquipmentUsageTypeSelect from '../components/EquipmentUsageTypeSelect';
+import { BlueButton, YellowButton } from '@/components/common/ColorButtons';
 
 type ExtendedFilters = Omit<EquipmentFilters, 'usageType'> & {
   usageType?: EquipmentUsageType | 'all';
@@ -151,19 +152,16 @@ const EquipmentListPage = () => {
             </ColumnApp>
           </div>
           <div className="flex items-end gap-2 ml-4">
-            <Button
-              variant="outline"
-              className="bg-blue-50 hover:bg-blue-100 text-blue-600"
+            <BlueButton
               onClick={handleSearch}
             >
               Buscar
-            </Button>
-            <Button 
-              className="bg-yellow-400 hover:bg-yellow-500 text-black"
+            </BlueButton>
+            <YellowButton 
               onClick={handleOpenCreate}
             >
               Registrar equipo
-            </Button>
+            </YellowButton>
           </div>
         </RowApp>
       </div>

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import AsyncClientCombobox from "@/features/client/components/AsyncClientCombobox";
 import AsyncEquipmentCombobox from "@/features/equipment/components/AsyncEquipmentCombobox";
 import { CreateEquipmentFinancingDto } from "@/features/equipment-financing/api/equipment-financing-api";
+import { GrayButton, GreenButton } from "@/components/common/ColorButtons";
 
 interface Props {
   open: boolean;
@@ -18,7 +19,7 @@ const EquipmentFinancingFormModal = ({ open, onClose, onSubmit, defaultValues }:
   const [form, setForm] = useState<CreateEquipmentFinancingDto>({
     clientId: "",
     equipmentId: "",
-    totalPrice: 0,
+    totalAmount: 0,
     downPayment: 0,
   });
 
@@ -26,13 +27,13 @@ const EquipmentFinancingFormModal = ({ open, onClose, onSubmit, defaultValues }:
     if (defaultValues) {
       setForm(defaultValues);
     } else {
-      setForm({ clientId: "", equipmentId: "", totalPrice: 0, downPayment: 0 });
+      setForm({ clientId: "", equipmentId: "", totalAmount: 0, downPayment: 0 });
     }
   }, [defaultValues]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: name === "totalPrice" || name === "downPayment" ? parseFloat(value) : value }));
+    setForm((prev) => ({ ...prev, [name]: name === "totalAmount" || name === "downPayment" ? parseFloat(value) : value }));
   };
 
   const handleSubmit = () => {
@@ -59,11 +60,11 @@ const EquipmentFinancingFormModal = ({ open, onClose, onSubmit, defaultValues }:
           />
 
           <div>
-            <Label htmlFor="totalPrice">Precio Total</Label>
+            <Label htmlFor="totalAmount">Precio Total</Label>
             <Input
-              name="totalPrice"
+              name="totalAmount"
               type="number"
-              value={form.totalPrice}
+              value={form.totalAmount}
               onChange={handleChange}
               min={0}
               step={0.01}
@@ -84,12 +85,12 @@ const EquipmentFinancingFormModal = ({ open, onClose, onSubmit, defaultValues }:
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
-          <Button className="bg-gray-300 text-black" onClick={onClose}>
+          <GrayButton onClick={onClose}>
             Cancelar
-          </Button>
-          <Button className="bg-green-600 text-white" onClick={handleSubmit}>
+          </GrayButton>
+          <GreenButton onClick={handleSubmit}>
             Guardar
-          </Button>
+          </GreenButton>
         </div>
       </DialogContent>
     </Dialog>

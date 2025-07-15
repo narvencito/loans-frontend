@@ -25,7 +25,7 @@ export default function HeroSection() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold leading-tight text-gray-300">
             Tu futuro no puede esperar
           </h1>
 

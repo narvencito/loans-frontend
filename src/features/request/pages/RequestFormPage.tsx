@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { EmailConflictModal } from '../components/EmailConflictModal';
 import LoginPage from '@/features/auth/pages/LoginPage';
 import { useCheckEmail } from '../hooks/useCheckEmail';
+import { YellowButton } from '@/components/common/ColorButtons';
 
 export default function RequestFormPage() {
   const [searchParams] = useSearchParams();
@@ -19,7 +20,7 @@ export default function RequestFormPage() {
 
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [loginVisible, setLoginVisible] = useState(false);
-  const checkEmail = useCheckEmail();
+  const { checkEmail } = useCheckEmail();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -92,14 +93,15 @@ export default function RequestFormPage() {
           className="w-full p-3 border rounded mb-4"
         />
 
-        <button className="bg-green-600 text-white py-3 w-full rounded hover:bg-green-700">
+        <YellowButton type="submit" className="w-full">
           Continuar
-        </button>
+        </YellowButton>
       </form>
 
       {showConflictModal && (
         <EmailConflictModal
           email={form.email}
+          open={showConflictModal}
           onClose={() => setShowConflictModal(false)}
           onOpenLogin={() => {
             setShowConflictModal(false);

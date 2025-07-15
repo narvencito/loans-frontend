@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Staff } from "../api/staff_api";
+import { BlueButton, RedButton, GreenButton } from "@/components/common/ColorButtons";
 
 interface Props {
   staff: Staff[];
@@ -45,23 +46,27 @@ export const StaffTable = ({ staff, onEdit, onToggleStatus }: Props) => {
                   </span>
                 </TableCell>
                 <TableCell className="flex items-center justify-center gap-2">
-                  <Button
+                  <BlueButton
                     size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={() => onEdit(person)}
                   >
                     Editar
-                  </Button>
-                  <Button
-                    size="sm"
-                    className={person.isActive ? 
-                      "bg-red-600 hover:bg-red-700 text-white" :
-                      "bg-green-600 hover:bg-green-700 text-white"
-                    }
-                    onClick={() => onToggleStatus(person.id)}
-                  >
-                    {person.isActive ? 'Desactivar' : 'Activar'}
-                  </Button>
+                  </BlueButton>
+                  {person.isActive ? (
+                    <RedButton
+                      size="sm"
+                      onClick={() => onToggleStatus(person.id)}
+                    >
+                      Desactivar
+                    </RedButton>
+                  ) : (
+                    <GreenButton
+                      size="sm"
+                      onClick={() => onToggleStatus(person.id)}
+                    >
+                      Activar
+                    </GreenButton>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

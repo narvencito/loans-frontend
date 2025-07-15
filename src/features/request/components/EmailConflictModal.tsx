@@ -1,11 +1,12 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { GrayButton, BlueButton } from '@/components/common/ColorButtons';
 
 interface Props {
   email: string;
   onClose: () => void;
   open: boolean;
+  onOpenLogin: () => void;
 }
 
 export const EmailConflictModal = ({ email, onClose, open }: Props) => {
@@ -30,12 +31,12 @@ export const EmailConflictModal = ({ email, onClose, open }: Props) => {
           </ul>
         </div>
         <div className="flex justify-end gap-3 mt-4">
-          <Button variant="outline" onClick={onClose}>
+          <GrayButton onClick={onClose}>
             Usar otro correo
-          </Button>
-          <Button onClick={() => navigate('/login')}>
+          </GrayButton>
+          <BlueButton onClick={() => navigate('/login')}>
             Iniciar sesión
-          </Button>
+          </BlueButton>
         </div>
       </DialogContent>
     </Dialog>

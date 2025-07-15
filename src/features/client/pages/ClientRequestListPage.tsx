@@ -14,6 +14,7 @@ import RequestDetailModal from '../components/RequestDetailModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { REQUEST_STATUS_STYLES } from '@/features/request/constants/request-status.constants';
 import { RequestStatusCode } from '@/features/request/enums/request-status.enum';
+import { BlueButton, YellowButton } from '@/components/common/ColorButtons';
 
 const RequestTypeLabels: Record<string, string> = {
   'cash': 'Préstamo en efectivo',
@@ -151,14 +152,13 @@ export default function ClientRequestListPage() {
               }
             </TableCell>
             <TableCell className="text-right">
-              <Button
-                variant="ghost"
+              <BlueButton
                 size="icon"
                 onClick={() => handleViewDetail(request)}
                 className="hover:bg-gray-200"
               >
                 <Eye className="h-4 w-4" />
-              </Button>
+              </BlueButton>
             </TableCell>
           </TableRow>
         ))}
@@ -166,12 +166,12 @@ export default function ClientRequestListPage() {
           <TableRow>
             <TableCell colSpan={6} className="text-center py-8">
               <p className="text-gray-500">No se encontraron solicitudes</p>
-              <button
+              <YellowButton
                 onClick={() => navigate('/general/request-wizard')}
-                className="mt-4 text-primary hover:text-primary/90"
+                className="mt-4"
               >
                 Crear nueva solicitud
-              </button>
+              </YellowButton>
             </TableCell>
           </TableRow>
         )}
@@ -183,12 +183,11 @@ export default function ClientRequestListPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Mis Solicitudes</h1>
-        <button
+        <YellowButton
           onClick={() => navigate('/general/request-wizard')}
-          className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
         >
           Nueva Solicitud
-        </button>
+        </YellowButton>
       </div>
 
       <Tabs defaultValue="all" className="w-full" value={activeTab} onValueChange={setActiveTab}>

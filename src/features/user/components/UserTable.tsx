@@ -9,6 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { BlueButton, RedButton, GreenButton } from '@/components/common/ColorButtons';
 
 interface Props {
   users: UserItem[];
@@ -49,14 +50,21 @@ const UserTable = ({ users, onToggle }: Props) => {
                 </span>
               </TableCell>
               <TableCell className="text-center">
-                <Button
-                  size="sm"
-                  variant="default"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => onToggle(u.id)}
-                >
-                  {u.isActive ? 'Desactivar' : 'Activar'}
-                </Button>
+                {u.isActive ? (
+                  <RedButton
+                    size="sm"
+                    onClick={() => onToggle(u.id)}
+                  >
+                    Desactivar
+                  </RedButton>
+                ) : (
+                  <GreenButton
+                    size="sm"
+                    onClick={() => onToggle(u.id)}
+                  >
+                    Activar
+                  </GreenButton>
+                )}
               </TableCell>
             </TableRow>
           ))}

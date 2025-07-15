@@ -9,7 +9,8 @@ import { equipmentApi } from "@/features/equipment/api/equipment_api";
 import { CreateEquipmentFinancingDto, equipmentFinancingApi, EquipmentFinancingItem } from "../api/equipment-financing-api";
 import { SimpleClient } from "@/features/client/components/ClientSearchInput";
 import { clientApi } from "@/features/client/api/client_api";
-import { AsyncClientCombobox } from "@/features/client/components/AsyncClientCombobox";
+import AsyncClientCombobox from "@/features/client/components/AsyncClientCombobox";
+import { BlueButton, YellowButton } from "@/components/common/ColorButtons";
 
 const FINANCING_STATUSES = {
   PAID: 'Pagado',
@@ -39,7 +40,7 @@ const EquipmentFinancingListPage = () => {
     ]);
     setFinancings(financingList);
     setClients(clientList);
-    setEquipments(equipmentList);
+    setEquipments(equipmentList.items);
     setLoading(false);
   };
 
@@ -121,12 +122,12 @@ const EquipmentFinancingListPage = () => {
 
         {/* Botones a la derecha */}
         <div className="flex gap-2 w-full sm:w-auto">
-          <Button
+          <BlueButton
             onClick={buscarFinanciamientos}
-            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+            className="w-full sm:w-auto"
           >
             Buscar
-          </Button>
+          </BlueButton>
         </div>
       </div>
 
@@ -135,7 +136,7 @@ const EquipmentFinancingListPage = () => {
       ) : (
         <div className="overflow-x-auto">
           <EquipmentFinancingTable
-            items={financings}
+            financings={financings}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onViewSchedule={handleViewSchedule}

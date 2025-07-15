@@ -5,6 +5,7 @@ import { clientApi, ClientItem, CreateClientDto } from '../api/client_api';
 import { Button } from '@/components/ui/button';
 import { confirmDialog } from '@/shared/utils/global-dialog';
 import { showSuccess, showError } from '@/shared/utils/global-dialog-utils';
+import { YellowButton } from '@/components/common/ColorButtons';
 
 const ClientListPage = () => {
   const [clients, setClients] = useState<ClientItem[]>([]);
@@ -65,13 +66,12 @@ const ClientListPage = () => {
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
           Gestión de Clientes
         </h1>
-        <Button 
+        <YellowButton 
           onClick={() => setShowModal(true)} 
           className="w-full sm:w-auto"
-          variant="default"
         >
           Crear Cliente
-        </Button>
+        </YellowButton>
       </div>
 
       {loading ? (

@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { showConfirm } from '@/shared/utils/global-dialog-utils';
 import CashLoanStatusSelect from '@/features/cash-loan-status/components/CashLoanStatusSelect';
 import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
+import { BlueButton, YellowButton } from '@/components/common/ColorButtons';
 
 const AdminCashLoanListPage = () => {
   const [loans, setLoans] = useState<CashLoanItem[]>([]);
@@ -79,19 +80,19 @@ const AdminCashLoanListPage = () => {
 
         {/* Botones a la derecha */}
         <div className="flex gap-2 w-full sm:w-auto">
-          <Button
+          <BlueButton
             onClick={buscarPrestamos}
-            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+            className="w-full sm:w-auto"
           >
             Buscar
-          </Button>
+          </BlueButton>
 
-          <Button
+          <YellowButton
             onClick={() => setShowModal(true)}
             className="w-full sm:w-auto"
           >
             Crear Préstamo
-          </Button>
+          </YellowButton>
         </div>
       </div>
 

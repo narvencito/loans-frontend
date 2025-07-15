@@ -8,6 +8,7 @@ import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
 import { Label } from '@/components/ui/label';
 import AsyncClientCombobox from '@/features/client/components/AsyncClientCombobox';
 import { showGlobalDialog } from '@/shared/utils/global-dialog';
+import { BlueButton, YellowButton } from '@/components/common/ColorButtons';
 
 
 const AdminRequestListPage = () => {
@@ -181,19 +182,19 @@ const AdminRequestListPage = () => {
                         </div>
 
                         <div className="flex gap-2 items-end justify-end">
-                            <Button
-                                className="w-full sm:w-auto self-end bg-[#2563eb] hover:bg-[#1d4ed8] text-white"
+                            <YellowButton
+                                className="w-full sm:w-auto self-end"
                                 onClick={() => setShowModal(true)}
                             >
                                 Registrar solicitud
-                            </Button>
-                            <Button
-                                className="w-full sm:w-auto self-end bg-yellow-400 hover:bg-yellow-500 text-black"
+                            </YellowButton>
+                            <BlueButton
+                                className="w-full sm:w-auto self-end"
                                 onClick={handleSearch}
                                 type="button"
                             >
                                 Buscar
-                            </Button>
+                            </BlueButton>
                         </div>
                     </div>
                 </div>

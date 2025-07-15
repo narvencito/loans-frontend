@@ -15,6 +15,7 @@ import { showConfirm } from '@/shared/utils/global-dialog-utils';
 import { RequestTypeEnum } from '@/shared/enums/request-type.enum';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { RoleEnum } from '@/features/auth/types/auth.types';
+import { BlueButton, GrayButton, GreenButton, RedButton } from '@/components/common/ColorButtons';
 
 interface RequestDetailProps {
   request: RequestItem;
@@ -199,12 +200,12 @@ export const RequestDetail = ({ request: initialRequest, showActions = false, on
                 {request.requestStatus.name}
               </span>
             </div>
-            <CancelButton
+            <GrayButton
               onClick={() => setShowHistoryModal(true)}
               className="shrink-0"
             >
               Ver Historial
-            </CancelButton>
+            </GrayButton>
           </div>
 
           {/* Acciones según estado */}
@@ -216,12 +217,12 @@ export const RequestDetail = ({ request: initialRequest, showActions = false, on
               {isUserView && (request.requestStatus.code === RequestStatusCode.PENDING || 
                 request.requestStatus.code === RequestStatusCode.IN_REVIEW) && (
                 <div className="flex gap-2">
-                  <CancelButton
+                  <RedButton
                     onClick={() => openStatusDialog('cancel')}
                     disabled={isLoading}
                   >
                     Cancelar Solicitud
-                  </CancelButton>
+                  </RedButton>
                 </div>
               )}
 
@@ -231,43 +232,43 @@ export const RequestDetail = ({ request: initialRequest, showActions = false, on
                   {/* Botón para pasar a revisión (Worker o superior) */}
                   {request.requestStatus.code === RequestStatusCode.PENDING && canReviewRequest && (
                     <div className="flex gap-2">
-                      <ConfirmButton
+                      <BlueButton
                         onClick={() => openStatusDialog('review')}
                         disabled={isLoading}
                       >
                         Pasar a Revisión
-                      </ConfirmButton>
+                      </BlueButton>
                     </div>
                   )}
 
                   {/* Botones de aprobar/rechazar (Boss o Admin) */}
                   {request.requestStatus.code === RequestStatusCode.IN_REVIEW && canApproveOrCancel && (
                     <div className="flex gap-2">
-                      <CancelButton
+                      <RedButton
                         onClick={() => openStatusDialog('reject')}
                         disabled={isLoading}
                       >
                         Rechazar Solicitud
-                      </CancelButton>
-                      <ConfirmButton
+                      </RedButton>
+                      <GreenButton
                         onClick={() => openStatusDialog('approve')}
                         disabled={isLoading}
                       >
                         Aprobar Solicitud
-                      </ConfirmButton>
+                      </GreenButton>
                     </div>
                   )}
 
                   {/* Botón de convertir (Admin o Boss) */}
                   {request.requestStatus.code === RequestStatusCode.APPROVED && canConvertRequest && (
                     <div className="flex">
-                      <ConfirmButton
+                      <GreenButton
                         onClick={() => openStatusDialog('convert')}
                         disabled={isLoading}
                         className="flex-1"
                       >
                         Convertir a Préstamo
-                      </ConfirmButton>
+                      </GreenButton>
                     </div>
                   )}
                 </div>
@@ -432,17 +433,19 @@ export const RequestDetail = ({ request: initialRequest, showActions = false, on
           </div>
 
           <div className="flex justify-end gap-3">
-            <CancelButton
+            <GrayButton
               onClick={() => setShowConvertDialog(false)}
               disabled={isLoading}
-            />
-            <ConfirmButton
+            >
+              Cancelar
+            </GrayButton>
+            <GreenButton
               onClick={handleConvert}
               disabled={isLoading || downPayment < 0}
               loading={isLoading}
             >
               Convertir
-            </ConfirmButton>
+            </GreenButton>
           </div>
         </DialogContent>
       </Dialog>

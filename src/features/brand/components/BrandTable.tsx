@@ -7,10 +7,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Brand } from '../api/brand_api';
 import { formatDate } from '@/shared/utils/dateUtils';
 import Pagination from '@/shared/components/Pagination';
+import { BlueButton, GreenButton, RedButton } from '@/components/common/ColorButtons';
 
 interface Props {
   brands: Brand[];
@@ -50,29 +50,26 @@ const BrandTable = ({ brands, onEdit, onDelete, onRestore }: Props) => {
                     </span>
                   </TableCell>
                   <TableCell className="flex items-center justify-center gap-2">
-                    <Button
+                    <BlueButton
                       size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
                       onClick={() => onEdit(brand)}
                     >
                       Editar
-                    </Button>
+                    </BlueButton>
                     {brand.isActive ? (
-                      <Button
+                      <RedButton
                         size="sm"
-                        className="bg-red-600 hover:bg-red-700 text-white"
                         onClick={() => onDelete(brand.id)}
                       >
                         Eliminar
-                      </Button>
+                      </RedButton>
                     ) : (
-                      <Button
+                      <GreenButton
                         size="sm"
-                        className="bg-green-600 hover:bg-green-700 text-white"
                         onClick={() => onRestore(brand.id)}
                       >
                         Restaurar
-                      </Button>
+                      </GreenButton>
                     )}
                   </TableCell>
                 </TableRow>

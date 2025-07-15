@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { CancelButton, ConfirmButton } from '@/components/common/ActionButtons';
 import { RequestStatusCode } from '../enums/request-status.enum';
+import { GrayButton, GreenButton } from '@/components/common/ColorButtons';
 
 interface Props {
   open: boolean;
@@ -76,18 +76,20 @@ export const RequestStatusChangeDialog = ({
         </div>
 
         <div className="flex justify-end gap-3">
-          <CancelButton
+          <GrayButton
             onClick={onClose}
             disabled={isLoading}
-          />
-          <ConfirmButton
+          >
+            Cancelar
+          </GrayButton>
+          <GreenButton
             onClick={handleConfirm}
             disabled={isLoading || (!shouldHideComments && !comments.trim())}
             loading={isLoading}
             className={confirmColor}
           >
             {confirmLabel}
-          </ConfirmButton>
+          </GreenButton>
         </div>
       </DialogContent>
     </Dialog>

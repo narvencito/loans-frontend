@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { StaffRoleEnum, STAFF_ROLE_LABELS } from "../types/staff.types";
+import { YellowButton } from "@/components/common/ColorButtons";
 
 const StaffListPage = () => {
   const [staff, setStaff] = useState<Staff[]>([]);
@@ -116,7 +117,9 @@ const StaffListPage = () => {
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={() => setIsModalOpen(true)}>Registrar Personal</Button>
+          <YellowButton onClick={() => setIsModalOpen(true)}>
+            Registrar Personal
+          </YellowButton>
         </div>
       </div>
 

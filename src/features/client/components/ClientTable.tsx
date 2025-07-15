@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { ClientItem } from '../api/client_api';
+import { RedButton, GreenButton } from '@/components/common/ColorButtons';
 
 interface Props {
   clients: ClientItem[];
@@ -41,14 +42,23 @@ const ClientTable = ({ clients, onToggle }: Props) => {
                 </span>
               </TableCell>
               <TableCell className="text-center">
-                <Button
-                  size="sm"
-                  variant="default"
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
-                  onClick={() => onToggle(c.id)}
-                >
-                  {c.isActive ? 'Desactivar' : 'Activar'}
-                </Button>
+                {c.isActive ? (
+                  <RedButton
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => onToggle(c.id)}
+                  >
+                    Desactivar
+                  </RedButton>
+                ) : (
+                  <GreenButton
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => onToggle(c.id)}
+                  >
+                    Activar
+                  </GreenButton>
+                )}
               </TableCell>
             </TableRow>
           ))}

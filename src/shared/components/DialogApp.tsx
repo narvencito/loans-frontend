@@ -29,19 +29,28 @@ export default function DialogApp() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
-      <DialogContent>
+      <DialogContent className="bg-surface border-2 border-primary">
         <DialogHeader>
-          <DialogTitle>
-            {getIcon()} {title}
+          <DialogTitle className="text-primary flex items-center gap-2">
+            <span className="text-xl">{getIcon()}</span>
+            <span>{title}</span>
           </DialogTitle>
-          <DialogDescription>{message}</DialogDescription>
+          <DialogDescription className="text-primary/80">{message}</DialogDescription>
         </DialogHeader>
         {type === 'confirm' && (
           <DialogFooter className="flex justify-end gap-2">
-            <Button variant="outline" onClick={handleCancel}>
+            <Button 
+              variant="destructive" 
+              onClick={handleCancel}
+              className="transition-all duration-200"
+            >
               Cancelar
             </Button>
-            <Button onClick={handleConfirm}>
+            <Button 
+              variant="default"
+              onClick={handleConfirm}
+              className="transition-all duration-200"
+            >
               Confirmar
             </Button>
           </DialogFooter>

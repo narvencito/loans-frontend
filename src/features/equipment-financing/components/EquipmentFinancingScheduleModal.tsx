@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Wallet, Download } from 'lucide-react';
 import RowApp from '@/shared/components/RowApp';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { BlueButton, GreenButton } from "@/components/common/ColorButtons";
 
 interface Props {
   open: boolean;
@@ -18,6 +19,7 @@ interface Props {
   onPayInstallment?: (financing: EquipmentFinancingItem, installmentId: string) => void;
   onPayTotal?: (financing: EquipmentFinancingItem) => void;
   onDownloadSchedule?: (financing: EquipmentFinancingItem) => void;
+  onFinancingUpdated?: () => Promise<void>;
 }
 
 const formatCurrency = (amount: number) => {
@@ -51,7 +53,8 @@ const EquipmentFinancingScheduleModal = ({
   financing,
   onPayInstallment,
   onPayTotal,
-  onDownloadSchedule
+  onDownloadSchedule,
+  onFinancingUpdated
 }: Props) => {
   if (!financing) return null;
 
@@ -127,26 +130,22 @@ const EquipmentFinancingScheduleModal = ({
               <div className="mt-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Cronograma de Pagos</h3>
-                  <div className="flex gap-2">
+                  <div className="flex justify-end gap-2 mt-4">
+                    <BlueButton
+                      onClick={() => onDownloadSchedule && onDownloadSchedule(financing)}
+                      className="gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Descargar Cronograma
+                    </BlueButton>
                     {showPaymentButtons && onPayTotal && remainingAmount > 0 && (
-                      <Button
-                        variant="default"
+                      <GreenButton
                         onClick={() => onPayTotal(financing)}
                         className="gap-2"
                       >
                         <Wallet className="h-4 w-4" />
                         Pago Total ({formatCurrency(remainingAmount)})
-                      </Button>
-                    )}
-                    {onDownloadSchedule && (
-                      <Button
-                        variant="outline"
-                        onClick={() => onDownloadSchedule(financing)}
-                        className="gap-2"
-                      >
-                        <Download className="h-4 w-4" />
-                        Descargar Cronograma
-                      </Button>
+                      </GreenButton>
                     )}
                   </div>
                 </div>

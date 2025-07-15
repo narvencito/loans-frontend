@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import EquipmentCategoryTable from '../components/EquipmentCategoryTable';
 import EquipmentCategoryFormModal from '../components/EquipmentCategoryFormModal';
-import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { YellowButton } from '@/components/common/ColorButtons';
 
 export default function EquipmentCategoryListPage() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -27,10 +27,10 @@ export default function EquipmentCategoryListPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Categorías de Equipos</h1>
-        <Button onClick={handleAdd}>
+        <YellowButton onClick={handleAdd}>
           <Plus className="h-4 w-4 mr-2" />
           Nueva Categoría
-        </Button>
+        </YellowButton>
       </div>
 
       <EquipmentCategoryTable onEdit={handleEdit} />

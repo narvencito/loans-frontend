@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Button } from "@/components/ui/button";
 import { Brand, brandApi } from '../api/brand_api';
 import BrandTable from '../components/BrandTable';
 import BrandFormModal from '../components/BrandFormModal';
 import { showConfirm } from '@/shared/utils/global-dialog-utils';
+import { YellowButton } from '@/components/common/ColorButtons';
 
 const AdminBrandPage = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -90,9 +90,9 @@ const AdminBrandPage = () => {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Gestión de Marcas</h1>
-        <Button onClick={handleOpenCreate}>
+        <YellowButton onClick={handleOpenCreate}>
           Registrar marca
-        </Button>
+        </YellowButton>
       </div>
 
       <BrandTable

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/shared/components/Pagination";
+import { BlueButton, RedButton } from "@/components/common/ColorButtons";
 
 interface Props {
   loans?: CashLoanItem[];
@@ -69,22 +70,20 @@ export const CashLoanTable = ({ loans = [], isLoading, onViewSchedule, askToogle
               </TableCell>
               <TableCell className="text-center space-x-2">
                 {onViewSchedule && (
-                  <Button
+                  <BlueButton
                     size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={() => onViewSchedule(l.id)}
                   >
                     Cronograma
-                  </Button>
+                  </BlueButton>
                 )}
                 {askToogle && (
-                  <Button
+                  <RedButton
                     size="sm"
-                    className="bg-red-600 hover:bg-red-700 text-white"
                     onClick={() => askToogle(l.id)}
                   >
                     Eliminar
-                  </Button>
+                  </RedButton>
                 )}
               </TableCell>
             </TableRow>

@@ -16,6 +16,7 @@ import { RequestDetail } from './RequestDetail';
 import { RequestStatusChangeDialog } from './RequestStatusChangeDialog';
 import { RequestStatusCode } from '../enums/request-status.enum';
 import { Badge } from "@/components/ui/badge";
+import { BlueButton } from "@/components/common/ColorButtons";
 
 interface Props {
   requests: RequestItem[];
@@ -158,14 +159,12 @@ export const RequestTable = ({ requests, showActions = false, onRefresh, onAlert
                   <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell className="p-2">
                     <div className="flex justify-end items-center gap-2">
-                      <Button
-                        variant="outline"
+                      <BlueButton
                         size="sm"
-                        className="bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300"
                         onClick={() => handleOpenDetail(request)}
                       >
                         Ver Solicitud
-                      </Button>
+                      </BlueButton>
                     </div>
                   </TableCell>
                 </TableRow>

@@ -13,6 +13,7 @@ import TruncatedWithTooltip from "@/components/common/TruncatedWithTooltip";
 import Pagination from "@/shared/components/Pagination";
 import { Badge } from "@/components/ui/badge";
 import { EQUIPMENT_USAGE_TYPE_LABELS } from "../model/equipment.types";
+import { BlueButton, RedButton } from "@/components/common/ColorButtons";
 
 interface Props {
   equipos: EquipmentItem[];
@@ -106,20 +107,18 @@ const EquipmentTable = ({
                     </span>
                   </TableCell>
                   <TableCell className="flex items-center justify-center gap-2">
-                    <Button
-                      variant="ghost"
+                    <BlueButton
                       size="icon"
                       onClick={() => onEdit(item)}
                     >
                       <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
+                    </BlueButton>
+                    <RedButton
                       size="icon"
                       onClick={() => onDelete(item.id)}
                     >
                       <Trash2 className="h-4 w-4" />
-                    </Button>
+                    </RedButton>
                   </TableCell>
                 </TableRow>
               ))}

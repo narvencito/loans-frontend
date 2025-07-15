@@ -18,11 +18,11 @@ export const CancelButton = ({
 }: ActionButtonProps) => {
   return (
     <Button
-      variant="outline"
+      variant="destructive"
       onClick={onClick}
       disabled={disabled || loading}
       className={cn(
-        "bg-red-100 hover:bg-red-200 text-red-800 border-red-300",
+        "transition-all duration-200",
         className
       )}
     >
@@ -40,11 +40,11 @@ export const ConfirmButton = ({
 }: ActionButtonProps) => {
   return (
     <Button
-      variant="outline"
+      variant="default"
       onClick={onClick}
       disabled={disabled || loading}
       className={cn(
-        "bg-yellow-100 hover:bg-yellow-200 text-yellow-800 border-yellow-300",
+        "transition-all duration-200",
         className
       )}
     >
